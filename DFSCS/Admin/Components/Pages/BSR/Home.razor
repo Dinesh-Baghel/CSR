@@ -1,0 +1,86 @@
+﻿@page "/HomeNotInUse"
+@layout BSRLayout
+@attribute [Authorize]
+@using MudBlazor
+
+<div class="">
+    @if (Users != null)
+    {
+        <!-- Mobile Cards (only on small screens) -->
+        <div class="d-flex d-md-none flex-column gap-2 px-2">
+            @foreach (var user in Users)
+            {
+                string bgc = "background: linear-gradient(90deg," + @user.ColorStart + ", " + @user.ColorEnd + ");";
+                <MudPaper Class="px-3 py-2 text-white cb-card ranking-card" Style="@bgc" @onclick="@(() => OnCardClick(user))">
+                        <div class="d-flex align-items-center justify-between">
+                            <MudAvatar Size="Size.Medium" Image="@user.AvatarUrl" />
+                            <div class="ms-2 flex-grow-1">
+                                <div class="fw-bold">@user.Name</div>
+                                <div class="text-xs">@user.Title</div>
+                            <div class="fw-bold">@user.Name</div>
+                            <div class="text-xs">@user.Title</div>
+                            </div>
+                            <div class="text-end pe-1">
+                                <div class="fw-bold">@user.Rank</div>
+                                <div class="text-xs">Rank</div>
+                            <div class="fw-bold">@user.Rank</div>
+                            <div class="text-xs">Rank</div>
+                            </div>
+                        </div>
+                    </MudPaper>
+            }
+            </div>
+    }
+</div>
+
+@code {
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if(firstRender)
+        {
+            Users = new()
+            {
+                new RankingUser { Name = "xiaohuiGod", Title = "Title: Flying wings", Views = 2631, Likes = 3208, Messages = 142, Rank = 1, AvatarUrl = "/images/avatar1.png", ColorStart = "#48c6ef", ColorEnd = "#6f86d6" },
+                new RankingUser { Name = "Luck", Title = "Growing up trouble", Views = 2453, Likes = 2562, Messages = 142, Rank = 2, AvatarUrl = "/images/avatar2.png", ColorStart = "#f953c6", ColorEnd = "#b91d73" },
+                new RankingUser { Name = "Jerry cool west", Title = "The sculptor’s diary", Views = 1580, Likes = 1962, Messages = 88, Rank = 3, AvatarUrl = "/images/avatar3.png", ColorStart = "#a18cd1", ColorEnd = "#fbc2eb" },
+                new RankingUser { Name = "Bold", Title = "The illustrator of little girl", Views = 1972, Likes = 2460, Messages = 102, Rank = 4, AvatarUrl = "/images/avatar4.png", ColorStart = "#f6d365", ColorEnd = "#fda085" }
+            };
+            StateHasChanged();
+        }
+    }
+    public class RankingUser
+    {
+        public string? Name { get; set; }
+        public string? Title { get; set; }
+        public int Views { get; set; }
+        public int Likes { get; set; }
+        public int Messages { get; set; }
+        public int Rank { get; set; }
+        public string? AvatarUrl { get; set; }
+        public string? ColorStart { get; set; }
+        public string? ColorEnd { get; set; }
+    }
+
+    public List<RankingUser> Users = new();
+    private void OnCardClick(RankingUser user)
+    {
+        // Perform navigation, open dialog, or show toast
+        Console.WriteLine($"Clicked on {user.Name}");
+    }
+}
+
+ <style>
+     .ranking-card {
+         transition: transform 0.2s ease;
+         border-radius: 12px;
+         cursor: pointer;
+      }
+     .ranking-card:hover 
+     {
+             transform: scale(1.01);
+     }
+
+     /* .mud-toolbar-gutters {
+         padding-right: 0px;
+     } */
+ </style>

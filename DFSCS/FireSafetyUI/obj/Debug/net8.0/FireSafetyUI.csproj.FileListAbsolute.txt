@@ -1,0 +1,8 @@
+D:\DFSCS\FireSafetyUI\obj\Debug\net8.0\FireSafetyUI.csproj.AssemblyReference.cache
+D:\DFSCS\FireSafetyUI\obj\Debug\net8.0\rpswa.dswa.cache.json
+D:\DFSCS\FireSafetyUI\obj\Debug\net8.0\FireSafetyUI.GeneratedMSBuildEditorConfig.editorconfig
+D:\DFSCS\FireSafetyUI\obj\Debug\net8.0\FireSafetyUI.AssemblyInfoInputs.cache
+D:\DFSCS\FireSafetyUI\obj\Debug\net8.0\FireSafetyUI.AssemblyInfo.cs
+D:\DFSCS\FireSafetyUI\obj\Debug\net8.0\FireSafetyUI.csproj.CoreCompileInputs.cache
+D:\DFSCS\FireSafetyUI\obj\Debug\net8.0\FireSafetyUI.MvcApplicationPartsAssemblyInfo.cache
+D:\DFSCS\FireSafetyUI\obj\Debug\net8.0\FireSafetyUI.sourcelink.json

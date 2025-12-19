@@ -1,0 +1,38 @@
+﻿.f18{
+    font-size:18px;
+}
+.f15 {
+    font-size: 15px;
+}
+#components-reconnect-modal
+{
+    display: none;
+}
+/*.mud-icon-root.mud-svg-icon {
+    fill: rgb(255 64 129);
+}*/
+
+.archive {
+    border-top: solid 1px #a59fa24f;
+    margin-top: 20px;
+    padding-top: 20px;
+}
+
+.mud-navmenu.mud-navmenu-secondary .mud-nav-link.active:not(.mud-nav-link-disabled) {
+    color: rgb(255 255 255);
+    --mud-ripple-color: rgb(237 0 139);
+    background-color: rgb(237 0 139);
+}
+
+.mud-nav-item:hover {
+    color: rgb(255 255 255);
+    --mud-ripple-color: rgb(237 0 139);
+    background-color: rgb(237 0 139);
+}
+.mud-nav-link-expand-icon
+{
+    color:white !important;
+}
+/*.mud-svg-icon-black {
+    fill: rgb(0 0 0) !important;
+}*/

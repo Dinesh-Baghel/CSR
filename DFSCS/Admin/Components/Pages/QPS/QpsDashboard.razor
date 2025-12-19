@@ -1,0 +1,1009 @@
+﻿@page "/"
+@using Admin.Components.Shared
+@using System.Globalization
+@using MudExtensions
+@layout BSRLayout
+@attribute [Authorize]
+
+<div style=" display: flex;flex-direction: column;box-sizing: border-box;height: 88vh;">
+    <MudGrid Class="justify-end px-5" Style="flex-shrink: 0;">
+        <MudItem xs="5" md="5" Class="pt-0">
+            <MudBreadcrumbs Class="pl-0" Items="_items">
+                <ItemTemplate Context="item">
+                    <MudLink Href="@item.Href">@item.Text.ToUpper() (@(SelectedYear.ToString() + SelectedWeek.ToString()))</MudLink>
+                </ItemTemplate>
+            </MudBreadcrumbs>
+        </MudItem>
+        <MudItem xs="7" md="7" Class="d-flex justify-end pt-0">
+            <MudTooltip Text="@(ShowHideFilter ? "Hide Filter" : "Show Filter")">
+                <MudCheckBox @bind-Value="ShowHideFilter" Color="@(ShowHideFilter? Color.Primary: Color.Primary)" CheckedIcon="@Icons.Material.Filled.FilterListOff" UncheckedIcon="@Icons.Material.Filled.FilterList"></MudCheckBox>
+            </MudTooltip>
+            <MudTooltip Text="Card View">
+                <MudIconButton Icon="@Icons.Material.Filled.GridView" Color="@(IsCardView? Color.Primary: Color.Dark)" OnClick="() => SetView(true)" />
+            </MudTooltip>
+            <MudTooltip Text="List View">
+                <MudIconButton Icon="@Icons.Material.Filled.ViewHeadline" Color="@(!IsCardView ? Color.Primary : Color.Dark)" OnClick="() => SetView(false)" />
+            </MudTooltip>
+            <MudTooltip Text="Export To Excel">
+                <MudIconButton Icon="@Icons.Custom.FileFormats.FileExcel" Color="Color.Success" OnClick="ExportToExcel" />
+            </MudTooltip>
+            <MudTooltip Text="Export To Pdf">
+                <MudIconButton Icon="@Icons.Custom.FileFormats.FilePdf" Color="Color.Error" OnClick="ExportToPdf" />
+            </MudTooltip>
+        </MudItem>
+    </MudGrid>
+    @* Filter Start*@
+    @* @if (ShowHideFilter)
+        { *@
+    <MudPaper Elevation="5" Class="filter-paper" Style="@(ShowHideFilter ? "display: block;" : "display: none;")">
+        <MudGrid Class="justify-start" Style="flex-shrink: 0;">
+            <MudItem xs="6" sm="6" md="2" lg="2" xl="2" xxl="2" Class="d-flex justify-end pt-0 ">
+                <MudSelect T="int" Label="Select Year" Dense="true" @bind-Value="SelectedYear" Variant="Variant.Outlined" Clearable="false">
+                    @foreach (var year in YearOptions)
+                    {
+                        <MudSelectItem Value="@year">@year</MudSelectItem>
+                    }
+                </MudSelect>
+            </MudItem>
+            <MudItem xs="6" sm="6" md="2" lg="2" xl="2" xxl="2" Class="d-flex justify-end pt-0 ">
+                <MudSelect T="int" Label="Week" Dense="true" @bind-Value="SelectedWeek" Variant="Variant.Outlined" Clearable="false">
+                    @foreach (var week in WeekOptions)
+                    {
+                        <MudSelectItem Value="@week">@week</MudSelectItem>
+                    }
+                </MudSelect>
+            </MudItem>
+            @if (filters != null && filters.Any())
+            {
+                @foreach (var filter in filters)
+                {
+                    var key = filter.Key;
+
+                    <MudItem xs="12" sm="12" md="2" lg="2" xl="2" xxl="2" Class="pt-0">
+                        <div style="position: relative;">
+                            <MudSelectExtended Class="my-custom-select" T="FilterOption" SearchBoxAutoFocus="true"
+                                               ItemCollection="filter.Value"
+                                               SelectedValues="@selectedFilters[key]"
+                                               SelectedValuesChanged="@(v => selectedFilters[key] = v.ToList())"
+                                               MultiSelection="true"
+                                               Label="@GetLabel(key).Split("|")[1]"
+                                               Immediate="true"
+                                               Clearable="true"
+                                               SearchBox="true"
+                                               Dense="true"
+                                               Variant="Variant.Outlined"
+                                               MultiSelectionTextFunc="GetMultiSelectionText"
+                                               @ref="selectRefs[key]"
+                                               OnClose="() => closeChip(key)"
+                                               OnOpen="() => openChip(key)">
+                                @foreach (var option in filter.Value)
+                                {
+                                    <MudSelectItemExtended T="FilterOption" Value="@option" Text="@option.Text"></MudSelectItemExtended>
+                                }
+                            </MudSelectExtended>
+                            @if (@selectedFilters[key].Count > 0)
+                            {
+                                if (chipVisible[key])
+                                {
+                                    <MudChip T="string" Style="z-index:9999999999;  position: absolute; top: 15px; right: 16px; " Size="Size.Small" @onclick="() => CloseDropdown(key)" Color="Color.Secondary">Apply</MudChip>
+                                }
+                                @* <button class="filter-close-button" @onclick="() => CloseDropdown(key)">Apply</button> *@
+                            }
+                        </div>
+                    </MudItem>
+                }
+            }
+            <MudItem xs="12" sm="12" md="4" lg="4" xl="4" xxl="4" Class="d-flex justify-end pt-0">
+                <MudTextField T="string" HelperId="Minimum 5 characters" Label="Search by generic art or min 5 char desc." @bind-Value="SearchTextBoxText" Variant="Variant.Outlined" Placeholder="" Clearable="true" Immediate="true" Adornment="Adornment.End" AdornmentIcon="@Icons.Material.Filled.QrCodeScanner" AdornmentColor="Color.Secondary" OnAdornmentClick="@(() => SearchClicked())" />
+            </MudItem>
+            <MudItem xs="6" sm="6" md="1" lg="1" xl="1" xxl="1" Class="d-flex justify-start py-3">
+                <MudButton Color="Color.Secondary" Variant="Variant.Filled" OnClick="SearchClicked">Search</MudButton>
+            </MudItem>
+            <MudItem xs="6" sm="6" md="1" lg="1" xl="1" xxl="1" Class="d-flex justify-start py-3">
+                <MudButton Color="Color.Primary" Variant="Variant.Filled" @onclick="ResetSearch">Reset</MudButton>
+            </MudItem>
+
+        </MudGrid>
+    </MudPaper>
+    @*         } *@
+    @* Filter End*@
+
+
+    <div style="overflow: auto;flex-grow: 1; box-sizing: border-box;">
+        @* List View *@
+        <div style="@(IsCardView ? "display:none" : "display:block")">
+            <div class="d-flex d-md-flex flex-column gap-2 px-2">
+                <MudSimpleTable Dense="true" Bordered="true" FixedHeader="true" Class="mt-1">
+                    <thead>
+                        <tr style="text-align-last: center;">
+                            <th class="border1pxblack"><b>Image</b></th>
+                            <th class="border1pxblack" style="cursor:pointer" @onclick='() => SortBy("GENERIC_MATERIAL")'><b>Options</b> @GetSortIcon("GENERIC_MATERIAL")</th>
+                            <th class="border1pxblack" style="cursor:pointer" @onclick='() => SortBy("GENERIC_MATERIAL_DESC")'><b>Art Desc</b> @GetSortIcon("GENERIC_MATERIAL_DESC")</th>
+                            <th class="border1pxblack" style="cursor:pointer" @onclick='() => SortBy("MRP")'><b>MRP</b> @GetSortIcon("MRP")</th>
+                            <th class="border1pxblack" style="cursor:pointer" @onclick='() => SortBy("COLOR")'><b>Color</b> @GetSortIcon("COLOR")</th>
+                            <th class="border1pxblack" style="cursor:pointer" @onclick='() => SortBy("VENDOR_NAME")'><b>Vendor Name</b> @GetSortIcon("VENDOR_NAME")</th>
+                            <th class="border1pxblack" style="cursor:pointer" @onclick='() => SortBy("MOTHER_COMPANY")'><b>Mother Company</b> @GetSortIcon("MOTHER_COMPANY")</th>
+                            <th class="border1pxblack" style="cursor:pointer" @onclick='() => SortBy("GRC_QTY")'><b>GRC Qty.</b> @GetSortIcon("GRC_QTY")</th>
+                            <th class="border1pxblack" style="cursor:pointer" @onclick='() => SortBy("WEEK_ON_FLOOR")'><b>Week On Floor</b> @GetSortIcon("WEEK_ON_FLOOR")</th>
+                            <th class="border1pxblack" colspan="3">
+                                <MudSimpleTable class="border1pxblack1">
+                                    <tr>
+                                        <th class="border1pxblack1" colspan="3" style="TEXT-ALIGN-LAST: CENTER;"> <b>Sell Thru (%)</b></th>
+                                    </tr>
+                                    <tr>
+                                        <th class="border1pxblack1" style="font-size:0.8rem;cursor:pointer; text-align-last:start;" @onclick='() => SortBy("AVG_PERDAY_SELL_THRU")'><b>Avg/Day</b> @GetSortIcon("AVG_PERDAY_SELL_THRU")</th>
+                                        <th class="border1pxblack1" style="font-size:0.8rem;cursor:pointer; text-align-last:center;" @onclick='() => SortBy("TOTAL_SELL_THRU")'><b>Total</b> @GetSortIcon("TOTAL_SELL_THRU")</th>
+                                        <th class="border1pxblack1" style="font-size:0.8rem;cursor:pointer; text-align-last:end;" @onclick='() => SortBy("SELL_THRU_CUMMULATIVE")'><b>Cuml.</b> @GetSortIcon("SELL_THRU_CUMMULATIVE")</th>
+                                    </tr>
+                                </MudSimpleTable>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (DisplayedData?.Any() == true)
+                        {
+                            @foreach (var item in DisplayedData)
+                            {
+                                <tr>
+                                    <td @onclick="() => OpenDialog(item)" style="cursor:pointer;">
+                                        <img @key="@item.IMAGE_URL" src="@item.IMAGE_URL" width="50" height="50" alt="Product" class="rounded-lg mud-elevation-25" @onmouseover="@(() => OnImageMouseOver(item))" @onmouseout="@(() => OnImageMouseOut(item))" onerror="this.onerror=null;this.src='resources/media/images/noimage.jpg';" />
+                                        <MudPopover Open="@(currentlyHoveredProduct == item)" Fixed="true" AnchorOrigin="Origin.CenterRight" TransformOrigin="Origin.CenterLeft" style="width:25%;transform: translate(0%,-20%); z-index:9999; background-color:lightgray;" Class="py-10 px-1">
+                                            <ChildContent>
+                                                <img src="@item.IMAGE_URL" alt="Product" style="width:100%; height:auto; border-radius:8px;" onerror="this.onerror=null;this.src='resources/media/images/noimage.jpg';" />
+                                            </ChildContent>
+                                        </MudPopover>
+                                    </td>
+                                    <td>@(item.GENERIC_MATERIAL + item.COLOR)</td>
+                                    <td>@textInfo.ToTitleCase(item.GENERIC_MATERIAL_DESC!.ToLower()).Replace('_', ' ')</td>
+                                    <td style="text-align-last: right;">@item.MRP.ToString("0.##")</td>
+                                    <td>@item.COLOR</td>
+                                    <td>@textInfo.ToTitleCase(item.VENDOR_NAME!.ToLower()).Replace('_', ' ')</td>
+                                    <td>@textInfo.ToTitleCase(item.MOTHER_COMPANY!.ToLower()).Replace('_', ' ')</td>
+                                    <td style="text-align-last: right;">@item.GRC_QTY.ToString("0.##")</td>
+                                    <td style="text-align-last: right;">@item.WEEK_ON_FLOOR.ToString("0.##")</td>
+                                    <td style="text-align-last: right;">@item.AVG_PERDAY_SELL_THRU.ToString("0.00")</td>
+                                    <td style="text-align-last: right;">@item.TOTAL_SELL_THRU.ToString("0.00")</td>
+                                    <td style="text-align-last: right;">@item.SELL_THRU_CUMMULATIVE.ToString("0.00")</td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            @* <tr>
+                                <td colspan="12" class="text-center" style="padding: 20px; font-weight: 500; color: #888;text-align: center; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                                    <MudIcon Icon="@Icons.Material.Filled.Info" Class="mr-2" />
+                                    No data found matching your criteria.
+                                </td>
+                            </tr> *@
+                            <tr>
+                                <td colspan="12">
+                                    <MudPaper Class="pa-6 text-center" Style="text-align: center; width: 100%; background-color: #f9f9f9; border: 1px dashed #ccc;">
+                                        <MudText Color="Color.Secondary" Style="vertical-align:middle;" Typo="Typo.h6">
+                                            <MudIcon Icon="@Icons.Material.Filled.Info" Size="Size.Large" Style="vertical-align:middle;" Class="mr-2" />
+                                            No data found.
+                                        </MudText>
+                                    </MudPaper>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </MudSimpleTable>
+                @* <MudTable T="AppsBsr" Items="DisplayedData" Dense="true" Hover="true" >
+        <HeaderContent>
+            <MudTh>Image</MudTh>
+            <MudTh>Options</MudTh>
+            <MudTh>Art Desc</MudTh>
+            <MudTh>Mrp</MudTh>
+            <MudTh>Color</MudTh>
+            <MudTh>Vendor Name</MudTh>
+            <MudTh>Mother Company</MudTh>
+            <MudTh>Grc Qty.</MudTh>
+            <MudTh>Week On Floor</MudTh>
+            <MudTh>Sell Thru Cummulative</MudTh>
+            <MudTh>Total Sell Thru</MudTh>
+            <MudTh>Avg Sell Thru</MudTh>
+            <MudTh>Remarks</MudTh>
+            <MudTh>Top Best Seller</MudTh>
+
+        </HeaderContent>
+        <RowTemplate >
+                <MudTd  @onclick="() => OpenDialog(context)" style="cursor:pointer;">
+                    <img @key="@context.IMAGE_URL" src="@context.IMAGE_URL" width="50" height="50" alt="Product" class="rounded-lg mud-elevation-25" @onmouseover="@(() => OnImageMouseOver(context))" @onmouseout="@(() => OnImageMouseOut(context))" onerror="this.onerror=null;this.src='resources/media/images/noimage.jpg';" />
+                    <MudPopover Open="@(currentlyHoveredProduct == context)" Fixed="true" AnchorOrigin="Origin.CenterRight" TransformOrigin="Origin.CenterLeft" style="width:25%;transform: translate(0%,-20%); z-index:9999; background-color:lightgray;" Class="py-10 px-1">
+                <ChildContent>
+                            <img src="@context.IMAGE_URL" alt="Product" style="width:100%; height:auto; border-radius:8px;" onerror="this.onerror=null;this.src='resources/media/images/noimage.jpg';" />
+                </ChildContent>
+            </MudPopover>
+        </MudTd>
+                    <MudTd @onclick="() => OpenDialog(context)" style="cursor:pointer;">@(context.GENERIC_MATERIAL + context.COLOR)</MudTd>
+                    <MudTd @onclick="() => OpenDialog(context)" style="cursor:pointer;">@textInfo.ToTitleCase(context.GENERIC_MATERIAL_DESC!.ToLower()).Replace('_', ' ')</MudTd>
+                    <MudTd @onclick="() => OpenDialog(context)" style="cursor:pointer;">@context.MRP.ToString("0.##")</MudTd>
+                    <MudTd @onclick="() => OpenDialog(context)" style="cursor:pointer;">@textInfo.ToTitleCase(context.COLOR!.ToLower()).Replace('_', ' ')</MudTd>
+                    <MudTd @onclick="() => OpenDialog(context)" style="cursor:pointer;">@textInfo.ToTitleCase(context.VENDOR_NAME!.ToLower()).Replace('_', ' ')</MudTd>
+                    <MudTd @onclick="() => OpenDialog(context)" style="cursor:pointer;">@textInfo.ToTitleCase(context.MOTHER_COMPANY!.ToLower()).Replace('_', ' ')</MudTd>
+                    <MudTd @onclick="() => OpenDialog(context)" style="cursor:pointer;">@context.GRC_QTY.ToString("0.##")</MudTd>
+                    <MudTd @onclick="() => OpenDialog(context)" style="cursor:pointer;">@context.WEEK_ON_FLOOR.ToString("0.##")</MudTd>
+                    <MudTd @onclick="() => OpenDialog(context)" style="cursor:pointer;">@context.SELL_THRU_CUMMULATIVE.ToString("0.##") %</MudTd>
+                    <MudTd @onclick="() => OpenDialog(context)" style="cursor:pointer;">@context.TOTAL_SELL_THRU.ToString("0.##") %</MudTd>
+                    <MudTd @onclick="() => OpenDialog(context)" style="cursor:pointer;">@context.AVG_PERDAY_SELL_THRU.ToString("0.##") %</MudTd>
+                    <MudTd @onclick="() => OpenDialog(context)" style="cursor:pointer;">@context.REMARKS</MudTd>
+                    <MudTd @onclick="() => OpenDialog(context)" style="cursor:pointer;">@context.BS_REPEAT_REMARK</MudTd>       
+        </RowTemplate>
+        <NoRecordsContent>
+            <MudText>No matching records found</MudText>
+        </NoRecordsContent>
+    </MudTable> *@
+            </div>
+            @* <div class="d-flex d-md-none flex-column gap-2 px-2">    *@  
+              <div class="d-none d-md-none flex-column gap-2 px-2">
+                @for (int i = 0; i < DisplayedData.Count(); i++)
+                {
+                    var item = DisplayedData[i];
+                    var bgc = gradientStyles[i % gradientStyles.Length] + "border-radius:12px;color: #FFFFFF;";
+                    <MudPaper Class="px-3 py-2 text-white cb-card" Style="@bgc" @onclick="@(() => OpenDialog(item))">
+                        <div class="d-flex">
+                            <img @key="@item.IMAGE_URL" src="@item.IMAGE_URL" width="80" height="80" style="object-fit:cover; border-radius:8px;"
+                                 onerror="this.onerror=null;this.src='resources/media/images/noimage.jpg';" />
+                            <div class="ms-3 flex-grow-1">
+                                <div class="fw-bold">Mat: @item.GENERIC_MATERIAL  @item.COLOR | Color: @item.COLOR</div>
+                                <div class="text-xs">Desc: @textInfo.ToTitleCase(item.GENERIC_MATERIAL_DESC!.ToLower()).Replace('_', ' ')</div>
+                                <div class="text-xs">MRP: ₹@item.MRP.ToString("0.##") | GRC: @item.GRC_QTY.ToString("0.##")</div>
+                                <div>Remarks: @item.REMARKS | BS: @item.BS_REPEAT_REMARK</div>
+                            </div>
+                        </div>
+                        <div class="mt-2 text-xs">
+                            <div>Vendor: @textInfo.ToTitleCase(item.VENDOR_NAME!.ToLower()).Replace('_', ' ')</div>
+                            <div>Mother Co.: @textInfo.ToTitleCase(item.MOTHER_COMPANY!.ToLower()).Replace('_', ' ')</div>
+                            <div class="text-xs">Sell Thru: @item.SELL_THRU_CUMMULATIVE.ToString("0.##")% | Total: @item.TOTAL_SELL_THRU.ToString("0.##")% | Avg: @item.AVG_PERDAY_SELL_THRU.ToString("0.##")%</div>
+                        </div>
+                    </MudPaper>
+                }
+
+            </div>
+        </div>
+        @*  Card View *@
+        <div style="@(IsCardView ? "display:block" : "display:none")">
+            <MudGrid Class="px-5 pb-5">
+                @if (DisplayedData != null && DisplayedData.Count > 0)
+                {
+                    @foreach (var item in DisplayedData)
+                    {
+                        <MudItem xs="12" sm="12" md="3" lg="2" @key="item">
+                            <MudCard Style="background-color:#fdfdfd;align-items: center; min-height:456px;" Elevation="10">
+                                <img src="@item.IMAGE_URL" @onclick="() => OpenDialog(item)" alt="Product" style="width:100%; height:auto; border-radius:8px; min-height:237px; cursor:pointer;" onerror="this.onerror=null;this.src='resources/media/images/noimage.jpg';" />
+                                <MudCardContent Style="text-align:left; padding:12px;">
+                                    <!-- MRP & Mother Company in same line -->
+
+                                    <MudText Class="mt-1 font8"> @item.GENERIC_MATERIAL - @textInfo.ToTitleCase(item.GENERIC_MATERIAL_DESC!.ToLower()).Replace('_', ' ')</MudText>
+
+                                    <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                                        <MudText Color="Color.Secondary"> ₹@item.MRP.ToString("0.##")</MudText>
+                                        <MudText Color="Color.Secondary"> @item.COLOR</MudText>
+                                    </MudStack>
+
+                                    <MudText Class="mt-1 font8"><strong>Vendor:</strong> @textInfo.ToTitleCase(item.VENDOR_NAME!.ToLower()).Replace('_', ' ')</MudText>
+
+                                    <MudSimpleTable Dense="true" Bordered="true" Class="mt-1">
+                                        <thead>
+                                            <tr><th colspan="3" style="text-align: center; font-size:0.8rem;"><strong>Sell Thru (%)</strong></th></tr>
+                                            <tr>
+                                                <th style="font-size:0.8rem;">Avg/Day</th>
+                                                <th style="font-size:0.8rem;">Total</th>
+                                                <th style="font-size:0.8rem;">Cuml.</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td style="font-size:0.8rem;">@item.AVG_PERDAY_SELL_THRU.ToString("0.00")</td>
+                                                <td style="font-size:0.8rem;">@item.TOTAL_SELL_THRU.ToString("0.00")</td>
+                                                <td style="font-size:0.8rem;">@item.SELL_THRU_CUMMULATIVE.ToString("0.00")</td>
+                                            </tr>
+                                        </tbody>
+                                    </MudSimpleTable>
+
+                                </MudCardContent>
+                            </MudCard>
+                        </MudItem>
+                    }
+                }
+                else
+                {
+                    <MudItem xs="12" sm="12" md="12" lg="12" Class="d-flex justify-center align-center" Style="min-height:200px;">
+                        <MudPaper Class="pa-6 text-center" Style="text-align: center;width: 100%; background-color: #f9f9f9; border: 1px dashed #ccc;">
+                            <MudText Color="Color.Secondary" Style="vertical-align:middle;" Typo="Typo.h6">
+                                <MudIcon Icon="@Icons.Material.Filled.Info" Size="Size.Large" Style="vertical-align:middle;" Class="mr-2" />
+                                No data found.
+                            </MudText>
+                        </MudPaper>
+                    </MudItem>
+                }
+            </MudGrid>
+        </div>
+
+        <div class="text-center mb-15 py-2" style="text-align: center;">
+            @if (DisplayedData.Count > 0)
+            {
+                // Display the "X/Y" text
+                <MudChip T="string" Color="Color.Primary">
+                    @($"{DisplayedData.Count} / {DisplayedData[0].TotalCount} items loaded")
+                </MudChip>
+                <br />
+                @* Check if more items can be loaded *@
+                @if (DisplayedData.Count < DisplayedData[0].TotalCount) // More robust check: if loaded count is less than total
+                {
+                    <MudButton OnClick="LoadMore" Color="Color.Secondary" Variant="Variant.Filled">Load More . .</MudButton>
+                }
+            }
+        </div>
+    </div>
+</div>
+<Loader IsVisible="@IsLoading" />
+<MessageBox @ref="messageBox" />
+@code {
+    private MessageBox? messageBox;
+    private string GetLabel(string key) =>
+        keyLabels.TryGetValue(key, out var label) ? label : key;
+
+
+    public bool ShowHideFilter { get; set; } = true;
+    // private Dictionary<string, List<string>> filters; // from DB
+    // private Dictionary<string, HashSet<string>> selectedFilters = new(); // user's selection
+    private Dictionary<string, List<FilterOption>> filters = new(); // Filters loaded from API
+    private Dictionary<string, List<FilterOption>> selectedFilters = new(); // User selections
+    private Dictionary<string, string> keyLabels { get; set; } = new();
+    private string posType = "";
+    private ValuePresenter _valuePresenter = ValuePresenter.Text;
+    TextInfo textInfo = CultureInfo.CurrentCulture.TextInfo;
+    private List<int> YearOptions = new();
+    private List<int> WeekOptions = new();
+    private int _selectedYear;
+    public int SelectedWeek;
+    bool IsLoading = false;
+    private string SearchTextBoxText = string.Empty;
+    private string SearchQuery = string.Empty;
+    private List<AppsBsr> CachedData = new();
+    private List<AppsBsr> FilteredData = new();
+    private List<AppsBsr> DisplayedData = new();
+    private int PageNumber = 1;
+    private int PageSize = 100;
+    private bool IsCardView = true;
+    private AppsBsr? currentlyHoveredProduct;
+    private string whereClause = "";
+    private string OrderByClause = "";
+    private int userId = 0;
+
+    private string currentSortColumn = "AVG_PERDAY_SELL_THRU"; // default column
+    private bool sortAscending = true;
+    Dictionary<string, MudSelectExtended<FilterOption>> selectRefs = new();
+    Dictionary<string, bool> chipVisible = new();
+    protected override void OnInitialized()
+    {
+        IsLoading = true;
+        var user = HttpContextAccessor.HttpContext?.User;
+        if (user == null)
+        {
+            NavigationManager.NavigateTo("/Account/User-Login");
+            return;
+        }
+        var uid = user.Claims.FirstOrDefault(c => c.Type == CustomClaimTypes.User_Id)?.Value;
+        userId = Convert.ToInt32(uid);
+    }
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            PageSize = BsrSettings.PageSize;
+            currentSortColumn = BsrSettings.DefaultSortColumns!;
+            sortAscending = BsrSettings.sortAscending;
+            GenerateYearOptions();
+            await AdvSearchClicked("");
+            if (FilteredData.Count > 0)
+            {
+                SelectedYear = Convert.ToInt32(FilteredData[0].CALENDAR_WEEK!.Substring(0, 4));
+                SelectedWeek = Convert.ToInt32(FilteredData[0].CALENDAR_WEEK!.Remove(0, 4));
+                PopulateWeeksForYear(SelectedYear, SelectedWeek);
+            }
+            await GetDisplayFilters();
+            StateHasChanged();
+        }
+    }
+    void CloseDropdown(string key)
+    {
+        if (selectRefs.ContainsKey(key))
+        {
+            selectRefs[key]?.CloseMenu();
+            chipVisible[key] = false;
+        }
+    }
+    void closeChip(string key)
+    {
+        chipVisible[key] = false;
+    }
+
+    void openChip(string key)
+    {
+        chipVisible[key] = true;
+    }
+    // private void CloseSpecificDropdown(string key)
+    // {
+    //     if (MudSelectRefs.TryGetValue(key, out var selectComponent))
+    //     {
+    //         selectComponent.Close();
+    //     }
+    // }
+    public string FormatIfNumeric(string input)
+    {
+        if (decimal.TryParse(input, out var number))
+        {
+            return number.ToString("0.##"); // Always 2 decimal places
+        }
+        return input;
+    }
+    private async Task SortBy(string column)
+    {
+        if (currentSortColumn == column)
+            sortAscending = !sortAscending;
+        else
+        {
+            currentSortColumn = column;
+            sortAscending = true;
+        }
+        await SearchClicked();
+    }
+    private RenderFragment GetSortIcon(string column) => __builder =>
+    {
+    bool isActive = currentSortColumn == column;
+
+    string icon = Icons.Material.Filled.UnfoldMore; // Default neutral icon
+    if (isActive)
+        icon = sortAscending ? Icons.Material.Filled.SwitchLeft : Icons.Material.Filled.SwitchRight;
+
+    string rotateStyle = isActive
+        ? "transform: rotate(90deg); font-size:25px; vertical-align:middle; color:white;"
+        : "font-size:18px; vertical-align:middle; color:white;";
+
+    __builder.OpenComponent<MudIcon>(0);
+    __builder.AddAttribute(1, "Icon", icon);
+    __builder.AddAttribute(2, "Style", rotateStyle);
+    __builder.CloseComponent();
+    };
+    public class FilterOption
+    {
+        public string? Value { get; set; }
+        public string? Text { get; set; }
+
+        public override bool Equals(object obj)
+        {
+            return obj is FilterOption other && Value == other.Value;
+        }
+
+        public override int GetHashCode()
+        {
+            return Value?.GetHashCode() ?? 0;
+        }
+
+        public override string ToString() => Text;
+    }
+    private void OnCheckBoxChanged()
+    {
+        StateHasChanged(); // Forces immediate UI update
+    }
+    // private string? GetMultiSelectionText(List<string> selectedValues)
+    // {
+    //     if (selectedValues is null || selectedValues.Count == 0)
+    //         return "";
+
+    //     if (selectedValues.Count == 1)
+    //         return selectedValues.First();
+
+    //     return $"{selectedValues.First()} + {selectedValues.Count - 1} more";
+    // }
+    private Func<IEnumerable<FilterOption>, string> GetMultiSelectionText =>
+    (selected) =>
+    {
+        if (selected == null || !selected.Any())
+        {
+            return "";
+        }
+        var selectedList = selected.ToList();
+
+        if (selectedList.Count == 1)
+            return selectedList.First().Text!;
+
+        return $"{selectedList.First().Text} + {selectedList.Count - 1} more";
+    };
+
+    private void ResetPageNumber()
+    {
+        PageNumber = 1;
+        DisplayedData = new();
+    }
+
+    private async Task ResetSearch()
+    {
+        foreach (var key in filters.Keys)
+        {
+            selectedFilters[key] = new();
+        }
+        whereClause = "";
+        SearchTextBoxText = "";
+        await SearchClicked();
+    }
+    private void OnImageMouseOver(AppsBsr product)
+    {
+        currentlyHoveredProduct = product;
+    }
+    private readonly string[] gradientStyles = new[]
+    {
+        "background: linear-gradient(90deg, #ff4081, #2a5298);",  // Dark Blue
+        "background: linear-gradient(90deg, #3a1c71, #ff4081, #ffaf7b);",  // Purple to Coral
+        "background: linear-gradient(90deg, #232526, #594ae2);",  // Charcoal Grey
+        "background: linear-gradient(90deg, #594ae2, #734b6d);" ,  // Deep Purple
+        "background: linear-gradient(90deg, #0f2027, #ff4081, #2c5364);"  // Dark Gray-Blue
+    };
+    private void OnImageMouseOut(AppsBsr product)
+    {
+        // Only clear if the current hovered product is the one that just had the mouse leave
+        if (currentlyHoveredProduct == product)
+        {
+            currentlyHoveredProduct = null;
+        }
+    }
+    private void SetView(bool card)
+    {
+        IsCardView = card;
+    }
+    private List<BreadcrumbItem> _items = new()
+    {
+        // new BreadcrumbItem("Home", href: "/"),
+        new BreadcrumbItem("BSR Report", href: "#", disabled: true)
+    };
+    private async Task GetDisplayFilters()
+    {
+        var req = new GetDisplayFiltersReq { yearWeek = SelectedYear.ToString() + SelectedWeek.ToString(), userId = userId };
+        var rawFilters = await ApiMasterService.CallingAPI<Dictionary<string, List<string>>, GetDisplayFiltersReq>(AllApiNames.BSR_GET_DISPLAY_FILTERS!, req);
+        filters = rawFilters.ToDictionary(
+            kvp => kvp.Key,
+            kvp => kvp.Value.Select(val =>
+            {
+                var parts = val.Split('~');
+                return new FilterOption
+                    {
+                        Value = parts[0].Trim(),
+                        Text = parts.Length > 1 ? FormatIfNumeric(val.Trim()) : FormatIfNumeric(parts[0].Trim())
+                    };
+            }).ToList()
+        );
+
+        // foreach (var key in filters.Keys)
+        // {
+        //     selectedFilters[key] = new List<FilterOption>();
+        // }
+        foreach (var key in filters.Keys)
+        {
+            selectedFilters[key] = new List<FilterOption>();
+            if (!selectRefs.ContainsKey(key))
+            {
+                selectRefs[key] = null; // Will be assigned by @ref later
+            }
+            if (!chipVisible.ContainsKey(key))
+            {
+                chipVisible[key] = true;
+            }
+        }
+    }
+    public int SelectedYear
+    {
+        get => _selectedYear;
+        set
+        {
+            if (_selectedYear != value)
+            {
+                _selectedYear = value;
+                PopulateWeeksForYear(_selectedYear);
+            }
+        }
+    }
+    private void GenerateYearOptions()
+    {
+        int startYear = BsrSettings.StartYear;
+        int currentYear = DateTime.Now.Year;
+
+        YearOptions = Enumerable.Range(startYear, currentYear - startYear + 1)
+            .OrderByDescending(y => y)
+            .ToList();
+    }
+    private void PopulateWeeksForYear(int year, int _SelectedWeek = 0)
+    {
+        int maxWeeks = GetWeeksInYear(year);
+        if (year == DateTime.Now.Year)
+        {
+            if (_SelectedWeek == 0)
+            {
+                _SelectedWeek = GetCurrentWeekNumber();
+            }
+            maxWeeks = Math.Min(maxWeeks, _SelectedWeek);
+        }
+
+        WeekOptions = Enumerable.Range(1, maxWeeks)
+            .OrderByDescending(w => w)
+            .ToList();
+
+        // Reset week if not in valid range
+        if (!WeekOptions.Contains(SelectedWeek))
+            SelectedWeek = WeekOptions.FirstOrDefault();
+    }
+    private int GetWeeksInYear(int year)
+    {
+        DateTime lastDay = new DateTime(year, 12, 31);
+        var calendar = CultureInfo.CurrentCulture.Calendar;
+        return calendar.GetWeekOfYear(lastDay, CalendarWeekRule.FirstFourDayWeek, (DayOfWeek)BsrSettings.FirstDayOfWeek);
+    }
+    private int GetCurrentWeekNumber()
+    {
+        DateTime today = DateTime.Now;
+        var calendar = CultureInfo.CurrentCulture.Calendar;
+        return calendar.GetWeekOfYear(today, CalendarWeekRule.FirstFourDayWeek, (DayOfWeek)BsrSettings.FirstDayOfWeek);
+    }
+
+    // private void ApplyFilters()
+    // {
+    //     var filtersToSend = selectedFilters
+    //         .Where(kv => kv.Value != null && kv.Value.Any())
+    //         .ToDictionary(kv => kv.Key, kv => kv.Value.ToList());
+    //     if (filtersToSend.Count == 0)
+    //     {
+    //         whereClause = "";
+    //         return;
+    //     }
+    //     var whereConditions = new List<string>();
+    //     foreach (var filter in filtersToSend)
+    //     {
+    //         var column = filter.Key.Split('|')[0];
+    //         var values = filter.Value;
+
+    //         // Escape values and wrap in single quotes
+    //         var quotedValues = values.Select(v => $"'{v.Replace('\"', '\'')}'");
+    //         // Build IN clause
+    //         var condition = $"{column} IN ({string.Join(", ", quotedValues)})";
+    //         whereConditions.Add(condition);
+    //     }
+    //     whereClause = string.Join(" AND ", whereConditions);
+    // }
+    private void ApplyFilters()
+    {
+        var filtersToSend = selectedFilters.Where(kv => kv.Value != null && kv.Value.Any())
+            .ToDictionary(kv => kv.Key, kv => kv.Value.Select(f => f.Value).ToList());
+
+        if (filtersToSend.Count == 0)
+        {
+            whereClause = "";
+            return;
+        }
+
+        var whereConditions = new List<string>();
+        foreach (var filter in filtersToSend)
+        {
+            var column = filter.Key.Split('|')[0];
+            var values = filter.Value;
+
+            var quotedValues = values.Select(v => $"'{v!.Replace('\"', '\'')}'");//values.Select(v => $"'{v.Replace("'", "''")}'");
+
+            var condition = $"{column} IN ({string.Join(", ", quotedValues)})";
+            whereConditions.Add(condition);
+        }
+
+        whereClause = string.Join(" AND ", whereConditions);
+    }
+    private async Task AdvSearchClicked(string _yearWeek)
+    {
+        IsLoading = true;
+        try
+        {
+            OrderByClause = currentSortColumn + (sortAscending ? " ASC" : " DESC");
+            var req = new GetBSRDataReq { yearWeek = _yearWeek, whereClause = whereClause, OrderByClause = OrderByClause, pageNumber = PageNumber, pageSize = PageSize, userId = userId };
+            var result = await ApiMasterService.CallingAPI<AppsBsrRes, GetBSRDataReq>(AllApiNames.GET_BSR_LIST!, req);
+            CachedData = result?.APPS_BSR ?? new();
+            FilteredData = CachedData.ToList();
+            DisplayedData.AddRange(FilteredData);
+        }
+        finally
+        {
+            IsLoading = false;
+            if (DisplayedData.Count > 0)
+            {
+                ShowHideFilter = false;
+            }
+            StateHasChanged();
+        }
+    }
+    private async Task SearchClicked()
+    {
+        ApplyFilters();
+        if (SearchTextBoxText.Length >= 5)
+        {
+            whereClause = (whereClause.Length > 0 ? whereClause + " AND " : whereClause) + " GENERIC_MATERIAL ='" + SearchTextBoxText + "' OR GENERIC_MATERIAL_DESC Like '%" + SearchTextBoxText + "%'";
+        }
+        ResetPageNumber();
+        await AdvSearchClicked(SelectedYear.ToString() + SelectedWeek.ToString());
+    }
+    // private async Task TextBoxSearchClicked()
+    // {
+    //     if(SearchTextBoxText.Length<5)
+    //     {
+    //         Snackbar.Add("Please enter at least 5 characters to search.", Severity.Error);
+    //         return;
+    //     }
+    //     whereClause = "GENERIC_MATERIAL ='" + SearchTextBoxText + "' OR GENERIC_MATERIAL_DESC Like '%" + SearchTextBoxText + "%'";
+    //     ResetPageNumber();
+    //     await AdvSearchClicked();
+    //     // SearchTextBoxText = "";
+    // }
+    // private void HandleKeyDown(KeyboardEventArgs e)
+    // {
+    //     // Check if the pressed key is "Enter"
+    //     if (e.Key == "Enter")
+    //     {
+    //         TextBoxSearchClicked(); // Call your search method
+    //     }
+    // }
+    private async Task OnSearchChanged(string value)
+    {
+        // SearchQuery = value;
+
+        // var lower = SearchQuery?.ToLowerInvariant() ?? "";
+        // FilteredData = CachedData
+        //     .Where(x =>
+        //         (!string.IsNullOrEmpty(x.VENDOR_NAME) && x.VENDOR_NAME.ToLower().Contains(lower)) ||
+        //         (!string.IsNullOrEmpty(x.VENDOR) && x.VENDOR.ToLower().Contains(lower)) ||
+        //         (!string.IsNullOrEmpty(x.GENERIC_MATERIAL) && x.GENERIC_MATERIAL.ToLower().Contains(lower)))
+        //     .ToList();
+
+        // ItemsToLoad = LoadStep;
+        // DisplayedData = FilteredData.Take(ItemsToLoad).ToList();
+        // await Task.CompletedTask;
+    }
+
+    private async Task LoadMore()
+    {
+        PageNumber++;
+        await AdvSearchClicked(SelectedYear.ToString() + SelectedWeek.ToString());
+    }
+
+    private async Task OpenDialog(AppsBsr? CurrentRecord = null)
+    {
+        if (CurrentRecord is null) return;
+
+        var parameters = new DialogParameters
+            {
+                { "Data", CurrentRecord }
+            };
+
+        var options = new DialogOptions { MaxWidth = MaxWidth.ExtraLarge, FullWidth = true };
+        //await DialogService.ShowAsync<BSRDetails>("Product Details", parameters, options);
+    }
+
+    private async Task ShowErrorDialog(string message)
+    {
+        await DialogService.ShowMessageBox(title: "Error", markupMessage: (MarkupString)message, yesText: "OK");
+    }
+    private async Task ExportToPdf()
+    {
+
+        try
+        {
+            if (BsrSettings.ImageDownloadLimit >= DisplayedData.Count)
+            {
+                IsLoading = true;
+                var result = await ApiMasterService.CallingAPI<string, List<AppsBsr>>(AllApiNames.BSR_LIST_REPORT_PDF_WITH_IMAGE!, FilteredData);
+                if (!string.IsNullOrEmpty(result))
+                {
+                    await JS.InvokeVoidAsync("downloadBase64Pdf", result, "AppsBsrReport.pdf");
+                }
+            }
+            else
+            {
+                var res = await messageBox!.ShowAsync("Confirm", "Records count is more than " + BsrSettings.ImageDownloadLimit + ".<br/>Would you like to continue and download the Pdf file <br/><b>with only image links</b> instead of images?", MessageBox.MessageBoxButton.YesNo);
+                if (res == MessageBox.MessageBoxResult.Yes)
+                {
+                    IsLoading = true;
+                    var result = await ApiMasterService.CallingAPI<string, List<AppsBsr>>(AllApiNames.BSR_LIST_REPORT_PDF!, FilteredData);
+                    if (!string.IsNullOrEmpty(result))
+                    {
+                        await JS.InvokeVoidAsync("downloadBase64Pdf", result, "AppsBsrReport.pdf");
+                    }
+                }
+            }
+
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
+    private async Task ExportToExcel()
+    {
+        try
+        {
+            if (BsrSettings.ImageDownloadLimit >= DisplayedData.Count)
+            {
+                IsLoading = true;
+                var result = await ApiMasterService.CallingAPI<string, List<AppsBsr>>(AllApiNames.BSR_LIST_REPORT_EXCEL_WITH_IMAGE!, DisplayedData);
+                if (!string.IsNullOrEmpty(result))
+                {
+                    await JS.InvokeVoidAsync("downloadFileFromBase64", "AppsBsrReport.xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", result);
+                }
+            }
+            else
+            {
+                var res = await messageBox!.ShowAsync("Confirm", "Records count is more than " + BsrSettings.ImageDownloadLimit + ".<br/>Would you like to continue and download the Excel file <br/> <b>with only image links</b> instead of images?", MessageBox.MessageBoxButton.YesNo);
+                if (res == MessageBox.MessageBoxResult.Yes)
+                {
+                    IsLoading = true;
+                    var result = await ApiMasterService.CallingAPI<string, List<AppsBsr>>(AllApiNames.BSR_LIST_REPORT_EXCEL!, DisplayedData);
+                    if (!string.IsNullOrEmpty(result))
+                    {
+                        await JS.InvokeVoidAsync("downloadFileFromBase64", "AppsBsrReport.xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", result);
+                    }
+                }
+            }
+
+        }
+        finally
+        {
+            IsLoading = false;
+            StateHasChanged();
+        }
+    }
+}
+<style>
+    .mud-breadcrumbs {
+        padding: 12px 12px;
+    }
+
+    .floating-search-btn {
+        position: fixed;
+        top: 50%;
+        right: 0;
+        transform: translateY(-50%);
+        background-color: #e91e63;
+        color: white;
+        padding: 10px 6px;
+        border-radius: 8px 0 0 8px;
+        cursor: pointer;
+        writing-mode: vertical-rl;
+        text-orientation: mixed;
+        font-weight: bold;
+        z-index: 999;
+        box-shadow: 0 0 8px rgba(0,0,0,0.2);
+    }
+
+        .floating-search-btn:hover {
+            background-color: #c2185b;
+        }
+
+    .search-modal {
+        position: fixed;
+        top: 170px;
+        right: 35px;
+        background-color: white;
+        width: 320px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+        border-radius: 8px;
+        z-index: 1000;
+    }
+
+        .search-modal .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .search-modal .close-btn {
+            background: none;
+            border: none;
+            font-size: 18px;
+            cursor: pointer;
+        }
+
+    .mud-simple-table.mud-table-dense * tr td, .mud-simple-table.mud-table-dense * tr th {
+        padding: 2px 4px
+    }
+
+    .font8 {
+        font-size: 0.8rem;
+    }
+
+    .mud-list-subheader-extended {
+        padding-top: 0px;
+        padding-bottom: 0px;
+        margin-bottom: -12px !important;
+    }
+
+    .mud-list-item-extended {
+        padding-bottom: 0px !important;
+    }
+
+    .mud-list-item-gutters-extended.mud-list-item-dense-extended {
+        padding-left: 4px;
+        padding-right: 4px;
+        padding-top: 0px;
+        padding-bottom: 0px;
+    }
+
+    .mud-list-subheader-gutters-extended {
+        padding-left: 8px;
+        padding-right: 8px;
+        padding-top: 0px !important;
+        padding-bottom: 0px !important;
+    }
+
+    .mud-icon-button-edge-margin-end {
+        color: red !important;
+    }
+
+    .mud-input > input.mud-input-root-outlined, div.mud-input-slot.mud-input-root-outlined {
+        padding: 15px 10px;
+        font-size: 12px;
+        height: 20px !important;
+    }
+
+
+
+    .filter-paper {
+        padding-left: 8px !important;
+        padding-right: 8px !important;
+        padding-top: 25px !important;
+        padding-bottom: 5px !important;
+        margin-left: 22px !important;
+        margin-right: 28px !important;
+        margin-bottom: 20px !important;
+    }
+
+    .mud-link {
+        font-size: 0.8rem !important;
+    }
+
+    .mud-list-item-multiselect-extended.mud-list-item-multiselect-checkbox-extended {
+        padding-inline-end: 0px;
+    }
+
+    .border1pxblack {
+        border: 1px solid #ffffffeb;
+        background-color: #ed008b !important;
+        color: white;
+    }
+
+    .border1pxblack1 {
+        background-color: #ed008b !important;
+        color: white;
+        border: none !important;
+    }
+
+    .my-custom-select {
+        position: relative;
+    }
+
+        .my-custom-select .mud-popover {
+            padding-top: 20px;
+        }
+
+    .filter-close-button {
+        position: absolute;
+        top: 6px;
+        right: 6px;
+        cursor: pointer;
+        background-color: white;
+        border: 1px solid #ccc;
+        border-radius: 50%;
+        padding: 2px;
+        z-index: 99999;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    }
+
+    .mud-list-subheader-extended {
+        position: relative !important;
+    }
+</style>

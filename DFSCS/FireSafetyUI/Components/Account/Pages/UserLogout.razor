@@ -1,0 +1,21 @@
+﻿@page "/Account/User-Logout"
+@using Microsoft.AspNetCore.Authentication
+@layout BlankLayout
+
+
+@code {
+    [CascadingParameter]
+    private HttpContext httpContext { get; set; } = default!;
+    protected override async Task OnInitializedAsync()
+    {
+        // Clear the authentication cookie
+        // var httpContext = HttpContextAccessor.HttpContext;
+        if (httpContext != null)
+        {
+            await httpContext.SignOutAsync(Constants.AuthScheme);
+            await Task.Delay(100);
+            NavigationManager.NavigateTo("/Account/User-Login", forceLoad: true);
+        }
+        // Redirect to the login or home page
+    }
+}

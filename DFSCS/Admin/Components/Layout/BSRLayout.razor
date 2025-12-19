@@ -1,0 +1,89 @@
+﻿@inherits LayoutComponentBase
+<MudThemeProvider Theme="@_theme" IsDarkMode="_isDarkMode" />
+<MudPopoverProvider />
+<MudDialogProvider />
+<MudSnackbarProvider />
+<MudLayout>
+    <!-- Side Drawer -->
+    <MudDrawer @bind-Open="_drawerOpen" Color="Color.Primary" Elevation="1" Anchor="Anchor.Left" Variant="DrawerVariant.Temporary" Class="d-md-none">
+        <MudText Class="px-5 py-1" Style="background-color:rgb(237 0 139);" Typo="Typo.h4">BSR</MudText>
+        <BSRNavMenu/>
+    </MudDrawer>
+    <!-- TOP APP BAR -->
+    <MudAppBar Elevation="1" Color="Color.Primary" Style="padding-left:0px;">
+        <div class="py-1 px-1 d-none d-md-flex" style="background-color:white; cursor: pointer;" @onclick="NavigateToHome">
+           
+              <MudImage Src="/resources/vishal-mega-mart-logo.png" Width="198" Height="45" Alt="logo" Elevation="0" />
+            
+       </div>
+
+        <span class="d-flex d-md-none pl-2" style="font-size: 37px; cursor: pointer;" @onclick="ToggleDrawer">☰</span>
+       <MudSpacer />
+        <div class="d-flex d-md-none py-1" style="background-color:white; cursor: pointer;" @onclick="NavigateToHome">
+        
+            <MudImage Src="/resources/vishal-mega-mart-logo.png" Width="198" Height="45" Alt="logo" Elevation="0" />
+           
+        </div>
+        <BSRTopMenu/>
+    </MudAppBar>
+    <!-- BODY -->
+    <MudMainContent>
+        <br />
+        @Body
+    </MudMainContent>
+
+    <MudAppBar Color="Color.Secondary" Elevation="5" Bottom="true" Fixed="true" Class="d-flex align-center justify-center" style=" height:50px;">
+        <MudText Typo="Typo.body2">Copyright © @DateTime.Now.ToString("yyyy") Vishal Mega Mart</MudText>
+    </MudAppBar>
+</MudLayout>
+
+@code {
+    private MudTheme? _theme = null;
+    private bool _isDarkMode = false;
+    private bool _drawerOpen = false;
+    private Modules modules;
+    private string url="/";
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if(firstRender)
+        {
+            modules = await MenuService.GetModules();
+            if(modules.User_Management)
+            {
+                url = "/V1/Login2BsrAccount";
+            }
+        }
+    }
+    private void NavigateToHome()
+    {
+        NavigationManager.NavigateTo(url);
+    }
+    private void ToggleDrawer()
+    {
+        _drawerOpen = !_drawerOpen;
+    }
+
+}
+<style>
+    .mud-toolbar-gutters {
+        padding-left: 1px;
+    }
+
+    .mud-button-root {
+        color: white;
+    }
+
+    /* .mud-icon-root.mud-svg-icon {
+        fill: white;
+    } */
+
+    .mud-toolbar-gutters
+    {
+        padding-right:0px;
+    }
+
+    .mud-navmenu.mud-navmenu-default .mud-nav-link.active:not(.mud-nav-link-disabled) {
+        color: white;
+        background-color: transparent;
+    }
+</style>

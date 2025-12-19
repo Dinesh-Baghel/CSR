@@ -1,0 +1,394 @@
+﻿@using Domain.Entities.Modals
+@using System.Globalization
+@inject IDialogService DialogService
+<MudDialog>
+    <DialogContent>
+        <MudPaper Class="pa-4" Elevation="25" Style="background-color: rgb(237 0 139 / 2%);">
+            <MudGrid Class="py-2">
+                <MudItem xs="12" md="4">
+                    <img src="@Data?.IMAGE_URL" alt="Product" style="width:100%; height:auto; border-radius:8px;" onerror="this.onerror=null;this.src='resources/media/images/noimage.jpg';" />
+                </MudItem>
+
+                <MudItem xs="12" md="8" >
+                    <MudGrid Class="pt-10">
+                       
+                       @*  @if (!string.IsNullOrEmpty(Data!.CALENDAR_WEEK))
+                        { *@
+                            <MudItem xs="6" sm="3">
+                                <MudText Typo="Typo.subtitle2" Color="Color.Secondary">
+                                    Calendar Week
+                                </MudText>
+                                <MudText Typo="Typo.body1">
+                                    @textInfo.ToTitleCase(Data!.CALENDAR_WEEK?.ToLower() ?? "")
+                                </MudText>
+                            </MudItem>
+                        @* } *@
+                        @* @if (!string.IsNullOrEmpty(Data!.SEASON))
+                        { *@
+                            <MudItem xs="6" sm="3">
+                                <MudText Typo="Typo.subtitle2" Color="Color.Secondary">
+                                    Season
+                                </MudText>
+                                <MudText Typo="Typo.body1">
+                                    @Data!.SEASON
+                                </MudText>
+                            </MudItem>
+                        @* } *@
+                        @* @if (!string.IsNullOrEmpty(Data!.DIV))
+                        { *@
+                            <MudItem xs="12" sm="3">
+                                <MudText Typo="Typo.subtitle2" Color="Color.Secondary">
+                                    Divison
+                                </MudText>
+                                <MudText Typo="Typo.body1">
+                                    @textInfo.ToTitleCase(Data!.DIV?.ToLower() ?? "") -
+                                @textInfo.ToTitleCase(Data!.DIV_DESC?.ToLower() ?? "")
+                                </MudText>
+                            </MudItem>
+                        @* } *@
+
+                        @* @if (!string.IsNullOrEmpty(Data!.MC))
+                        { *@
+                            <MudItem xs="12" sm="3">
+                                <MudText Typo="Typo.subtitle2" Color="Color.Secondary">
+                                Merchandise Category
+                                </MudText>
+                                <MudText Typo="Typo.body1">
+                                    @textInfo.ToTitleCase(Data!.MC?.ToLower() ?? "") -
+                                    @textInfo.ToTitleCase(Data!.MC_DESC?.ToLower() ?? "")
+                                </MudText>
+                            </MudItem>
+                        @* } *@
+                        @* @if (!string.IsNullOrEmpty(Data!.BRAND_TYPE))
+                        { *@
+                        <MudItem xs="6" sm="3">
+                            <MudText Typo="Typo.subtitle2" Color="Color.Secondary">
+                                Brand Type
+                            </MudText>
+                            <MudText Typo="Typo.body1">
+                                @textInfo.ToTitleCase(Data!.BRAND_TYPE?.ToLower() ?? "")
+                            </MudText>
+                        </MudItem>
+                        @* } *@
+                        <MudItem xs="6" sm="3">
+                          <MudText Typo="Typo.subtitle2" Color="Color.Secondary">
+                              MRP
+                          </MudText>
+                          <MudText Typo="Typo.body1">
+                                @Data!.MRP.ToString("0.##")
+                          </MudText>
+                        </MudItem>
+                       @*  @if (!string.IsNullOrEmpty(Data!.GENERIC_MATERIAL))
+                        { *@
+                            <MudItem xs="6" sm="3">
+                                <MudText Typo="Typo.subtitle2" Color="Color.Secondary">
+                                    Generic Art.
+                                </MudText>
+                                <MudText Typo="Typo.body1">
+                                    @textInfo.ToTitleCase(Data!.GENERIC_MATERIAL?.ToLower() ?? "")
+                                </MudText>
+                            </MudItem>
+                        @* } *@
+                        @* @if (!string.IsNullOrEmpty(Data!.GENERIC_MATERIAL_DESC))
+                        { *@
+                            <MudItem xs="12" sm="3">
+                                <MudText Typo="Typo.subtitle2" Color="Color.Secondary">
+                                    Generic Art. Desc
+                                </MudText>
+                                <MudText Typo="Typo.body1">
+                                    @textInfo.ToTitleCase(Data!.GENERIC_MATERIAL_DESC?.ToLower() ?? "")
+                                </MudText>
+                            </MudItem>
+                        @* } *@
+                        @* @if (!string.IsNullOrEmpty(Data!.MATERIAL))
+                        { *@
+                        <MudItem xs="12" sm="3">
+                            <MudText Typo="Typo.subtitle2" Color="Color.Secondary">
+                                Material
+                            </MudText>
+                            <MudText Typo="Typo.body1">
+                                @textInfo.ToTitleCase(Data!.MATERIAL?.ToLower() ?? "")
+                            </MudText>
+                        </MudItem>
+                        @*  } *@
+                        @* @if (!string.IsNullOrEmpty(Data!.MATERIAL_DESC))
+                        { *@
+                        <MudItem xs="12" sm="3">
+                            <MudText Typo="Typo.subtitle2" Color="Color.Secondary">
+                                Material Desc
+                            </MudText>
+                            <MudText Typo="Typo.body1">
+                                @textInfo.ToTitleCase(Data!.MATERIAL_DESC?.ToLower() ?? "")
+                            </MudText>
+                        </MudItem>
+                        @* } *@
+                        @* @if (!string.IsNullOrEmpty(Data!.PRICE_BAND_CATEGORY))
+                        { *@
+                            <MudItem xs="6" sm="3">
+                                <MudText Typo="Typo.subtitle2" Color="Color.Secondary">
+                                    Price Band
+                                </MudText>
+                                <MudText Typo="Typo.body1">
+                                    @textInfo.ToTitleCase(Data!.PRICE_BAND_CATEGORY?.ToLower() ?? "")
+                                </MudText>
+                            </MudItem>
+                        @* } *@
+                        @* @if (!string.IsNullOrEmpty(Data!.COLOR))
+                        { *@
+                            <MudItem xs="6" sm="3">
+                                <MudText Typo="Typo.subtitle2" Color="Color.Secondary">
+                                    Color
+                                </MudText>
+                                <MudText Typo="Typo.body1">
+                                    @Data!.COLOR
+                                </MudText>
+                            </MudItem>
+                        @* } *@
+                        @* @if (!string.IsNullOrEmpty(Data!.VENDOR))
+                        { *@
+                            <MudItem xs="12" sm="3">
+                                <MudText Typo="Typo.subtitle2" Color="Color.Secondary">
+                                    Vendor
+                                </MudText>
+                                <MudText Typo="Typo.body1">
+                                    @textInfo.ToTitleCase(Data!.VENDOR?.ToLower() ?? "") -
+                                    @textInfo.ToTitleCase(Data!.VENDOR_NAME?.ToLower() ?? "")
+                                </MudText>
+                            </MudItem>
+                        @* } *@
+                       
+                        @* @if (!string.IsNullOrEmpty(Data!.MOTHER_COMPANY))
+                        { *@
+                            <MudItem xs="12" sm="3">
+                                <MudText Typo="Typo.subtitle2" Color="Color.Secondary">
+                                    Mother Company
+                                </MudText>
+                                <MudText Typo="Typo.body1">
+                                    @Data!.MOTHER_COMPANY
+                                </MudText>
+                            </MudItem>
+                        @* } *@
+                        @* @if (!string.IsNullOrEmpty(Data!.BS_ARTICLE_KEY))
+                        { *@
+                            <MudItem xs="6" sm="3">
+                                <MudText Typo="Typo.subtitle2" Color="Color.Secondary">
+                                    Bs Article Key
+                                </MudText>
+                                <MudText Typo="Typo.body1">
+                                    @textInfo.ToTitleCase(Data!.BS_ARTICLE_KEY?.ToLower() ?? "")
+                                </MudText>
+                            </MudItem>
+                        @* } *@
+                        @* @if (!string.IsNullOrEmpty(Data!.BS_ARTICLE_TEXT))
+                        { *@
+                            <MudItem xs="6" sm="3">
+                                <MudText Typo="Typo.subtitle2" Color="Color.Secondary">
+                                    Bs Article Text
+                                </MudText>
+                                <MudText Typo="Typo.body1">
+                                    @textInfo.ToTitleCase(Data!.BS_ARTICLE_TEXT?.ToLower() ?? "")
+                                </MudText>
+                            </MudItem>
+                        @* } *@
+                        
+                        @* @if (!string.IsNullOrEmpty(Data!.ARTICLE_TYPE))
+                        { *@
+                            <MudItem xs="6" sm="3">
+                                <MudText Typo="Typo.subtitle2" Color="Color.Secondary">
+                                    Article Type
+                                </MudText>
+                                <MudText Typo="Typo.body1">
+                                    @textInfo.ToTitleCase(Data!.ARTICLE_TYPE?.ToLower() ?? "")
+                                </MudText>
+                            </MudItem>
+                        @* } *@
+                        <MudItem xs="6" sm="3">
+                            <MudText Typo="Typo.subtitle2" Color="Color.Secondary">
+                                GRC Qty
+                            </MudText>
+                            <MudText Typo="Typo.body1">
+                                @Data!.GRC_QTY.ToString("0.##")
+                            </MudText>
+                        </MudItem>
+                        <MudItem xs="6" sm="3">
+                            <MudText Typo="Typo.subtitle2" Color="Color.Secondary">
+                                Pending Po Qty
+                            </MudText>
+                            <MudText Typo="Typo.body1">
+                                @Data!.PENDING_PO_QTY.ToString("0.##")
+                            </MudText>
+                        </MudItem>
+                        <MudItem xs="6" sm="3">
+                            <MudText Typo="Typo.subtitle2" Color="Color.Secondary">
+                                Week On Floor
+                            </MudText>
+                            <MudText Typo="Typo.body1">
+                                @Data!.WEEK_ON_FLOOR.ToString("0.##")
+                            </MudText>
+                        </MudItem>
+                        <MudItem xs="6" sm="3">
+                            <MudText Typo="Typo.subtitle2" Color="Color.Secondary">
+                                Bs Avg Perday Sell Thru
+                            </MudText>
+                            <MudText Typo="Typo.body1">
+                                @Data!.BS_AVG_PERDAY_SELL_THRU.ToString("0.##")
+                            </MudText>
+                        </MudItem>
+                        
+                        <MudItem xs="12" sm="3">
+                            <MudSimpleTable Dense="true" Bordered="true" Class="mt-1" Style="background-color: #fffafd;">
+                            <thead>
+                                <tr><th colspan="3" style="text-align: center; font-size:0.8rem;">
+                                            <MudText Typo="Typo.subtitle2" Color="Color.Secondary">
+                                                <strong>Sell Thru (%)</strong>
+                                            </MudText>
+                                    
+                                    </th></tr>
+                                <tr>
+                                    <th style="font-size:0.8rem;">
+                                            <MudText Typo="Typo.subtitle2" Color="Color.Secondary">
+                                                Avg/Day
+                                            </MudText>
+                                        
+                                        </th>
+                                    <th style="font-size:0.8rem;">
+                                            <MudText Typo="Typo.subtitle2" Color="Color.Secondary">
+                                                Total
+                                            </MudText>
+                                        
+                                        </th>
+                                    <th style="font-size:0.8rem;">
+                                            <MudText Typo="Typo.subtitle2" Color="Color.Secondary">
+                                                Cuml.
+                                            </MudText>
+                                        
+                                        </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td style="font-size:0.8rem;">@Data!.AVG_PERDAY_SELL_THRU.ToString("0.00")</td>
+                                    <td style="font-size:0.8rem;">@Data!.TOTAL_SELL_THRU.ToString("0.00")</td>
+                                    <td style="font-size:0.8rem;">@Data!.SELL_THRU_CUMMULATIVE.ToString("0.00")</td>
+                                </tr>
+                            </tbody>
+                        </MudSimpleTable>
+                        </MudItem>
+                        <MudItem xs="12" sm="3">
+                            <MudSimpleTable Dense="true" Bordered="true" Class="mt-1" Style="background-color: #fffafd;">
+                                <thead>
+                                    <tr>
+                                        <th colspan="3" style="text-align: center; font-size:0.8rem;">
+                                            <MudText Typo="Typo.subtitle2" Color="Color.Secondary">
+                                                <strong>Sell Thru</strong>
+                                            </MudText>
+
+                                        </th>
+                                    </tr>
+                                    <tr>
+                                        <th style="font-size:0.8rem;">
+                                            <MudText Typo="Typo.subtitle2" Color="Color.Secondary">
+                                                Wk 1
+                                            </MudText>
+
+                                        </th>
+                                        <th style="font-size:0.8rem;">
+                                            <MudText Typo="Typo.subtitle2" Color="Color.Secondary">
+                                                Wk 2
+                                            </MudText>
+
+                                        </th>
+                                        <th style="font-size:0.8rem;">
+                                            <MudText Typo="Typo.subtitle2" Color="Color.Secondary">
+                                                Wk 3
+                                            </MudText>
+
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td style="font-size:0.8rem;">@Data!.SELL_THRU_WK1.ToString("0.00")</td>
+                                        <td style="font-size:0.8rem;">@Data!.SELL_THRU_WK2.ToString("0.00")</td>
+                                        <td style="font-size:0.8rem;">@Data!.SELL_THRU_WK3.ToString("0.00")</td>
+                                    </tr>
+                                </tbody>
+                            </MudSimpleTable>
+                        </MudItem>
+                        <MudItem xs="12" sm="3">
+                            <MudSimpleTable Dense="true" Bordered="true" Class="mt-1" Style="background-color: #fffafd;">
+                                <thead>
+                                    
+                                    <tr>
+                                        <th colspan="3" style="text-align: center; font-size:0.8rem;">
+                                            <MudText Typo="Typo.subtitle2" Color="Color.Secondary">
+                                                <strong>Str Pur</strong>
+                                            </MudText>
+
+                                        </th>
+                                    </tr>
+                                    <tr>
+                                        <th style="font-size:0.8rem;">
+                                            <MudText Typo="Typo.subtitle2" Color="Color.Secondary">
+                                                Wk 1
+                                            </MudText>
+
+                                        </th>
+                                        <th style="font-size:0.8rem;">
+                                            <MudText Typo="Typo.subtitle2" Color="Color.Secondary">
+                                                Wk 2
+                                            </MudText>
+
+                                        </th>
+                                        <th style="font-size:0.8rem;">
+                                            <MudText Typo="Typo.subtitle2" Color="Color.Secondary">
+                                                Wk 3
+                                            </MudText>
+
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td style="font-size:0.8rem;">@Data!.STR_PUR_WK1.ToString("0.##")</td>
+                                        <td style="font-size:0.8rem;">@Data!.STR_PUR_WK2.ToString("0.##")</td>
+                                        <td style="font-size:0.8rem;">@Data!.STR_PUR_WK3.ToString("0.##")</td>
+                                    </tr>
+                                </tbody>
+                            </MudSimpleTable>
+                        </MudItem>
+                    </MudGrid>
+                </MudItem>
+            </MudGrid>
+        </MudPaper>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Close" Color="Color.Error" Variant="Variant.Filled">Close</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter]
+    private IMudDialogInstance? MudDialog { get; set; }
+    [Parameter]
+    public AppsBsr? Data { get; set; }
+    private void Close() => MudDialog?.Close();
+    TextInfo textInfo = CultureInfo.CurrentCulture.TextInfo;
+   
+}
+<style>
+    .mud-dialog-title
+    {
+        border-bottom: 2px solid pink;
+    }
+
+    .mud-dialog-actions
+    {
+        border-top: 2px solid pink;
+    }
+
+    .mud-grid-spacing-xs-6 > .mud-grid-item
+    {
+       padding-top:5px !important;
+    }
+</style>

@@ -1,0 +1,23 @@
+{
+  "runtimeTarget": {
+    "name": ".NETCoreApp,Version=v8.0",
+    "signature": ""
+  },
+  "compilationOptions": {},
+  "targets": {
+    ".NETCoreApp,Version=v8.0": {
+      "DFSCS.Domain/1.0.0": {
+        "runtime": {
+          "DFSCS.Domain.dll": {}
+        }
+      }
+    }
+  },
+  "libraries": {
+    "DFSCS.Domain/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    }
+  }
+}

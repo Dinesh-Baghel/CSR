@@ -1,0 +1,18 @@
+﻿@page "/yourpage"
+@using Admin.Components.Shared
+@using System.Globalization
+@layout BSRLayout
+@attribute [Authorize]
+<button class="btn btn-primary" @onclick="ShowMessage">Show MessageBox</button>
+
+<MessageBox @ref="messageBox" />
+
+@code {
+    private MessageBox? messageBox;
+
+    private async Task ShowMessage()
+    {
+        var result = await messageBox!.ShowAsync("Confirm", "Records count is more than 100. Download without images?", MessageBox.MessageBoxButton.YesNo);
+        Console.WriteLine($"Result: {result}");
+    }
+}

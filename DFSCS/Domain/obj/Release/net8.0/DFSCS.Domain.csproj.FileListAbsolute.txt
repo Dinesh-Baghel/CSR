@@ -1,0 +1,12 @@
+D:\DFSCS\DFSCS.Domain\bin\Release\net8.0\DFSCS.Domain.deps.json
+D:\DFSCS\DFSCS.Domain\bin\Release\net8.0\DFSCS.Domain.dll
+D:\DFSCS\DFSCS.Domain\bin\Release\net8.0\DFSCS.Domain.pdb
+D:\DFSCS\DFSCS.Domain\obj\Release\net8.0\DFSCS.Domain.GeneratedMSBuildEditorConfig.editorconfig
+D:\DFSCS\DFSCS.Domain\obj\Release\net8.0\DFSCS.Domain.AssemblyInfoInputs.cache
+D:\DFSCS\DFSCS.Domain\obj\Release\net8.0\DFSCS.Domain.AssemblyInfo.cs
+D:\DFSCS\DFSCS.Domain\obj\Release\net8.0\DFSCS.Domain.csproj.CoreCompileInputs.cache
+D:\DFSCS\DFSCS.Domain\obj\Release\net8.0\DFSCS.Domain.sourcelink.json
+D:\DFSCS\DFSCS.Domain\obj\Release\net8.0\DFSCS.Domain.dll
+D:\DFSCS\DFSCS.Domain\obj\Release\net8.0\refint\DFSCS.Domain.dll
+D:\DFSCS\DFSCS.Domain\obj\Release\net8.0\DFSCS.Domain.pdb
+D:\DFSCS\DFSCS.Domain\obj\Release\net8.0\ref\DFSCS.Domain.dll

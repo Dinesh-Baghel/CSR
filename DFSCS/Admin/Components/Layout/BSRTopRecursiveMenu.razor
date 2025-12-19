@@ -1,0 +1,22 @@
+﻿@if (MenuItems?.Any() == true)
+{
+    @foreach (var item in MenuItems)
+    {
+        var children = MenuList.Where(m => m.Parent_Id == item.Id).ToList();
+        if (children.Any())
+        {
+            <MudMenu Label="@item.Label">
+                <BSRTopRecursiveMenu MenuItems="children" MenuList="MenuList" />
+            </MudMenu>
+        }
+        else
+        {
+            <MudMenuItem Href="@item.Url">@item.Label</MudMenuItem>
+        }
+    }
+}
+
+@code {
+    [Parameter] public List<MenusList> MenuItems { get; set; } = new();
+    [Parameter] public List<MenusList> MenuList { get; set; } = new();
+}

@@ -1,0 +1,31 @@
+D:\DFSCS Project\DFSCS.API\DFSCS.Application\bin\Debug\net8.0\DFSCS.Application.deps.json
+D:\DFSCS Project\DFSCS.API\DFSCS.Application\bin\Debug\net8.0\DFSCS.Application.dll
+D:\DFSCS Project\DFSCS.API\DFSCS.Application\bin\Debug\net8.0\DFSCS.Application.pdb
+D:\DFSCS Project\DFSCS.API\DFSCS.Application\bin\Debug\net8.0\DFSCS.Domain.dll
+D:\DFSCS Project\DFSCS.API\DFSCS.Application\bin\Debug\net8.0\DFSCS.Domain.pdb
+D:\DFSCS Project\DFSCS.API\DFSCS.Application\obj\Debug\net8.0\DFSCS.Application.csproj.AssemblyReference.cache
+D:\DFSCS Project\DFSCS.API\DFSCS.Application\obj\Debug\net8.0\DFSCS.Application.GeneratedMSBuildEditorConfig.editorconfig
+D:\DFSCS Project\DFSCS.API\DFSCS.Application\obj\Debug\net8.0\DFSCS.Application.AssemblyInfoInputs.cache
+D:\DFSCS Project\DFSCS.API\DFSCS.Application\obj\Debug\net8.0\DFSCS.Application.AssemblyInfo.cs
+D:\DFSCS Project\DFSCS.API\DFSCS.Application\obj\Debug\net8.0\DFSCS.Application.csproj.CoreCompileInputs.cache
+D:\DFSCS Project\DFSCS.API\DFSCS.Application\obj\Debug\net8.0\DFSCS.Ap.2C418D86.Up2Date
+D:\DFSCS Project\DFSCS.API\DFSCS.Application\obj\Debug\net8.0\DFSCS.Application.dll
+D:\DFSCS Project\DFSCS.API\DFSCS.Application\obj\Debug\net8.0\refint\DFSCS.Application.dll
+D:\DFSCS Project\DFSCS.API\DFSCS.Application\obj\Debug\net8.0\DFSCS.Application.pdb
+D:\DFSCS Project\DFSCS.API\DFSCS.Application\obj\Debug\net8.0\ref\DFSCS.Application.dll
+D:\DFSCS\DFSCS.Application\bin\Debug\net8.0\DFSCS.Application.deps.json
+D:\DFSCS\DFSCS.Application\bin\Debug\net8.0\DFSCS.Application.dll
+D:\DFSCS\DFSCS.Application\bin\Debug\net8.0\DFSCS.Application.pdb
+D:\DFSCS\DFSCS.Application\bin\Debug\net8.0\DFSCS.Domain.dll
+D:\DFSCS\DFSCS.Application\bin\Debug\net8.0\DFSCS.Domain.pdb
+D:\DFSCS\DFSCS.Application\obj\Debug\net8.0\DFSCS.Application.csproj.AssemblyReference.cache
+D:\DFSCS\DFSCS.Application\obj\Debug\net8.0\DFSCS.Application.GeneratedMSBuildEditorConfig.editorconfig
+D:\DFSCS\DFSCS.Application\obj\Debug\net8.0\DFSCS.Application.AssemblyInfoInputs.cache
+D:\DFSCS\DFSCS.Application\obj\Debug\net8.0\DFSCS.Application.AssemblyInfo.cs
+D:\DFSCS\DFSCS.Application\obj\Debug\net8.0\DFSCS.Application.csproj.CoreCompileInputs.cache
+D:\DFSCS\DFSCS.Application\obj\Debug\net8.0\DFSCS.Application.sourcelink.json
+D:\DFSCS\DFSCS.Application\obj\Debug\net8.0\DFSCS.Ap.2C418D86.Up2Date
+D:\DFSCS\DFSCS.Application\obj\Debug\net8.0\DFSCS.Application.dll
+D:\DFSCS\DFSCS.Application\obj\Debug\net8.0\refint\DFSCS.Application.dll
+D:\DFSCS\DFSCS.Application\obj\Debug\net8.0\DFSCS.Application.pdb
+D:\DFSCS\DFSCS.Application\obj\Debug\net8.0\ref\DFSCS.Application.dll

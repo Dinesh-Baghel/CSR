@@ -1,0 +1,275 @@
+﻿@page "/UserMasterDialog"
+<MudDialog>
+    <DialogContent>
+        <MudForm @ref="form">
+            <MudGrid>
+                <MudItem xs="12" md="3">
+                    <MudGrid>
+                    <!-- Employee Code -->
+                    <MudItem xs="12" md="12">
+                        @if (IsEditMode)
+                        {
+                                <MudTextField T="string" Label="Employee Code" ReadOnly="true" @bind-Value="User.Emp_Code" Required="true" />
+                        }
+                        else
+                        {
+                            <MudGrid>
+                                <MudItem xs="12">
+                                        <MudTextField T="string" Label="Employee Code" @bind-Value="User.Emp_Code" Required="true" Adornment="Adornment.End" AdornmentIcon="@Icons.Material.Filled.PersonSearch" AdornmentColor="Color.Secondary" OnAdornmentClick="@(() => OnFindClick())" />
+                                </MudItem>
+                            </MudGrid>
+                        }
+                    </MudItem>
+                    <!-- Employee Name -->
+                    <MudItem xs="12" md="12">
+                            <MudTextField T="string" Label="Employee Name" ReadOnly="true" @bind-Value="User.Emp_Name" Required="true" />
+                    </MudItem>
+                    <!-- Other fields here, similar to the example -->
+                    <MudItem xs="12" md="12">
+                            <MudTextField T="string" Label="Employee Location" ReadOnly="true" @bind-Value="User.Emp_Location" />
+                    </MudItem>
+                    <MudItem xs="12" md="12">
+                            <MudTextField T="string" Label="Employee Location Code" ReadOnly="true" @bind-Value="User.Emp_Loc_Code" />
+                    </MudItem>
+                    <MudItem xs="12" md="12">
+                            <MudTextField T="string" Label="Department Name" ReadOnly="true" @bind-Value="User.Emp_Dept_Name" />
+                    </MudItem>
+                    <MudItem xs="12" md="12">
+                            <MudTextField T="string" Label="Designation" ReadOnly="true" @bind-Value="User.Emp_Desig" />
+                    </MudItem>
+                    <MudItem xs="12" md="12">
+                            <MudTextField T="string" Label="Contact No" ReadOnly="true" @bind-Value="User.Emp_Contact_No" />
+                    </MudItem>
+                    <MudItem xs="12" md="12">
+                            <MudTextField T="string" Label="Email Id" ReadOnly="true" @bind-Value="User.Emp_Mail_Id" />
+                    </MudItem>
+                    <MudItem xs="12" md="12">
+                            <MudTextField T="string" Label="Reporting Manager" ReadOnly="true" @bind-Value="User.Emp_Rpt_Mng" />
+                    </MudItem>
+                    <MudItem xs="12" md="6">
+                            <MudSwitch T="bool" Label="Is Resigned?" ReadOnly="true" @bind-Value="User.Is_Resign" />
+                    </MudItem>
+                    <MudItem xs="12" md="12">
+                            <MudTextField T="string" Label="Employee Grade Description" ReadOnly="true" @bind-Value="User.Emp_Grade_Desc" />
+                    </MudItem>
+                    <MudItem xs="12" md="12">
+                            <MudSwitch T="bool" Label="Is Active?" ReadOnly="true" @bind-Value="User.Emp_Status" />
+                    </MudItem>
+                    </MudGrid>
+                </MudItem>
+                <MudItem xs="12" md="9">
+                    <MudGrid>
+                <!-- Role Selection -->
+                    <MudItem xs="12" md="12">
+                            <MudSelect T="int" Label="Select Role" AnchorOrigin="Origin.BottomLeft" Clearable Variant="Variant.Text" @bind-Value="User.Role_Id" Required="true">
+                             @foreach (var role in roleList)
+                            {
+                                <MudSelectItem T="int" Value="role.Id">@role.Role_Name</MudSelectItem>
+                            }
+                        </MudSelect>
+                    </MudItem>
+                        <MudItem xs="12" md="12">
+                            @if (User.RoleDetailsList.Count>0)
+                            {
+                                <MudPaper Elevation="1" Class="px-5 mb-2 border-solid border-2 mud-border-primary">
+                                    <MudText Typo="Typo.body1">
+                                        <MudButton Color="Color.Error" Variant="Variant.Text" OnClick="() => ResetAllPermissions()">
+                                                Reset All
+                                            </MudButton>
+                                    </MudText>
+                                    <MudRadioGroup T="string" @bind-Value="AllPermission" @bind-Value:after="SetAllPermissions">
+                                        <MudRadio Color="Color.Secondary" UncheckedColor="Color.Default" Value="Permissions.Read">All @Permissions.Read</MudRadio>
+                                        <MudRadio Color="Color.Secondary" UncheckedColor="Color.Default" Value="Permissions.ReadWrite">All Read & Write</MudRadio>
+                                        <MudRadio Color="Color.Secondary" UncheckedColor="Color.Default" Value="Permissions.Approve">All @Permissions.Approve</MudRadio>
+                                        <MudRadio Color="Color.Secondary" UncheckedColor="Color.Default" Value="Permissions.WriteApprove">All Write & Approve</MudRadio>
+                                    </MudRadioGroup>
+                                </MudPaper>
+                            }
+                            @foreach (var role in User.RoleDetailsList)
+                               {
+                                <MudPaper Elevation="1" Class="px-5 mb-2">
+                                        <MudText Typo="Typo.body1">@role.Label
+                                            @if (role.Permission != null)
+                                            {
+                                                <MudButton Color="Color.Error" Variant="Variant.Text" OnClick="() => ResetPermissions(role.Menu_Id)">
+                                                    Reset
+                                               </MudButton>
+                                            }
+                                        </MudText>
+                                        <MudRadioGroup T="string" @bind-Value="role.Permission">
+                                            <MudRadio Color="Color.Secondary" UncheckedColor="Color.Default" Value="Permissions.Read">@Permissions.Read</MudRadio>
+                                            <MudRadio Color="Color.Secondary" UncheckedColor="Color.Default" Value="Permissions.ReadWrite">Read & Write</MudRadio>
+                                            <MudRadio Color="Color.Secondary" UncheckedColor="Color.Default" Value="Permissions.Approve">@Permissions.Approve</MudRadio>
+                                            <MudRadio Color="Color.Secondary" UncheckedColor="Color.Default" Value="Permissions.WriteApprove">Write & Approve</MudRadio>
+                                        </MudRadioGroup>
+                                    </MudPaper>
+                                }
+                        </MudItem>
+                </MudGrid>
+                </MudItem>
+            </MudGrid>
+        </MudForm>
+    </DialogContent>
+
+    <DialogActions>
+        <MudButton OnClick="Save" Color="Color.Secondary" Variant="Variant.Filled" Disabled="@isSubmitting">Save</MudButton>
+        <MudButton OnClick="CloseDialog" Color="Color.Error" Variant="Variant.Filled">Cancel</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter]
+    private IMudDialogInstance? MudDialog { get; set; }
+    [Parameter] public UserDetails User { get; set; }
+    [Parameter] public bool IsEditMode { get; set; }
+    private MudForm form;
+    private bool isSubmitting = false;
+    private SelectListReq selectListReq = new();
+    private HrpLoginByCodeReq hrpLoginByCodeReq = new();
+    private List<RoleList> roleList = new();
+    private string AllPermission { get; set; } = "";
+    protected override async Task OnInitializedAsync()
+    {
+        selectListReq.Cmd = CmdNames.Get_Roles_List;
+        roleList = await ApiMasterService.CallingAPI<List<RoleList>, SelectListReq>(AllApiNames.SELECT_ROLES_LIST!, selectListReq);
+        if (roleList.Count > 0 && !IsEditMode)
+        {
+            User.Role_Id = roleList[0].Id;
+        }
+        StateHasChanged();
+    }
+
+    private void ResetPermissions(int Id)
+    {
+        for (int i = 0; i < User.RoleDetailsList.Count; i++)
+        {
+            if (User.RoleDetailsList[i].Menu_Id.Equals(Id))
+            {
+                User.RoleDetailsList[i].Permission = null;
+            }
+        }
+
+    }
+    private void ResetAllPermissions()
+    {
+        for (int i = 0; i < User.RoleDetailsList.Count; i++)
+        {
+            User.RoleDetailsList[i].Permission = null;
+        }
+    }
+    private void SetAllPermissions()
+    {
+
+        if (AllPermission == "" || AllPermission == string.Empty)
+        {
+            for (int i = 0; i < User.RoleDetailsList.Count; i++)
+            {
+                User.RoleDetailsList[i].Permission = null;
+            }
+        }
+        else if (AllPermission == Permissions.Read)
+        {
+            for (int i = 0; i < User.RoleDetailsList.Count; i++)
+            {
+                User.RoleDetailsList[i].Permission = Permissions.Read;
+            }
+        }
+        else if (AllPermission == Permissions.ReadWrite)
+        {
+            for (int i = 0; i < User.RoleDetailsList.Count; i++)
+            {
+                User.RoleDetailsList[i].Permission = Permissions.ReadWrite;
+            }
+        }
+        else if (AllPermission == Permissions.Approve)
+        {
+            for (int i = 0; i < User.RoleDetailsList.Count; i++)
+            {
+                User.RoleDetailsList[i].Permission = Permissions.Approve;
+            }
+        }
+        else if (AllPermission == Permissions.WriteApprove)
+        {
+            for (int i = 0; i < User.RoleDetailsList.Count; i++)
+            {
+                User.RoleDetailsList[i].Permission = Permissions.WriteApprove;
+            }
+        }
+    }
+    //Get_Roles_List
+    private void Save()
+    {
+        form.Validate();
+        if (form.IsValid)
+        {
+            MudDialog?.Close(DialogResult.Ok(User));
+        }
+    }
+
+    private void CloseDialog()
+    {
+        MudDialog?.Close();
+    }
+
+    private async Task ShowErrorDialog(string Tital,string message)
+    {
+        await DialogService.ShowMessageBox(Tital, message);
+    }
+    private async Task SetUserRoles()
+    {
+        selectListReq.Id = User!.Id;
+        selectListReq.Cmd = CmdNames.Get_Role_Details_On_User_Id;
+        var roleDetails = await ApiMasterService.CallingAPI<List<RoleDetails>, SelectListReq>(AllApiNames.SELECT_ROLEDETAILS_ON_ID, selectListReq);
+        User.RoleDetailsList = roleDetails;
+    }
+    // Find Button Logic
+    private async Task OnFindClick()
+    {
+        if (!string.IsNullOrEmpty(User.Emp_Code))
+        {
+            selectListReq.Id = 0;
+            selectListReq.StrField = User.Emp_Code;
+            selectListReq.Cmd = CmdNames.Get_User_Details_On_User_Code;
+
+            // Find From CO Portal
+            var result = await ApiMasterService.CallingAPI<UserDetails, SelectListReq>(AllApiNames.SELECT_USER_ON_EMP_CODE, selectListReq);
+            if (result.Id.Equals(0))
+            {
+                // If Not Available on CO Portal Then Find From HR Portal
+                hrpLoginByCodeReq.loginID = User.Emp_Code;
+                var result1 = await ApiMasterService.CallingAPI<HrpLoginRes, HrpLoginByCodeReq>(AllApiNames.HRP_GET_EMP_DETAIL_CODE, hrpLoginByCodeReq);
+                if (result1.responseCode == 0 && result1!.responseMessage == "Success" && result1.employeeList?.Count > 0)
+                {
+                    User.Emp_Code = result1.employeeList[0].empCode;
+                    User.Emp_Name = result1.employeeList[0].empName;
+                    User.Emp_Location = result1.employeeList[0].empLocation;
+                    User.Emp_Loc_Code = result1.employeeList[0].empLocCode;
+                    User.Emp_Dept_Name = result1.employeeList[0].empDeptName;
+                    User.Emp_Desig = result1.employeeList[0].empDesig;
+                    User.Emp_Contact_No = result1.employeeList[0].empContactNo;
+                    User.Emp_Mail_Id = result1.employeeList[0].empMailID;
+                    User.Emp_Rpt_Mng = result1.employeeList[0].empRptMng;
+                    User.Is_Resign = result1.employeeList[0].isResign;
+                    User.Emp_Grade = result1.employeeList[0].empGrade;
+                    User.Emp_Grade_Desc = result1.employeeList[0].empGradeDesc;
+                    User.Emp_Status = result1.employeeList[0].empStatus;
+                    await SetUserRoles();
+                }
+            }
+            else
+            {
+                User = result;
+                await SetUserRoles();
+            }
+            if (User.Id.Equals(0) && User.Emp_Contact_No == null)
+            {
+                await ShowErrorDialog("Warning","User not found.");
+            }
+        }
+        else
+        {
+            await ShowErrorDialog("Warning","Please enter a valid Emp Code.");
+        }
+    }
+    
+}

@@ -1,0 +1,175 @@
+﻿@page "/User-Master"
+@attribute [Authorize]
+<MudGrid Class="justify-end">
+            <MudItem>
+                <MudBreadcrumbs Items="_items">
+                    <ItemTemplate Context="item">
+                        <MudLink Href="@item.Href">@item.Text.ToUpper()</MudLink>
+                    </ItemTemplate>
+                </MudBreadcrumbs>
+            </MudItem>
+        </MudGrid>
+<h3>User Master</h3>
+<MudStack Row="true" AlignItems="AlignItems.End" Justify="Justify.FlexEnd">
+    <MudButton OnClick="() => OpenRoleDialog()" StartIcon="@Icons.Material.Filled.Add" Variant="Variant.Filled" Color="Color.Secondary">
+        Add New User
+    </MudButton>
+</MudStack>
+<br />
+<MudTable Items="filteredUsers" @ref="mudTable">
+    <ToolBarContent>
+        <MudSpacer />
+        <MudTextField T="string" Value="@searchQuery" ValueChanged="OnSearchChanged" Placeholder="Search" Adornment="Adornment.Start"
+                      AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+    </ToolBarContent>
+    <HeaderContent>
+        <MudTh>Emp Code</MudTh>
+        <MudTh>Emp Name</MudTh>
+        <MudTh>Contact No</MudTh>
+        <MudTh>Mail Id</MudTh>
+        <MudTh>Designation</MudTh>
+        <MudTh>Role</MudTh>
+        <MudTh>Actions</MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd>@context.Emp_Code</MudTd>
+        <MudTd>@(context.Emp_Name)</MudTd>
+        <MudTd>@(context.Emp_Contact_No)</MudTd>
+        <MudTd>@(context.Emp_Mail_Id)</MudTd>
+        <MudTd>@(context.Emp_Desig)</MudTd>
+        <MudTd>@(context.Role_Name)</MudTd>
+        <MudTd>
+            <MudButton OnClick="() => OpenRoleDialog(context)" StartIcon="@Icons.Material.Filled.Edit" Color="Color.Secondary" Variant="Variant.Text" />
+        </MudTd>
+    </RowTemplate>
+    <NoRecordsContent>
+        <MudText>No matching records found</MudText>
+    </NoRecordsContent>
+    <LoadingContent>
+        <MudText>Loading...</MudText>
+    </LoadingContent>
+    <PagerContent>
+        <MudTablePager PageSizeOptions="[5,10,15,20,25,50,100]" />
+    </PagerContent>
+</MudTable>
+
+
+
+@code {
+    private SelectListReq selectListReq = new();
+    private List<UserDetails> filteredUsers = new();
+    private List<UserDetails> pagedUsers = new(); // Users to be shown on the current page
+    private MudTable<UserDetails> mudTable;
+    private string searchQuery = string.Empty;
+    private int pageSize = 5; // Items per page
+    private int currentPage = 0; // Current page index
+    private int User_Id = 0; //  Current logged in user id
+    private Modules modules;
+    private List<BreadcrumbItem> _items = new List<BreadcrumbItem>
+    {
+        new BreadcrumbItem("Home", href: "/V1/Login2BsrAccount"),
+        new BreadcrumbItem("User List", href: "#", disabled: true)
+    };
+    protected override async Task OnInitializedAsync()
+    {
+        modules = await MenuService.GetModules();
+        if (!modules.User_Management)
+        {
+            NavigationManager.NavigateTo("/");
+        }
+        var user = HttpContextAccessor.HttpContext?.User;
+        // Replace "YourCustomClaimType" with the actual claim type
+        var uid = user.Claims.FirstOrDefault(c => c.Type == CustomClaimTypes.User_Id)?.Value;
+        User_Id = Convert.ToInt32(uid);
+        await GetUsers();
+    }
+    private async Task GetUsers()
+    {
+        selectListReq.Id = 0;
+        selectListReq.Cmd = CmdNames.Get_All_Users;
+        pagedUsers = await ApiMasterService.CallingAPI<List<UserDetails>, SelectListReq>(AllApiNames.GET_ALL_USERS, selectListReq);
+        filteredUsers = pagedUsers;
+        // ApplyPaging(); // Apply pagination to the full list
+    }
+    private void OnSearchChanged(string searchQuery)
+    {
+        this.searchQuery = searchQuery;
+        FilterRoles(); // Apply search filter
+        ApplyPaging(); // Re-apply pagination after search
+    }
+    private void FilterRoles()
+    {
+        if (string.IsNullOrWhiteSpace(searchQuery))
+        {
+            filteredUsers = pagedUsers; // Show all Users if search is empty
+        }
+        else
+        {
+            filteredUsers = pagedUsers
+                .Where(role => role.Emp_Code!.Contains(searchQuery, StringComparison.OrdinalIgnoreCase)||
+                       role.Emp_Name!.ToString().Contains(searchQuery, StringComparison.OrdinalIgnoreCase) ||
+                       role.Emp_Contact_No!.ToString().Contains(searchQuery, StringComparison.OrdinalIgnoreCase))
+                .ToList(); 
+        }
+    }
+    private void ApplyPaging()
+    {
+        var startIndex = currentPage * pageSize;
+        filteredUsers = filteredUsers.Skip(startIndex).Take(pageSize).ToList(); // Paginate the filtered Users
+    }
+    private void OnPageChanged(int newPage)
+    {
+        currentPage = newPage;
+        ApplyPaging(); // Update paged users when the page is changed
+    }
+    private async Task OpenRoleDialog(UserDetails? user = null)
+    {
+        if (user != null)
+        {
+            if (User_Id == user.Id)
+            {
+                await ShowErrorDialog("You are not authorize to update yourself.");
+                return;
+            }
+        }
+        selectListReq.Id = user == null ? 0 : user!.Id;
+        selectListReq.Cmd = CmdNames.Get_Role_Details_On_User_Id;
+        var roleDetails = await ApiMasterService.CallingAPI<List<RoleDetails>, SelectListReq>(AllApiNames.SELECT_ROLEDETAILS_ON_ID, selectListReq);
+        if (roleDetails.Count > 0 && user!=null)
+        {
+            user!.RoleDetailsList = roleDetails;
+        }
+        var parameters = new DialogParameters
+        {
+            { "User", user ?? new UserDetails() {RoleDetailsList = roleDetails} },
+            { "IsEditMode", user != null }
+        };
+        var options = new DialogOptions { CloseButton = true, MaxWidth = MaxWidth.Medium, FullWidth = true };
+        var dialog = DialogService.Show<UserMasterDialog>("User Details", parameters, options);
+
+        var result = await dialog.Result;
+        if (!result!.Canceled)
+        {
+            var updatedUser = result.Data as UserDetails;
+            if (updatedUser != null)
+            {
+                updatedUser.Inserted_Updated_By = User_Id;
+                var res = await ApiMasterService.CallingAPI<GenRes, UserDetails>(AllApiNames.SET_USER!, updatedUser);
+                if (res.responseCode.Equals(0))
+                {
+                    await GetUsers();
+                }
+                else
+                {
+                    await ShowErrorDialog(res.responseMessage!);
+                    // Show Error Message
+                }
+            }
+        }
+    }
+    private async Task ShowErrorDialog(string message)
+    {
+        await DialogService.ShowMessageBox(title: "Error", markupMessage: (MarkupString)message, yesText: "OK");
+    }
+}
+

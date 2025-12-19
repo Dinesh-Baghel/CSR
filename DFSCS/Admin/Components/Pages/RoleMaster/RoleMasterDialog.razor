@@ -1,0 +1,36 @@
+﻿
+<MudDialog>
+    
+    <DialogContent>
+        <MudForm @ref="form" >
+                    <MudTextField @bind-Value="Role.Role_Name" Label="Role Name" Required="true" />
+                    <MudCheckBox T="bool" @bind-Value="Role.Menu" Color="Color.Secondary" UncheckedColor="Color.Default" Label="Menu Permission" />
+                    <MudCheckBox T="bool" @bind-Value="Role.User_Management" Color="Color.Secondary" UncheckedColor="Color.Default" Label="User Management Permission" />
+                    <MudSwitch T="bool" @bind-Value="Role.Active_Status" Color="Color.Secondary" UncheckedColor="Color.Default" Label="Active Status" />
+        </MudForm>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Save" Color="Color.Secondary" Variant="Variant.Filled">Save</MudButton>
+        <MudButton OnClick="Cancel" Color="Color.Error" Variant="Variant.Filled">Cancel</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [Parameter] public RoleMaster Role { get; set; } = new RoleMaster();
+    [Parameter] public bool IsEditMode { get; set; }
+    [CascadingParameter]
+    private IMudDialogInstance? MudDialog { get; set; }
+    private MudForm form;
+    private void Save()
+    {
+        form.Validate();
+        if (form.IsValid)
+        {
+            MudDialog?.Close(DialogResult.Ok(Role));
+        }
+    }
+    private void Cancel()
+    {
+        MudDialog?.Close();
+    }
+}

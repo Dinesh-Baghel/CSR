@@ -1,0 +1,102 @@
+﻿@using Microsoft.AspNetCore.Authentication
+@using Microsoft.AspNetCore.Http
+@implements IDisposable
+<MudNavMenu Class="f18" Bordered="true" Color="Color.Secondary">
+  <MudNavGroup Title="@UserName">
+      <MudNavLink Href="/Account/User-Logout" >Logout</MudNavLink>
+  </MudNavGroup>
+  @if (modules.User_Management)
+            {
+                <MudNavGroup Title="Settings" >
+                    <MudNavLink Href="User-Master" Match="NavLinkMatch.All">User Management</MudNavLink>
+                    <MudNavLink Href="Role-Master" Match="NavLinkMatch.All">User Roles</MudNavLink>
+                </MudNavGroup>
+            }
+  @if (modules.Menu)
+            {
+                @if (!menuList.Any())
+                {
+                    var eqs = new EncryptedQueryString();
+                    eqs.Add("Page_Id", "0");
+                    var linkUrl0 = "Menu-Master?output=" + eqs.ToString();
+                    <MudNavLink Href="@linkUrl0" Match="NavLinkMatch.Prefix">Menu</MudNavLink>
+                }
+                else
+                {
+                    var eqs = new EncryptedQueryString();
+                    eqs.Add("Page_Id", "0");
+                    var linkUrl0 = "Menu-Master?output=" + eqs.ToString(); 
+                    <MudNavGroup Title="Menu" >
+                        <MudNavLink Href="@linkUrl0" Icon="@Icons.Material.Filled.Edit" IconColor="Color.Inherit"> Edit </MudNavLink>
+
+                        @foreach (var topMenu in menuList.Where(m => m.Parent_Id == 0))
+                        {
+                            @if (menuList.Any(m => m.Parent_Id == topMenu.Id))
+                            {
+                                <RecursiveAdminNavMenu MenuItem="topMenu" AllMenus="menuList" />
+                            }
+                            else
+                            {
+                                var menuUrl = "Menu-Master?output=" + new EncryptedQueryString { { "Page_Id", topMenu.Id.ToString() } };
+                                <MudNavLink Href="@menuUrl" Match="NavLinkMatch.All">@topMenu.Label</MudNavLink>
+                            }
+                        }
+                    </MudNavGroup>
+                }
+            }
+    <MudNavLink Style="background-color:deeppink;" Href="/" Match="NavLinkMatch.Prefix">Go To BSR</MudNavLink>
+</MudNavMenu>
+@code {
+    private string? currentUrl;
+    private Modules modules = new();
+    private List<MenusList> menuList { get; set; } = new();
+    private List<MenusList> ChildMenus { get; set; } = new();
+    private SelectListReq selectListReq { get; set; } = new();
+    private string? UserName { get; set; }
+    protected override async Task OnInitializedAsync()
+    {
+        var context = HttpContextAccessor.HttpContext;
+        if (context != null)
+        {
+            UserName = context.User.Identity!.Name;
+        }
+        modules = await MenuService.GetModules();
+        selectListReq.Cmd = CmdNames.Get_Menu_List;
+        menuList = await ApiMasterService.CallingAPI<List<MenusList>, SelectListReq>(AllApiNames.GET_MENUS_LIST!, selectListReq);
+        NavMenuService.UpdateMenuList(menuList);
+        NavMenuService.OnMenuChanged += OnMenuChangedAsync;
+    }
+    private async Task OnMenuChangedAsync()
+    {
+        await InvokeAsync(StateHasChanged);
+    }
+    // Method to get child items for a given parentId
+    private List<MenusList> GetChildMenus(int parentId)
+    {
+        return NavMenuService.MenuList.Where(m => m.Parent_Id == parentId).ToList();
+    }
+
+    private void OnLocationChanged(object? sender, LocationChangedEventArgs e)
+    {
+        currentUrl = NavigationManager.ToBaseRelativePath(e.Location);
+        StateHasChanged();
+    }
+
+    public void Dispose()
+    {
+        NavigationManager.LocationChanged -= OnLocationChanged;
+        NavMenuService.OnMenuChanged -= OnMenuChangedAsync;
+    }
+}
+
+<style>
+    .mud-icon-root.mud-svg-icon {
+        fill: white !important;
+    }
+
+    @@media (max-width: 767.98px) {
+        .mud-icon-root.mud-svg-icon {
+            fill: deeppink !important;
+        }
+    }
+</style>   

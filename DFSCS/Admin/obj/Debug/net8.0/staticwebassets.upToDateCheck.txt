@@ -1,0 +1,17 @@
+wwwroot\Bootstrap\bootstrap.min.css
+wwwroot\Bootstrap\font\bootstrap-icons.min.css
+wwwroot\Bootstrap\font\fonts\bootstrap-icons.woff
+wwwroot\Bootstrap\font\fonts\bootstrap-icons.woff2
+wwwroot\Bootstrap\js\bootstrap.bundle.min.js
+wwwroot\favicon.ico
+wwwroot\resources\css\quill.snow.css
+wwwroot\resources\css\vmm.css
+wwwroot\resources\Dlls\EncryptionUtility.dll
+wwwroot\resources\Dlls\MyNewEncDec.dll
+wwwroot\resources\Dlls\VmmCaptcha.dll
+wwwroot\resources\Js\MyJs.js
+wwwroot\resources\Js\quill.js
+wwwroot\resources\Js\zxing-browser.min.js
+wwwroot\resources\media\images\noimage.jpg
+wwwroot\resources\refresh.png
+wwwroot\resources\vishal-mega-mart-logo.png

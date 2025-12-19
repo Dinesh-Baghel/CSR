@@ -1,0 +1,24 @@
+D:\DFSCS Project\DFSCS.API\DFSCS.Domain\bin\Debug\net8.0\DFSCS.Domain.deps.json
+D:\DFSCS Project\DFSCS.API\DFSCS.Domain\bin\Debug\net8.0\DFSCS.Domain.dll
+D:\DFSCS Project\DFSCS.API\DFSCS.Domain\bin\Debug\net8.0\DFSCS.Domain.pdb
+D:\DFSCS Project\DFSCS.API\DFSCS.Domain\obj\Debug\net8.0\DFSCS.Domain.GeneratedMSBuildEditorConfig.editorconfig
+D:\DFSCS Project\DFSCS.API\DFSCS.Domain\obj\Debug\net8.0\DFSCS.Domain.AssemblyInfoInputs.cache
+D:\DFSCS Project\DFSCS.API\DFSCS.Domain\obj\Debug\net8.0\DFSCS.Domain.AssemblyInfo.cs
+D:\DFSCS Project\DFSCS.API\DFSCS.Domain\obj\Debug\net8.0\DFSCS.Domain.csproj.CoreCompileInputs.cache
+D:\DFSCS Project\DFSCS.API\DFSCS.Domain\obj\Debug\net8.0\DFSCS.Domain.dll
+D:\DFSCS Project\DFSCS.API\DFSCS.Domain\obj\Debug\net8.0\refint\DFSCS.Domain.dll
+D:\DFSCS Project\DFSCS.API\DFSCS.Domain\obj\Debug\net8.0\DFSCS.Domain.pdb
+D:\DFSCS Project\DFSCS.API\DFSCS.Domain\obj\Debug\net8.0\ref\DFSCS.Domain.dll
+D:\DFSCS\DFSCS.Domain\bin\Debug\net8.0\DFSCS.Domain.deps.json
+D:\DFSCS\DFSCS.Domain\bin\Debug\net8.0\DFSCS.Domain.dll
+D:\DFSCS\DFSCS.Domain\bin\Debug\net8.0\DFSCS.Domain.pdb
+D:\DFSCS\DFSCS.Domain\obj\Debug\net8.0\DFSCS.Domain.GeneratedMSBuildEditorConfig.editorconfig
+D:\DFSCS\DFSCS.Domain\obj\Debug\net8.0\DFSCS.Domain.AssemblyInfoInputs.cache
+D:\DFSCS\DFSCS.Domain\obj\Debug\net8.0\DFSCS.Domain.AssemblyInfo.cs
+D:\DFSCS\DFSCS.Domain\obj\Debug\net8.0\DFSCS.Domain.csproj.CoreCompileInputs.cache
+D:\DFSCS\DFSCS.Domain\obj\Debug\net8.0\DFSCS.Domain.sourcelink.json
+D:\DFSCS\DFSCS.Domain\obj\Debug\net8.0\DFSCS.Domain.dll
+D:\DFSCS\DFSCS.Domain\obj\Debug\net8.0\refint\DFSCS.Domain.dll
+D:\DFSCS\DFSCS.Domain\obj\Debug\net8.0\DFSCS.Domain.pdb
+D:\DFSCS\DFSCS.Domain\obj\Debug\net8.0\ref\DFSCS.Domain.dll
+D:\DFSCS\DFSCS.Domain\obj\Debug\net8.0\DFSCS.Domain.csproj.AssemblyReference.cache

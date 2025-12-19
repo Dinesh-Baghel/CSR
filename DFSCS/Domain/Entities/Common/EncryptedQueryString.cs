@@ -1,0 +1,76 @@
+﻿using System.Text;
+using System.Data;
+using System.Web;
+using APress.ProAspNet.Utility;
+using System.Security.Cryptography;
+
+
+public class EncryptedQueryString : System.Collections.Specialized.StringDictionary
+{
+    public EncryptedQueryString()
+    {
+        // Nothing to do here
+    }
+
+    public EncryptedQueryString(string encryptedData)
+    {
+        try
+        {
+            // Decrypt data passed in using DPAPI
+            byte[] RawData = HexEncoding.GetBytes(encryptedData);
+            byte[] ClearRawData = ProtectedData.Unprotect(RawData, null, DataProtectionScope.LocalMachine);
+            string StringData = Encoding.UTF8.GetString(ClearRawData);
+
+            // Split the data and add the contents
+            int Index;
+            string[] SplittedData = StringData.Split(new char[] { '&' });
+            foreach (string SingleData in SplittedData)
+            {
+                Index = SingleData.IndexOf('=');
+                base.Add(
+                    HttpUtility.UrlDecode(SingleData.Substring(0, Index)),
+                    HttpUtility.UrlDecode(SingleData.Substring(Index + 1))
+                );
+            }
+        }
+        catch (Exception)
+        {
+
+            //HttpResponse response = System.Web.HttpContext.Current.Response;
+            //if (System.Web.HttpContext.Current.Session["LoginEntity"] == null)
+            //{
+            //    response.Redirect("/Login");
+            //}
+            //else
+            //{
+            //    response.Redirect("/Home");
+            //}
+        }
+    }
+
+    public override string ToString()
+    {
+        StringBuilder Content = new StringBuilder();
+
+        // Go through the contents and build a 
+        // typical query string
+        foreach (string key in base.Keys)
+        {
+            Content.Append(HttpUtility.UrlEncode(key));
+            Content.Append("=");
+            Content.Append(HttpUtility.UrlEncode(base[key]));
+            Content.Append("&");
+        }
+
+        // Remove the last '&'
+        Content.Remove(Content.Length - 1, 1);
+
+        // Now encrypt the contents using DPAPI
+        byte[] EncryptedData = ProtectedData.Protect(Encoding.UTF8.GetBytes(Content.ToString()),null, DataProtectionScope.LocalMachine);
+
+        // Convert encrypted byte array to a URL-legal string
+        // This would also be a good place to check that data
+        // is not larger than typical 4KB query string
+        return HexEncoding.GetString(EncryptedData);
+    }
+}

@@ -1,0 +1,150 @@
+﻿@page "/Role-Master"
+@attribute [Authorize]
+<MudGrid Class="justify-end">
+            <MudItem>
+                <MudBreadcrumbs Items="_items">
+                    <ItemTemplate Context="item">
+                        <MudLink Href="@item.Href">@item.Text.ToUpper()</MudLink>
+                    </ItemTemplate>
+                </MudBreadcrumbs>
+            </MudItem>
+        </MudGrid>
+<h3>Role Master</h3>
+<MudStack Row="true" AlignItems="AlignItems.End" Justify="Justify.FlexEnd">
+<MudButton OnClick="() => OpenRoleDialog()" StartIcon="@Icons.Material.Filled.Add" Variant="Variant.Filled" Color="Color.Secondary">
+    Add New Role
+</MudButton>
+    </MudStack>
+  <br />
+<MudTable Items="filteredRoles" @ref="mudTable">
+    <ToolBarContent>
+        <MudSpacer />
+        <MudTextField T="string" Value="@searchQuery" ValueChanged="OnSearchChanged" Placeholder="Search" Adornment="Adornment.Start"
+        AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+    </ToolBarContent>
+    <HeaderContent>
+        <MudTh>Role Name</MudTh>
+        <MudTh>Menu</MudTh>
+        <MudTh>User Management</MudTh>
+        <MudTh>Active</MudTh>
+        <MudTh>Actions</MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd>@context.Role_Name</MudTd>
+        <MudTd>@(context.Menu ? "Yes" : "No")</MudTd>
+        <MudTd>@(context.User_Management ? "Yes" : "No")</MudTd>
+        <MudTd>@(context.Active_Status ? "Yes" : "No")</MudTd>
+        <MudTd>
+            <MudButton OnClick="() => OpenRoleDialog(context)" StartIcon="@Icons.Material.Filled.Edit" Color="Color.Secondary" Variant="Variant.Text" />
+        </MudTd>
+    </RowTemplate>
+    <NoRecordsContent>
+        <MudText>No matching records found</MudText>
+    </NoRecordsContent>
+    <LoadingContent>
+        <MudText>Loading...</MudText>
+    </LoadingContent>
+    <PagerContent>
+        <MudTablePager PageSizeOptions="[5,10,15,20,25,50,100]" />
+    </PagerContent>
+</MudTable>
+@code {
+    private SelectListReq selectSelectAllSelectListReq = new();
+    private List<RoleMaster> filteredRoles = new();
+    private List<RoleMaster> pagedRoles = new(); // Roles to be shown on the current page
+    private MudTable<RoleMaster> mudTable;
+    private string searchQuery = string.Empty;
+    private int pageSize = 5; // Items per page
+    private int currentPage = 0; // Current page index
+    private int User_Id = 0; // Current logged in user id
+    private Modules modules;
+    private List<BreadcrumbItem> _items = new List<BreadcrumbItem>
+    {
+        new BreadcrumbItem("Home", href: "/V1/Login2BsrAccount"),
+        new BreadcrumbItem("Role List", href: "#", disabled: true)
+    };
+    protected override async Task OnInitializedAsync()
+    {
+        modules = await MenuService.GetModules();
+        if (!modules.User_Management)
+        {
+            NavigationManager.NavigateTo("/");
+        }
+        var user = HttpContextAccessor.HttpContext?.User;
+        // Replace "YourCustomClaimType" with the actual claim type
+        var uid = user.Claims.FirstOrDefault(c => c.Type == CustomClaimTypes.User_Id)?.Value;
+        User_Id = Convert.ToInt32(uid);
+        await GetRoles();
+    }
+    private async Task GetRoles()
+    {
+        selectSelectAllSelectListReq.Id = 0;
+        selectSelectAllSelectListReq.Cmd = CmdNames.Get_All_Roles;
+        pagedRoles = await ApiMasterService.CallingAPI<List<RoleMaster>, SelectListReq>(AllApiNames.SELECT_ALL_ROLES, selectSelectAllSelectListReq);
+        filteredRoles = pagedRoles;
+    }
+    private void OnSearchChanged(string searchQuery)
+    {
+        this.searchQuery = searchQuery;
+        FilterRoles(); // Apply search filter
+        ApplyPaging(); // Re-apply pagination after search
+    }
+    private void FilterRoles()
+    {
+        if (string.IsNullOrWhiteSpace(searchQuery))
+        {
+            filteredRoles = pagedRoles; // Show all roles if search is empty
+        }
+        else
+        {
+            filteredRoles = pagedRoles
+                .Where(role => role.Role_Name.Contains(searchQuery, StringComparison.OrdinalIgnoreCase))
+                .ToList(); // Filter by Role Name (case-insensitive)
+        }
+    }
+    private void ApplyPaging()
+    {
+        var startIndex = currentPage * pageSize;
+        filteredRoles = filteredRoles.Skip(startIndex).Take(pageSize).ToList(); // Paginate the filtered roles
+    }
+    private void OnPageChanged(int newPage)
+    {
+        currentPage = newPage;
+        ApplyPaging(); 
+    }
+    private async Task OpenRoleDialog(RoleMaster? role = null)
+    {
+        var parameters = new DialogParameters
+        {
+            { "Role", role ?? new RoleMaster(){  Active_Status=true } },
+            { "IsEditMode", role != null }
+        };
+        var options = new DialogOptions { CloseButton = true, MaxWidth = MaxWidth.Small, FullWidth = true };
+        var dialog = DialogService.Show<RoleMasterDialog>("Role Details", parameters, options);
+
+        var result = await dialog.Result;
+        if (!result.Canceled)
+        {
+            var updatedRole = result.Data as RoleMaster;
+            if (updatedRole != null)
+            {
+                updatedRole.Inserted_Updated_By = User_Id;
+                var res = await ApiMasterService.CallingAPI<InUpRes, RoleMaster>(AllApiNames.INSERT_UPDATE_ROLE, updatedRole);
+                if (res.responseCode.Equals(0))
+                {
+                    await GetRoles();
+                }
+                else
+                {
+                    await ShowErrorDialog(res.responseMessage!);
+                    // Show Error Message
+                }
+            }
+        }
+    }
+    private async Task ShowErrorDialog(string message)
+    {
+        // var options = new DialogOptions { CloseButton = true, MaxWidth = MaxWidth.Small, FullWidth = true };
+        await DialogService.ShowMessageBox(title: "Error",markupMessage: (MarkupString)message,yesText: "OK");
+    }
+}
