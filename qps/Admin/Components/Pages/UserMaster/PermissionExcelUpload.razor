@@ -1,0 +1,303 @@
+﻿@using Admin.Components.Shared
+@using ClosedXML.Excel;
+<MudDialog>
+    
+    <DialogContent>
+        <div class="row">
+            <div class="col-md-8 align-content-end">
+                <h5> Update divisions, MC and brands permissions by excel upload.</h5>
+            </div>
+            <div class="col-md-4 text-end">
+            <MudButton Color="Color.Success" OnClick="@Download_Click" Variant="Variant.Filled"> Download template </MudButton>
+            </div>
+        </div>
+        <MudStack Style="width: 100%">
+            <MudForm Model="@_model" @bind-IsValid="_isValid" @bind-IsTouched="_isTouched">
+                <MudItem xs="12">
+                    <MudFileUpload T="IBrowserFile" Accept=".xlsx,.xls"
+                                   @ref="@_fileUpload"
+                                   @bind-Files="_model.Files"
+                                   For="@(() => _model.Files)"
+                                   Hidden="@false"
+                                   InputClass="file-upload-input"
+                                   ErrorText="@string.Empty"
+                                   tabindex="-1"
+                                   @ondrop="@ClearDragClass"
+                                   @ondragenter="@SetDragClass"
+                                   @ondragleave="@ClearDragClass"
+                                   @ondragend="@ClearDragClass">
+                        <ActivatorContent>
+                            <MudPaper Height="300px" Style="background-color: lavenderblush; text-align: center; align-content: center;"
+                                      Outlined="true"
+                                      Class="@_dragClass">
+                                
+                                @if (!string.IsNullOrEmpty(_model.Files?.Name))
+                                {
+                                    <MudChip T="string" Color="Color.Dark" Text="@_model.Files?.Name" />
+                                }
+                                else
+                                {
+                                  <MudText Typo="Typo.h6">
+                                        <MudIcon Icon="@Icons.Material.Filled.CloudUpload" Size="Size.Large" />
+                                        <br />
+                                        Drag and drop files here or click
+                                    </MudText>
+                                }
+                            </MudPaper>
+                        </ActivatorContent>
+                    </MudFileUpload>
+                    
+                </MudItem>
+                <MudItem>
+                    @if (_fileUpload?.ValidationErrors.Any() ?? false)
+                    {
+                        <MudText Color="Color.Error" Typo="@Typo.caption"> @_fileUpload?.ValidationErrors[0]</MudText>
+                    }
+                </MudItem>
+            </MudForm>
+        </MudStack>
+    </DialogContent>
+
+    <DialogActions>
+        <MudButton Color="Color.Primary" OnClick="@OpenFilePickerAsync" Variant="Variant.Filled"> Open file picker </MudButton>
+        <MudButton Color="Color.Success" Disabled="@(_model.Files == null)" OnClick="@Upload" Variant="Variant.Filled"> Upload </MudButton>
+        <MudButton Color="Color.Warning" Disabled="@(_model.Files == null)" OnClick="@ClearAsync" Variant="Variant.Filled"> Clear </MudButton>
+        <MudButton Color="Color.Error" OnClick="@CloseDialog" Variant="Variant.Filled"> Close </MudButton>
+    </DialogActions>
+</MudDialog>
+<Loader IsVisible="@IsLoading" />
+@code {
+    #nullable enable
+    [CascadingParameter]
+    private IMudDialogInstance? MudDialog { get; set; }
+    public class Model
+    {
+        public IBrowserFile? Files { get; set; }
+    }
+    private Modules modules;
+    private SelectListReq selectListReq = new();
+    private HrpLoginByCodeReq hrpLoginByCodeReq = new();
+    public UserDetails User { get; set; } = new();
+    private int User_Id = 0; //  Current logged in user id
+    private Model _model = new();
+    private MudFileUpload<IBrowserFile>? _fileUpload;
+    private bool _isValid;
+    private bool _isTouched;
+    bool IsLoading = false;
+    private const string FileContent = "this is content";
+    private const string DefaultDragClass = "relative rounded-lg border-2 border-dashed pa-4 mt-4 mud-width-full mud-height-full";
+    private string _dragClass = DefaultDragClass;
+    private List<EmployeeRecord> employeeRecords = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        modules = await MenuService.GetModules();
+        if (!modules.User_Management)
+        {
+            NavigationManager.NavigateTo("/");
+        }
+        var user = HttpContextAccessor.HttpContext?.User;
+        var uid = user!.Claims.FirstOrDefault(c => c.Type == CustomClaimTypes.User_Id)?.Value;
+        User_Id = Convert.ToInt32(uid);
+    }
+    private async void Upload()
+    {
+        if (_model.Files == null)
+        {
+            Snackbar.Add("Please select an Excel file for upload.", Severity.Error);
+            return;
+        }
+        // check file type
+        if (_model.Files!.ContentType != "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" && _model.Files!.ContentType != "application/vnd.ms-excel")
+        {
+            Snackbar.Add("Invalid file type. Please upload an Excel file.", Severity.Error);
+            return;
+        }
+        using var stream = _model.Files!.OpenReadStream(long.MaxValue); // allow large files
+        using var memoryStream = new MemoryStream();
+        await stream.CopyToAsync(memoryStream);
+        memoryStream.Position = 0;
+
+        using var workbook = new XLWorkbook(memoryStream);
+        var worksheet = workbook.Worksheets.First(); // first sheet
+        var rows = worksheet.RangeUsed()!.RowsUsed().Skip(1); // skip header row
+
+        employeeRecords.Clear();
+        foreach (var row in rows)
+        {
+            var record = new EmployeeRecord
+            {
+                EMP_CODE = row.Cell(1).GetValue<string>(),
+                DIV = row.Cell(2).GetValue<string>(),
+                MC = row.Cell(3).GetValue<string>(),
+                BRAND_TYPE = row.Cell(4).GetValue<string>()
+            };
+            employeeRecords.Add(record);
+        }
+        if (employeeRecords.Count == 0)
+        {
+            Snackbar.Add("No records found in excel file.",Severity.Warning);
+            return;
+        }
+        // Updating Records
+        int insRecCount = 0;
+        int rowNumber = 1;
+        string message = "";
+        IsLoading = true;
+        StateHasChanged();
+        foreach (var er in employeeRecords)
+        {
+            rowNumber++;
+            if (!string.IsNullOrEmpty(er.EMP_CODE) && !string.IsNullOrEmpty(er.DIV) && !string.IsNullOrEmpty(er.MC) && !string.IsNullOrEmpty(er.BRAND_TYPE))
+            {
+                var res = await GetUser(er.EMP_CODE);
+                if (!string.IsNullOrEmpty(res.Emp_Code))
+                {
+                    // Update user found in DB
+                    User.DIV = er.DIV;
+                    User.MC = er.MC;
+                    User.BRAND_TYPE = er.BRAND_TYPE;
+                    User.Inserted_Updated_By = User_Id;
+                    var result = await ApiMasterService.CallingAPI<GenRes, UserDetails>(AllApiNames.SET_USER!, User);
+                    if (result.responseCode.Equals(0))
+                    {
+                        //success
+                        insRecCount++;
+                    }
+                    else
+                    {
+                        // faild
+                        message = $"{message},{rowNumber.ToString()}";
+                    }
+                }
+                else
+                {
+                    // Emp not found so faild
+                    message = $"{message},{rowNumber.ToString()}";
+                }
+            }
+            else
+            {
+                message = $"{message},{rowNumber.ToString()}";
+            }
+        }
+        IsLoading = false;
+        StateHasChanged();
+        if (employeeRecords.Count() == insRecCount)
+        {
+            Snackbar.Add("All records updated successfully.", Severity.Success);
+        }
+        else
+        {
+            // , cancelText: "   No   "
+            message = message.Remove(0, 1);
+            if (insRecCount > 0)
+            {
+                await DialogService.ShowMessageBox("Information", $"{insRecCount.ToString()} records updated successfully, row number ({message}) not uploaded due to incorrect data.", yesText: "  OK  ");
+            }
+            else
+            {
+                await DialogService.ShowMessageBox("Information", $"Data not uploaded due to incorrect data in all rows.", yesText: "  OK  ");
+            }
+        }
+        MudDialog?.Close();
+    }
+    private async Task SetUserRoles()
+    {
+        selectListReq.Id = User!.Id;
+        selectListReq.Cmd = CmdNames.Get_Role_Details_On_User_Id;
+        var roleDetails = await ApiMasterService.CallingAPI<RoleDetailsOnIdRes, SelectListReq>(AllApiNames.SELECT_ROLEDETAILS_ON_ID, selectListReq);
+        if (roleDetails.responseCode == 0)
+        {
+            User.RoleDetailsList = roleDetails.roleDetails;
+        }
+        else
+        {
+            Snackbar.Add(roleDetails.responseMessage!, Severity.Error);
+            User.RoleDetailsList = new();
+        }
+    }
+    private async Task<UserDetails> GetUser(string EMP_CODE)
+    {
+        User = new();
+        selectListReq.Id = 0;
+        selectListReq.StrField = EMP_CODE;
+        selectListReq.Cmd = CmdNames.Get_User_Details_On_User_Code;
+        // Find From CO Portal
+        IsLoading = true;
+        var res = await ApiMasterService.CallingAPI<GetUserOnEmpCodeRes, SelectListReq>(AllApiNames.SELECT_USER_ON_EMP_CODE, selectListReq);
+        IsLoading = false;
+        if (res.responseCode != 0)
+        {
+            Snackbar.Add(res.responseMessage!,Severity.Error);
+            return new UserDetails();
+        }
+        var result = res.userDetails;
+        if (result.Id.Equals(0))
+        {
+            // If Not Available on CO Portal Then Find From HR Portal
+            hrpLoginByCodeReq.loginID = User.Emp_Code;
+            IsLoading = true;
+            var result1 = await ApiMasterService.CallingAPI<HrpLoginRes, HrpLoginByCodeReq>(AllApiNames.HRP_GET_EMP_DETAIL_CODE, hrpLoginByCodeReq);
+            IsLoading = false;
+            if (result1.responseCode == 0 && result1!.responseMessage == "Success" && result1.employeeList?.Count > 0)
+            {
+                User.Emp_Code = result1.employeeList[0].empCode;
+                User.Emp_Name = result1.employeeList[0].empName;
+                User.Emp_Location = result1.employeeList[0].empLocation;
+                User.Emp_Loc_Code = result1.employeeList[0].empLocCode;
+                User.Emp_Dept_Name = result1.employeeList[0].empDeptName;
+                User.Emp_Desig = result1.employeeList[0].empDesig;
+                User.Emp_Contact_No = result1.employeeList[0].empContactNo;
+                User.Emp_Mail_Id = result1.employeeList[0].empMailID;
+                User.Emp_Rpt_Mng = result1.employeeList[0].empRptMng;
+                User.Is_Resign = result1.employeeList[0].isResign;
+                User.Emp_Grade = result1.employeeList[0].empGrade;
+                User.Emp_Grade_Desc = result1.employeeList[0].empGradeDesc;
+                User.Emp_Status = result1.employeeList[0].empStatus;
+                await SetUserRoles();
+                return User;
+            }
+            else
+            {
+                return User;
+            }
+        }
+        else
+        {
+            User = result;
+            await SetUserRoles();
+            return User;
+        }
+    }
+    private void Download_Click()
+    {
+        NavigationManager.NavigateTo("resources/Template.xlsx", true);
+    }
+    private void SetDragClass()
+        => _dragClass = $"{DefaultDragClass} mud-border-primary";
+
+    private void ClearDragClass()
+        => _dragClass = DefaultDragClass;
+
+    private Task OpenFilePickerAsync()
+        => _fileUpload?.OpenFilePickerAsync() ?? Task.CompletedTask;
+
+    private Task ClearAsync()
+        => _fileUpload?.ClearAsync() ?? Task.CompletedTask;
+    
+    private void CloseDialog()
+    {
+        MudDialog?.Close();
+    }
+}
+<style>
+    .file-upload-input {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        z-index: 10;
+        opacity: 0;
+    }
+</style>

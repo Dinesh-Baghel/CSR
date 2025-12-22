@@ -1,0 +1,17 @@
+﻿
+<MudOverlay Visible="IsVisible" DarkBackground="true" ZIndex="9999">
+    <MudProgressCircular Color="Color.Secondary" Indeterminate="true" />
+</MudOverlay>
+@code {
+    private bool IsVisible = false;
+    public async void Show()
+    {
+        IsVisible = true;
+        await InvokeAsync(StateHasChanged);
+    }
+    public async void Hide()
+    {
+        IsVisible = false;
+        await InvokeAsync(StateHasChanged);
+    }
+}

@@ -1,0 +1,394 @@
+﻿@page "/InspectionList"
+@using Admin.Components.Shared
+@using Admin.Components.UIControls
+@using System.Security.Claims
+@attribute [Authorize]
+@* VendorDashboard *@
+<MudGrid Class="justify-end">
+    <MudItem>
+        <MudBreadcrumbs Items="_items">
+            <ItemTemplate Context="item">
+                <MudLink Href="@item.Href">@item.Text.ToUpper()</MudLink>
+            </ItemTemplate>
+        </MudBreadcrumbs>
+    </MudItem>
+</MudGrid>
+<MudStack Row="true" AlignItems="AlignItems.End" Justify="Justify.FlexEnd" Class="mb-2">
+    @if (IsVendor)
+    {
+        <MudButton OnClick="() => OpenRoleDialog()" StartIcon="@Icons.Material.Filled.Add" Variant="Variant.Filled" Color="Color.Secondary">
+            Create New Inspection Request
+        </MudButton>
+    }
+</MudStack>
+<MudTable Items="filteredPO" @ref="mudTable" Dense="true">
+    <ToolBarContent>
+        <MudSpacer />
+        <MudTextField T="string" Value="@searchQuery" ValueChanged="OnSearchChanged" Placeholder="Search" Adornment="Adornment.Start"
+                      AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+    </ToolBarContent>
+    <HeaderContent>
+        <MudTh>PO NUMBER</MudTh>
+        <MudTh>VENDOR</MudTh>
+        <MudTh>COLOR</MudTh>
+        <MudTh>FABRIC</MudTh>
+        <MudTh>OFFERED QTY.</MudTh>
+        <MudTh>TOTAL QTY.</MudTh>
+        <MudTh>DATE OF INSPECTION</MudTh>
+        <MudTh>DATE ASSIGNED BY QA</MudTh>
+        <MudTh>INSPECTION LOCATION</MudTh>
+        <MudTh>CREATED BY</MudTh>
+        <MudTh>CREATED AT</MudTh>
+        <MudTh></MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd>@context.PoNumber</MudTd>
+        <MudTd>@(context.VendorName)</MudTd>
+        <MudTd>@(context.Color)</MudTd>
+        <MudTd>@(context.Fabric)</MudTd>
+        <MudTd>@(context.OfferedQty)</MudTd>
+        <MudTd>@(context.POTotalQty)</MudTd>
+        <MudTd>@(context.DateOfInspection?.ToString("dd-MM-yyyy HH:mm") ?? "")</MudTd>
+        <MudTd>
+            @if (!context.Is_Date_Assigned_By_QA)
+            {
+                <MudChip T="string" OnClick="() => OpenDialogForDOI(context)" Variant="Variant.Outlined" Color="Color.Secondary"> Not Assigned  </MudChip>
+            }
+            else
+            {
+                <MudChip T="string" OnClick="() => OpenDialogForDOI(context)" Variant="Variant.Outlined" Color="Color.Success"> @(context.QA_ASSIGNED_DOI?.ToString("dd-MM-yyyy HH:mm") ?? "")  </MudChip>
+            }
+        </MudTd>
+        <MudTd>@context.InspectionLocation</MudTd>
+        <MudTd>@(context.Created_By)</MudTd>
+        <MudTd>@(context.CreatedOn)</MudTd>
+        <MudTd>
+            @if (IsQA)
+            {
+                <MudButton OnClick="() => OpenRoleDialog(context)" StartIcon="@Icons.Material.Filled.AssignmentInd" Color="Color.Primary" Variant="Variant.Text" />
+            }
+            else if (IsINSP)
+            {
+                <MudButton OnClick="() => OpenRoleDialog(context)" StartIcon="@Icons.Material.Filled.Update" Color="Color.Success" Variant="Variant.Text" />
+            }
+            else
+            {
+                if (context.Is_Date_Assigned_By_QA || context.Is_Inspector_Assigned)
+                {
+                    <MudButton OnClick="() => OpenRoleDialog(context)" StartIcon="@Icons.Material.Filled.Edit" Color="Color.Success" Variant="Variant.Text" />
+                }
+                else
+                {
+                    <MudButton OnClick="() => OpenRoleDialog(context)" StartIcon="@Icons.Material.Filled.Edit" Color="Color.Secondary" Variant="Variant.Text" />
+                }
+
+            }
+
+        </MudTd>
+    </RowTemplate>
+    <LoadingContent>
+        <MudText>Loading...</MudText>
+    </LoadingContent>
+    <NoRecordsContent>
+        <MudText>No records found</MudText>
+    </NoRecordsContent>
+    <PagerContent>
+        <MudTablePager PageSizeOptions="@pageSizeOptions" />
+    </PagerContent>
+</MudTable>
+<Loader IsVisible="@IsLoading" />
+
+
+@code {
+    private SelectListReq selectListReq = new();
+    private List<POHeader> filteredPO = new();
+    private List<POHeader> pagedPO = new(); // Users to be shown on the current page
+    private MudTable<POHeader> mudTable;
+    private string searchQuery = string.Empty;
+    private int pageSize => BsrSettings.AdminPageSize; // Items per page
+    bool IsLoading = false;
+    private int[] pageSizeOptions => new[]
+    {
+        pageSize * 1,
+        pageSize * 2,
+        pageSize * 3,
+        pageSize * 4,
+        pageSize * 5
+    };
+    private int currentPage = 0; // Current page index
+    private string VendorCode = ""; //  Current logged in user id
+
+    private bool IsQC;
+    private bool IsQA;
+    private bool IsINSP;
+    private bool IsBuyer;
+    private bool IsAdmin;
+    private bool IsVendor;
+    private int User_Id = 0;
+    private List<BreadcrumbItem> _items = new List<BreadcrumbItem>
+    {
+        new BreadcrumbItem("Home", href: "/InspectionList"),
+        new BreadcrumbItem("PO List", href: "#", disabled: true)
+    };
+    protected override async Task OnInitializedAsync()
+    {
+        IsLoading = true;
+        var user = HttpContextAccessor.HttpContext?.User;
+        var uid = user!.Claims.FirstOrDefault(c => c.Type == CustomClaimTypes.User_Id)?.Value;
+        User_Id = Convert.ToInt32(uid);
+
+        VendorCode = user!.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value!;
+        var role = user!.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value!;
+        IsLoading = false;
+
+        //
+        IsVendor = user.IsInRole("Vendor");
+        IsBuyer = user.IsInRole("2");
+        IsQC = user.IsInRole("3");
+        IsAdmin = user.IsInRole("5");
+        IsQA = user.IsInRole("1007");
+        IsINSP = user.IsInRole("1006");
+
+
+
+    }
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await GetPOs();
+
+            StateHasChanged();
+        }
+
+    }
+    private async Task GetPOs()
+    {
+        pagedPO = new();
+        selectListReq.Id = 0;
+        selectListReq.StrField = VendorCode;
+        if (IsQC)
+            selectListReq.Cmd = "GET_ALL_INSPECTION";
+        else if (IsQA)
+            selectListReq.Cmd = "GET_ALL_INSPECTION";
+        else if (IsINSP)
+        {
+            selectListReq.Cmd = "GET_INSPECTOR_WISE_INSPECTIONS";
+        }
+        else
+            selectListReq.Cmd = "Get_All_Vendor_Wise_PO";
+
+
+        IsLoading = true;
+        var res = await ApiMasterService.CallingAPI<PODashboardResponse, SelectListReq>(AllApiNames.GET_VENDOR_WISE_POS, selectListReq);
+        IsLoading = false;
+
+        if (res.responseCode == 0)
+        {
+            if (res.POList == null)
+            {
+                Snackbar.Add("No record found.", Severity.Error);
+            }
+            else
+            {
+
+                foreach (var item in res.POList)
+                {
+                    pagedPO.Add(mapper.Map<POHeader>(item));
+                }
+            }
+        }
+        else
+        {
+            Snackbar.Add(res.responseMessage!, Severity.Error);
+        }
+
+        filteredPO = pagedPO;
+
+    }
+    private void OnSearchChanged(string searchQuery)
+    {
+        this.searchQuery = searchQuery;
+        FilterPOs(); // Apply search filter
+    }
+    private void FilterPOs()
+    {
+        if (string.IsNullOrWhiteSpace(searchQuery))
+        {
+            filteredPO = pagedPO; // Show all Users if search is empty
+        }
+        else
+        {
+            filteredPO = pagedPO
+                .Where(po => po.VendorCode!.Contains(searchQuery, StringComparison.OrdinalIgnoreCase) ||
+                       po.VendorName!.ToString().Contains(searchQuery, StringComparison.OrdinalIgnoreCase) ||
+                       po.PoNumber.Any()!.ToString().Contains(searchQuery, StringComparison.OrdinalIgnoreCase))
+                .ToList();
+
+            ApplyPaging(); // Re-apply pagination after search
+        }
+    }
+    private void ApplyPaging()
+    {
+        var startIndex = currentPage * pageSize;
+        filteredPO = filteredPO.Skip(startIndex).Take(pageSize).ToList(); // Paginate the filtered Users
+    }
+    private void OnPageChanged(int newPage)
+    {
+        currentPage = newPage;
+        ApplyPaging(); // Update paged users when the page is changed
+    }
+    private async Task OpenRoleDialog(POHeader? PO = null)
+    {
+        if (PO != null)
+        {
+            //Get here  PO Details and Address
+            selectListReq.Id = PO!.InspId;
+            selectListReq.Cmd = CmdNames.Get_InspRequest_By_Id;
+            var res = await ApiMasterService.CallingAPI<InspectionDetailResponse, SelectListReq>(AllApiNames.GET_INSPECTION_REQUEST_BY_ID, selectListReq);
+            if (res.responseCode == 0 && res.responseMessage!.ToUpper() == "SUCCESS")
+            {
+                PO = mapper.Map<POHeader>(res.POHeader);
+                PO.Details.Clear();
+                foreach (var podetail in res.PODetails)
+                {
+                    PO.Details.Add(mapper.Map<PODetails>(podetail));
+                }
+                PO.AddressList.Clear();
+                foreach (var addrss in res.AddressList)
+                {
+                    PO.AddressList.Add(mapper.Map<VendorAddressDetail>(addrss));
+                }
+
+                var selectRequest = new SelectListReq
+                {
+                    Id = 0,
+                    Cmd = CmdNames.Get_Region,
+                    StrField = ""     // null-safe
+                };
+                // Find the PO in local db
+                IsLoading = true;
+                var regionList = await ApiMasterService.CallingAPI<MasterDataList, SelectListReq>(AllApiNames.GET_MASTER_DATA, selectRequest);
+                IsLoading = false;
+                MasterDataList regionList1 = regionList;
+                PO.RegionList = regionList1.masterDataList;
+            }
+        }
+
+        var parameters = new DialogParameters
+        {
+            { "PO",  PO  },
+            { "IsEditMode", PO != null }
+        };
+        var options = new DialogOptions { CloseButton = true, MaxWidth = MaxWidth.Large, FullWidth = true };
+
+        if (IsQA)
+        {
+            var dialog = DialogService.Show<InspectorAssignment>("Assignment of Inspector", parameters, options);
+
+            var result = await dialog.Result;
+            if (!result!.Canceled)
+            {
+                await GetPOs();
+            }
+        }
+        else if (IsINSP)
+        {
+            var dialog = DialogService.Show<InspectionForm>("Inspection Form", parameters, options);
+
+            var result = await dialog.Result;
+            if (!result!.Canceled)
+            {
+                await GetPOs();
+            }
+        }
+        else
+        {
+            var dialog = DialogService.Show<AddEditInspections>("Inspection Request", parameters, options);
+            var result = await dialog.Result;
+            if (!result!.Canceled)
+            {
+
+                await GetPOs();
+            }
+        }
+    }
+
+    private async Task ShowErrorDialog(string message)
+    {
+        await DialogService.ShowMessageBox(title: "Error", markupMessage: (MarkupString)message, yesText: "OK");
+    }
+
+
+    private async Task OpenDialogForDOI(POHeader? PO = null)
+    {
+        if (PO != null)
+        {
+            //Get here  PO Details and Address
+            selectListReq.Id = PO!.InspId;
+            selectListReq.Cmd = CmdNames.Get_InspRequest_By_Id;
+            var res = await ApiMasterService.CallingAPI<InspectionDetailResponse, SelectListReq>(AllApiNames.GET_INSPECTION_REQUEST_BY_ID, selectListReq);
+            if (res.responseCode == 0 && res.responseMessage!.ToUpper() == "SUCCESS")
+            {
+                PO = mapper.Map<POHeader>(res.POHeader);
+                PO.Details.Clear();
+                foreach (var podetail in res.PODetails)
+                {
+                    PO.Details.Add(mapper.Map<PODetails>(podetail));
+                }
+                PO.AddressList.Clear();
+                foreach (var addrss in res.AddressList)
+                {
+                    PO.AddressList.Add(mapper.Map<VendorAddressDetail>(addrss));
+                }
+
+                var selectRequest = new SelectListReq
+                {
+                    Id = 0,
+                    Cmd = CmdNames.Get_Region,
+                    StrField = ""     // null-safe
+                };
+                // Find the PO in local db
+                IsLoading = true;
+                var regionList = await ApiMasterService.CallingAPI<MasterDataList, SelectListReq>(AllApiNames.GET_MASTER_DATA, selectRequest);
+                IsLoading = false;
+                MasterDataList regionList1 = regionList;
+                PO.RegionList = regionList1.masterDataList;
+            }
+        }
+
+        var parameters = new DialogParameters
+        {
+            { "PO",  PO  },
+            { "IsEditMode", PO != null }
+        };
+        var options = new DialogOptions { CloseButton = true, MaxWidth = MaxWidth.Large, FullWidth = true };
+
+        if (IsQA)
+        {
+            var dialog = DialogService.Show<DOIAssignedByQA>("Allocation of Date of Inspection", parameters, options);
+
+            var result = await dialog.Result;
+            if (!result!.Canceled)
+            {
+                await GetPOs();
+            }
+        }
+       
+    }
+
+}
+<style>
+    .mud-table-container {
+        max-height: 48vh;
+    }
+
+    .mud-table th {
+        background-color: #d92160;
+        color: white !important;
+        font-weight: bold !important;
+        font-size: 15px;
+    }
+</style>
+
+

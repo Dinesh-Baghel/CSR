@@ -1,0 +1,281 @@
+﻿@page "/Account/User-Login"
+@using Admin.Components.UIControls
+@using Application.Services
+@using Domain.Records
+@using System.Security.Claims
+@using Microsoft.AspNetCore.Authentication
+@using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage
+@using System.Reflection
+@layout BlankLayout
+@inject IDialogService DialogService
+@inject SessionService _SessionService
+<PageTitle>Quality Process System (QPS) - Login</PageTitle>
+<MudPaper Class="d-flex justify-center align-center pl-3 pr-3" Style="min-height:100vh; background: linear-gradient(135deg, #6a5af9, #8a7dff);">
+    <MudCard Class="p-6" Style="width: 100%; max-width: 380px; border-radius: 16px;">
+        <MudCardHeader>
+            <div class="d-flex justify-center">
+                <MudImage Src="resources/vishal-mega-mart-logo.png" Alt="Vishal Mega Mart Logo" style="width:50%" />
+            </div>
+        </MudCardHeader>
+
+        <MudCardContent>
+            <MudText Typo="Typo.h5" Align="Align.Center" GutterBottom="true" Class="fw-bold">Welcome to Quality Portal</MudText>
+            <EditForm EditContext="@editContext" method="post" OnSubmit="LoginUser" FormName="login">
+                <DataAnnotationsValidator />
+                <MudStaticTextField For="@(() => Input!.loginID)" @bind-Value="Input!.loginID" Class="mt-5" Placeholder="User Id" UserAttributes="@(new() { { "autocomplete", "false" }, { "aria-required", "true" } })"></MudStaticTextField>
+                <MudStaticTextField For="@(() => Input!.loginPassword)" InputType="InputType.Password" Class="mt-5" @bind-Value="Input!.loginPassword" Placeholder="Password" UserAttributes="@(new() { { "autocomplete", "false" }, { "aria-required", "true" } })"></MudStaticTextField>
+
+                <MudGrid Class="mt-3">
+                    <MudItem xs="2">
+                    </MudItem>
+                    <MudItem xs="8">
+                        <MudImage Src="@( "data:image/png;base64," + CaptchaBase64Image )" Alt="Captcha" Style="width:100%;" />
+                        <input type="hidden" id="actionType" name="actionType" value="login" />
+                    </MudItem>
+                    <MudItem xs="2" Class="d-flex justify-center align-center">
+                        <button onclick="setActionType('refresh')" style="background: none; border: none;">
+                            <img src="/resources/refresh.png" height="35" width="35" title="Refresh Captcha" class="mt-3" />
+                        </button>
+                    </MudItem>
+                </MudGrid>
+
+                <MudStaticTextField For="@(() => Input!.captchaText)" @bind-Value="Input!.captchaText" Class="mt-5" Placeholder="Captcha" UserAttributes="@(new() { { "autocomplete", "false" }, { "aria-required", "true" } })"></MudStaticTextField>
+
+                <MudStaticButton Variant="Variant.Filled" Color="Color.Secondary" Class="mt-4" FullWidth="true" FormAction="FormAction.Submit" @onclick="SetActionTypeLogin">Log in</MudStaticButton>
+
+
+            </EditForm>
+        </MudCardContent>
+        <div style="text-align-last: end;width: 100%;margin-top: -15px;padding-right: 12px;">
+            <MudChip T="string" Color="Color.Default" Size="Size.Small">@appVersion</MudChip>
+        </div>
+    </MudCard>
+
+    <MudAppBar Elevation="5" Bottom="true" Fixed="true" Class="d-flex justify-center align-center" Style="background: linear-gradient(135deg, #6a5af9, #8a7dff);">
+        <MudText Typo="Typo.body2" class="text-white-50">
+            Copyright © @DateTime.Now.ToString("yyyy") Vishal Mega Mart
+
+        </MudText>
+    </MudAppBar>
+
+</MudPaper>
+
+
+
+
+
+@code {
+    [SupplyParameterFromForm]
+    private HrpLoginReq? Input { get; set; } = new();
+    private const string LoginForm = "login-form";
+    [CascadingParameter]
+    private HttpContext httpContext { get; set; } = default!;
+
+    [CascadingParameter]
+    private string CaptchaText { get; set; } = default!;
+
+    private string CaptchaBase64Image { get; set; } = "";
+    VmmCaptcha.Captcha capcha = new VmmCaptcha.Captcha();
+    private EditContext? editContext;
+
+    private string? appVersion { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        appVersion = Assembly.GetExecutingAssembly().GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion ?? "NA";
+        appVersion = $"Ver.{appVersion.Split("+")[0]}";
+        try
+        {
+            editContext = new EditContext(Input!);
+            if (httpContext.Request.Method != HttpMethods.Post)
+            {
+                GenerateCaptcha();
+            }
+            else
+            {
+                if (string.IsNullOrEmpty(Input!.captchaText))
+                {
+                    GenerateCaptcha();
+                    return;
+                }
+                CaptchaBase64Image = _SessionService.GetString("ImageText");
+            }
+            var apiMasterResponse = await ApiMasterService.CallingAPI<ApiMasterRes, string>(AllApiNames.MasterApi, "");
+            if (apiMasterResponse.responseCode == 0 && apiMasterResponse.responseMessage!.ToUpper() == "SUCCESS" && apiMasterResponse.ApiData?.Count > 0)
+            {
+                AllApi.ApiDetails = apiMasterResponse.ApiData;
+            }
+            else
+            {
+                ShowAlert(apiMasterResponse.responseMessage!);
+            }
+        }
+        catch (Exception ex)
+        {
+            ShowAlert(ex.Message!);
+        }
+    }
+    private void GenerateCaptcha()
+    {
+        var res = capcha.Generate(3, 0, null, 30, System.Drawing.FontStyle.Regular, 0);
+        CaptchaBase64Image = res.CaptchaBase64Image;
+        _SessionService.SetString("CaptchaText", res.CaptchaText);
+        _SessionService.SetString("ImageText", res.CaptchaBase64Image);
+        Input!.captchaText = "";
+        StateHasChanged();
+    }
+    private async Task SetActionTypeLogin()
+    {
+        await JSRuntime.InvokeVoidAsync("setActionType", "login");
+    }
+    private async Task LoginUser()
+    {
+
+        var actionType = httpContext.Request.Form["actionType"].ToString();
+
+        if (actionType == "refresh")
+        {
+            GenerateCaptcha();
+            return;
+        }
+
+
+        if (actionType == "login")
+        {
+            if (editContext != null)
+            {
+                var isValid = editContext.Validate();
+                if (!isValid)
+                {
+                    // Form is invalid, do not continue
+                    return;
+                }
+            }
+        }
+        if (string.IsNullOrEmpty(Input!.captchaText))
+        {
+            if (actionType != "refresh")
+            {
+                ShowAlert("Captcha is required.");
+            }
+            GenerateCaptcha();
+            return;
+        }
+        if (Input!.captchaText != _SessionService.GetString("CaptchaText"))
+        {
+            if (actionType != "refresh")
+            {
+                ShowAlert("Invalid captcha, please try again.");
+            }
+            GenerateCaptcha();
+            return;
+        }
+        var ipAddress = httpContext.Connection.RemoteIpAddress?.ToString();
+        var hostName = "";
+        if (ipAddress == "::1")
+        {
+            ipAddress = Dns.GetHostEntry(Dns.GetHostName()).AddressList[1].ToString();
+            hostName = Dns.GetHostEntry(Dns.GetHostName()).HostName.Split('.')[0];
+        }
+        else
+        {
+            ipAddress = Dns.GetHostEntry(Dns.GetHostName()).AddressList[1].ToString();
+            hostName = Dns.GetHostEntry(Dns.GetHostName()).HostName.Split('.')[0];
+        }
+        // Input!.loginID = "1001391";
+        // Input.loginPassword = "abc1234#";
+        var loginResponse = await ApiMasterService.CallingAPI<HrpLoginRes, HrpLoginReq>(AllApiNames.HRP_GET_EMP_LOGIN_API, Input!);
+        if (loginResponse.responseCode == 0 && loginResponse!.responseMessage == "Success" && loginResponse.employeeList?.Count > 0)
+        {
+            CopLoginReq copLoginReq = new CopLoginReq();
+            copLoginReq.UserDetails.Emp_Code = loginResponse.employeeList[0].empCode;
+            copLoginReq.UserDetails.Emp_Name = loginResponse.employeeList[0].empName;
+            copLoginReq.UserDetails.Emp_Location = loginResponse.employeeList[0].empLocation;
+            copLoginReq.UserDetails.Emp_Loc_Code = loginResponse.employeeList[0].empLocCode;
+            copLoginReq.UserDetails.Emp_Dept_Name = loginResponse.employeeList[0].empDeptName;
+            copLoginReq.UserDetails.Emp_Desig = loginResponse.employeeList[0].empDesig;
+            copLoginReq.UserDetails.Emp_Contact_No = loginResponse.employeeList[0].empContactNo;
+            copLoginReq.UserDetails.Emp_Mail_Id = loginResponse.employeeList[0].empMailID;
+            copLoginReq.UserDetails.Emp_Rpt_Mng = loginResponse.employeeList[0].empRptMng;
+            copLoginReq.UserDetails.Is_Resign = loginResponse.employeeList[0].isResign;
+            copLoginReq.UserDetails.Emp_Grade = loginResponse.employeeList[0].empGrade;
+            copLoginReq.UserDetails.Emp_Grade_Desc = loginResponse.employeeList[0].empGradeDesc;
+            copLoginReq.UserDetails.Emp_Status = loginResponse.employeeList[0].empStatus;
+            copLoginReq.UserDetails.Ip_Address = ipAddress;
+            var copLoginRes = await ApiMasterService.CallingAPI<CopLoginRes, CopLoginReq>(AllApiNames.GET_EMP_COP_LOGIN_API, copLoginReq);
+            if (copLoginRes.responseCode != 0)
+            {
+                ShowAlert(copLoginRes.responseMessage!);
+                return;
+            }
+            else
+            {
+                //Create claims and sign in the user
+                var loggedInUser = new LoginUser(copLoginRes?.UserDetails!.Id!.ToString(), copLoginRes?.UserDetails!.Emp_Code!, copLoginRes?.UserDetails!.Emp_Name!, copLoginRes?.UserDetails!.Emp_Contact_No!, copLoginRes?.UserDetails!.Emp_Mail_Id!, copLoginRes?.UserDetails!.Role_Id.ToString()!, copLoginRes!.Modules, copLoginRes);
+                var claims = loggedInUser.ToClaims();
+                var identity = new ClaimsIdentity(claims, Constants.AuthScheme);
+                var principal = new ClaimsPrincipal(identity);
+                if (httpContext != null)
+                {
+                    // Store login result for later use
+                    // await _LocalStorageService.SetItemAsync(Cons.LoginRes, copLoginRes);
+                    MenuService.SetUserLoginData(copLoginRes);
+
+                    await httpContext.SignInAsync(Constants.AuthScheme, principal);
+                    // Redirect to the homepage
+                    if (copLoginRes.Modules.User_Management)
+                    {
+                        NavigationManager.NavigateTo("/V1/Login2BsrAccount");
+                    }
+                    else
+                    {
+                        NavigationManager.NavigateTo("/");
+                    }
+                }
+                else
+                {
+                    ShowAlert("httpContext is Null");
+                }
+            }
+            //NavigationManager.NavigateTo("/");
+        }
+        else
+        {
+            ShowAlert(loginResponse.responseMessage!);
+        }
+    }
+    private void ShowAlert(string message)
+    {
+        Snackbar.Add(message, Severity.Error);
+    }
+}
+<script>
+    function setActionType(action)
+    {
+        document.getElementById('actionType').value = action;
+    }
+</script>
+
+<style>
+    /* Ensures full height layout */
+    .fill-height {
+        min-height: 100vh;
+    }
+
+    .rounded-lg {
+        border-radius: 12px;
+    }
+
+    .shadow-md {
+        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+
+    .fw-bold {
+        font-weight: bold;
+    }
+
+    .min-vh-100 {
+        min-height: 100vh;
+    }
+
+</style>

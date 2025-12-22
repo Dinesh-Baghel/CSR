@@ -1,0 +1,19 @@
+﻿@foreach (var item in MenuItems)
+{
+    var children = AllMenus.Where(m => m.Parent_Id == item.Id).ToList();
+    if (children.Any())
+    {
+        <MudNavGroup Title="@item.Label">
+            <BSRRecursiveNavMenu MenuItems="children" AllMenus="AllMenus" />
+        </MudNavGroup>
+    }
+    else
+    {
+        <MudNavLink Href="@item.Url" Class="f15" Match="NavLinkMatch.All">@item.Label</MudNavLink>
+    }
+}
+
+@code {
+    [Parameter] public List<MenusList> MenuItems { get; set; } = new();
+    [Parameter] public List<MenusList> AllMenus { get; set; } = new();
+}

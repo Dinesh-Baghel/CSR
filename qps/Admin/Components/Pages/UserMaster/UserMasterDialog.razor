@@ -1,0 +1,1175 @@
+﻿@page "/UserMasterDialog"
+@using Admin.Components.Shared
+@using MudExtensions
+<MudDialog>
+    <DialogContent>
+        <MudForm @ref="form">
+            <MudGrid>
+                <MudItem xs="12" md="3">
+                    <MudGrid>
+                        <!-- Employee Code -->
+                        <MudItem xs="12" md="12">
+                            @if (IsEditMode)
+                            {
+                                <MudTextField T="string" Label="Employee Code" ReadOnly="true" @bind-Value="User.Emp_Code" Required="true" />
+                            }
+                            else
+                            {
+                                <MudGrid>
+                                    <MudItem xs="12">
+                                        <MudTextField T="string" Label="Employee Code" @bind-Value="User.Emp_Code" Required="true" Adornment="Adornment.End" AdornmentIcon="@Icons.Material.Filled.PersonSearch" AdornmentColor="Color.Secondary" OnAdornmentClick="@(() => OnFindClick())" />
+                                    </MudItem>
+                                </MudGrid>
+                            }
+                        </MudItem>
+                        <!-- Employee Name -->
+                        <MudItem xs="12" md="12">
+                            <MudTextField T="string" Label="Employee Name" ReadOnly="true" @bind-Value="User.Emp_Name" Required="true" />
+                        </MudItem>
+                        <!-- Other fields here, similar to the example -->
+                        <MudItem xs="12" md="12">
+                            <MudTextField T="string" Label="Employee Location" ReadOnly="true" @bind-Value="User.Emp_Location" />
+                        </MudItem>
+                        <MudItem xs="12" md="12">
+                            <MudTextField T="string" Label="Employee Location Code" ReadOnly="true" @bind-Value="User.Emp_Loc_Code" />
+                        </MudItem>
+                        <MudItem xs="12" md="12">
+                            <MudTextField T="string" Label="Department Name" ReadOnly="true" @bind-Value="User.Emp_Dept_Name" />
+                        </MudItem>
+                        <MudItem xs="12" md="12">
+                            <MudTextField T="string" Label="Designation" ReadOnly="true" @bind-Value="User.Emp_Desig" />
+                        </MudItem>
+                        <MudItem xs="12" md="12">
+                            <MudTextField T="string" Label="Contact No" ReadOnly="true" @bind-Value="User.Emp_Contact_No" />
+                        </MudItem>
+                        <MudItem xs="12" md="12">
+                            <MudTextField T="string" Label="Email Id" ReadOnly="true" @bind-Value="User.Emp_Mail_Id" />
+                        </MudItem>
+                        <MudItem xs="12" md="12">
+                            <MudTextField T="string" Label="Reporting Manager" ReadOnly="true" @bind-Value="User.Emp_Rpt_Mng" />
+                        </MudItem>
+                        <MudItem xs="12" md="6">
+                            <MudSwitch T="bool" Label="Is Resigned?" ReadOnly="true" @bind-Value="User.Is_Resign" />
+                        </MudItem>
+                        <MudItem xs="12" md="12">
+                            <MudTextField T="string" Label="Employee Grade Description" ReadOnly="true" @bind-Value="User.Emp_Grade_Desc" />
+                        </MudItem>
+                        <MudItem xs="12" md="12">
+                            <MudSwitch T="bool" Label="Is Active?" ReadOnly="true" @bind-Value="User.Emp_Status" />
+                        </MudItem>
+                    </MudGrid>
+                </MudItem>
+                <MudItem xs="12" md="9">
+                    <MudGrid>
+                        <!-- Role Selection -->
+                        <MudItem xs="12" md="6">
+                            <MudSelect T="int" Label="Select Role" AnchorOrigin="Origin.BottomLeft" Clearable Variant="Variant.Text" @bind-Value="User.Role_Id" Required="true">
+                                @foreach (var role in roleList)
+                                {
+                                    <MudSelectItem T="int" Value="role.Id">@role.Role_Name</MudSelectItem>
+                                }
+                            </MudSelect>
+                        </MudItem>
+                        <MudItem xs="12" md="6">
+                           @*  <MudSelect T="int" Label="Select Region" AnchorOrigin="Origin.BottomLeft" Clearable Variant="Variant.Text" @bind-Value="User.RegionId" Required="true">
+                                @foreach (var rgn in User.RegionList)
+                                {
+                                    <MudSelectItem T="int" Value="rgn.Master_ID">@rgn.Master_Name</MudSelectItem>
+                                }
+                            </MudSelect> *@
+                            <div style="position: relative;">
+                                @if (RgnList.Count > 0)
+                                {
+                                    <MudSelectExtended Required="true"
+                                                       T="ListItem"
+                                                       MultiSelection="true"
+                                                       ItemCollection="RgnList"
+                                                       SelectedValues="SelectedRgnList"
+                                                       SelectedValuesChanged="@(values => Rgn_OnSelectedValuesChanged(values.ToHashSet()))"
+                                                       Label="Select Regions"
+                                                       SearchBox="true"
+                                                       SearchBoxAutoFocus="true"
+                                                       SelectAll="true"
+                                                       Variant="Variant.Outlined"
+                                                       Dense="true"
+                                                       Clearable="true"
+                                                       @ref="ddlRgn"
+                                                       OnOpen="Rgn_Open"
+                                                       OnClose="Rgn_Close"
+                                                       OnClearButtonClick="Rgn_Close"
+                                                       AnchorOrigin="Origin.BottomCenter"
+                                                       MultiSelectionTextFunc="@(item => SelectedRgnList.Count >1 ? $"{SelectedRgnList.First().LIST_TEXT} + {SelectedRgnList.Count - 1} more" : SelectedRgnList.Count == 1 ? SelectedRgnList.First().LIST_TEXT : string.Empty)"
+                                                       ToStringFunc="@(item => item?.LIST_TEXT ?? string.Empty)">
+                                    </MudSelectExtended>
+                                }
+                                @if (@SelectedRgnList.Count > 0)
+                                {
+                                    if (RgnChipVisible)
+                                    {
+                                        <MudChip T="string" Style="z-index:9999999;  position: absolute; top: 15px; right: 15px; " Size="Size.Small" @onclick="CloseRgnDropdown" Color="Color.Secondary">Apply</MudChip>
+                                    }
+                                }
+                            </div>
+                        </MudItem>
+                        <MudItem xs="11" md="5">
+                            <div style="position: relative;">
+                                @if (DivList.Count > 0)
+                                {
+                                    <MudSelectExtended Required="true"
+                                                       T="ListItem"
+                                                       MultiSelection="true"
+                                                       ItemCollection="DivList"
+                                                       SelectedValues="SelectedDivList"
+                                                       SelectedValuesChanged="@(values => Div_OnSelectedValuesChanged(values.ToHashSet()))"
+                                                       Label="Select Divisions"
+                                                       SearchBox="true"
+                                                       SearchBoxAutoFocus="true"
+                                                       SelectAll="true"
+                                                       Variant="Variant.Outlined"
+                                                       Dense="true"
+                                                       Clearable="true"
+                                                       @ref="ddlDiv"
+                                                       OnOpen="Div_Open"
+                                                       OnClose="Div_Close"
+                                                       OnClearButtonClick="Div_Close"
+                                                       AnchorOrigin="Origin.BottomCenter"
+                                                       MultiSelectionTextFunc="@(item => SelectedDivList.Count >1 ? $"{SelectedDivList.First().LIST_TEXT} + {SelectedDivList.Count - 1} more" : SelectedDivList.Count == 1 ? SelectedDivList.First().LIST_TEXT : string.Empty)"
+                                                       ToStringFunc="@(item => item?.LIST_TEXT ?? string.Empty)">
+                                    </MudSelectExtended>
+                                }
+                                @if (@SelectedDivList.Count > 0)
+                                {
+                                    if (DivChipVisible)
+                                    {
+                                        <MudChip T="string" Style="z-index:9999999;  position: absolute; top: 15px; right: 15px; " Size="Size.Small" @onclick="CloseDivDropdown" Color="Color.Secondary">Apply</MudChip>
+                                    }
+                                }
+                            </div>
+                        </MudItem>
+                        <MudItem xs="1" md="1" Class="align-content-center" Style="padding-left:2px !important;">
+                            <MudTooltip Text="Select multiple divisions by textbox entry.">
+                                <MudFab Color="Color.Primary" StartIcon="@Icons.Material.Filled.PostAdd" Size="Size.Small" OnClick="BulkDivClick" />
+                            </MudTooltip>
+                        </MudItem>
+                        <MudItem xs="11" md="5">
+                            <div style="position: relative;">
+                                @if (SelectedDivList.Count > 0)
+                                {
+                                    <MudSelectExtended Required="true"
+                                                       Class='@(SelectedDivList.Count > 0 ? "" : "disabled-div")'
+                                                       T="ListItem"
+                                                       MultiSelection="true"
+                                                       ItemCollection="McList"
+                                                       SelectedValues="SelectedMcList"
+                                                       SelectedValuesChanged="@(values => Mc_OnSelectedValuesChanged(values.ToHashSet()))"
+                                                       Label="Select Merchandise Categories"
+                                                       SearchBox="true"
+                                                       SearchBoxAutoFocus="true"
+                                                       SelectAll="true"
+                                                       Variant="Variant.Outlined"
+                                                       Dense="true"
+                                                       Clearable="true"
+                                                       @ref="ddlMc"
+                                                       OnOpen="Mc_Open"
+                                                       OnClose="Mc_Close"
+                                                       OnClearButtonClick="Mc_Close"
+                                                       AnchorOrigin="Origin.BottomCenter"
+                                                       MultiSelectionTextFunc="@(item => SelectedMcList.Count >1 ? $"{SelectedMcList.First().LIST_TEXT} + {SelectedMcList.Count - 1} more" : SelectedMcList.Count == 1 ? SelectedMcList.First().LIST_TEXT : string.Empty)"
+                                                       ToStringFunc="@(item => item?.LIST_TEXT ?? string.Empty)">
+                                    </MudSelectExtended>
+                                }
+                                else
+                                {
+                                    <MudSelectExtended Variant="Variant.Outlined" Class="disabled-div" ItemCollection="McList" Label="Select Merchandise Categories"></MudSelectExtended>
+                                }
+                                @if (@SelectedMcList.Count > 0)
+                                {
+                                    if (McChipVisible)
+                                    {
+                                        <MudTooltip Text="Select multiple MC by textbox entry.">
+                                            <MudChip T="string" Style="z-index:9999999;  position: absolute; top: 15px; right: 15px; " Size="Size.Small" @onclick="CloseMcDropdown" Color="Color.Secondary">Apply</MudChip>
+                                        </MudTooltip>
+                                    }
+                                }
+                            </div>
+                        </MudItem>
+                        <MudItem xs="1" md="1" Class="align-content-center" Style="padding-left:2px !important;">
+                            @if (SelectedDivList.Count > 0)
+                            {
+                                <MudFab Color="Color.Primary" StartIcon="@Icons.Material.Filled.PostAdd" Size="Size.Small" OnClick="BulkMcClick" />
+                            }
+                        </MudItem>
+                        <MudItem xs="11" md="5">
+                            <div style="position: relative;">
+                                @if (SelectedMcList.Count > 0)
+                                {
+                                    <MudSelectExtended Required="true"
+                                                       Class='@(SelectedMcList.Count > 0 ? "" : "disabled-div")' T="ListItem"
+                                                       MultiSelection="true"
+                                                       ItemCollection="BrandList"
+                                                       SelectedValues="SelectedBrandList"
+                                                       SelectedValuesChanged="@(values => Brand_OnSelectedValuesChanged(values.ToHashSet()))"
+                                                       Label="Select Brands"
+                                                       SearchBox="true"
+                                                       SearchBoxAutoFocus="true"
+                                                       SelectAll="true"
+                                                       Variant="Variant.Outlined"
+                                                       Dense="true"
+                                                       Clearable="true"
+                                                       @ref="ddlBrand"
+                                                       OnOpen="Brand_Open"
+                                                       OnClose="Brand_Close"
+                                                       OnClearButtonClick="Brand_Close"
+                                                       AnchorOrigin="Origin.BottomCenter"
+                                                       MultiSelectionTextFunc="@(item => SelectedBrandList.Count >1 ? $"{SelectedBrandList.First().LIST_TEXT} + {SelectedBrandList.Count - 1} more" : SelectedBrandList.Count == 1 ? SelectedBrandList.First().LIST_TEXT : string.Empty)"
+                                                       ToStringFunc="@(item =>  item?.LIST_TEXT ?? string.Empty)">
+                                    </MudSelectExtended>
+                                }
+                                else
+                                {
+                                    <MudSelectExtended Variant="Variant.Outlined" Class="disabled-div" ItemCollection="BrandList" Label="Select Brands"></MudSelectExtended>
+                                }
+                                @if (@SelectedBrandList.Count > 0)
+                                {
+                                    if (BrandChipVisible)
+                                    {
+                                        <MudChip T="string" Style="z-index:9999999;  position: absolute; top: 15px; right: 15px; " Size="Size.Small" @onclick="CloseBrandDropdown" Color="Color.Secondary">Apply</MudChip>
+                                    }
+                                }
+                            </div>
+                        </MudItem>
+                        <MudItem xs="1" md="1" Class="align-content-center" Style="padding-left:2px !important;">
+                            @if (SelectedMcList.Count > 0)
+                            {
+                                <MudTooltip Text="Select multiple brands by textbox entry.">
+                                    <MudFab Color="Color.Primary" StartIcon="@Icons.Material.Filled.PostAdd" Size="Size.Small" OnClick="BulkBrandClick" />
+                                </MudTooltip>
+                            }
+                        </MudItem>
+                        <MudItem xs="12" md="12">
+                            @if (User.RoleDetailsList.Count > 0)
+                            {
+                                <MudPaper Elevation="1" Class="px-5 mb-2 border-solid border-2 mud-border-primary">
+                                    <MudText Typo="Typo.body1">
+                                        <MudButton Color="Color.Error" Variant="Variant.Text" OnClick="() => ResetAllPermissions()">
+                                            Reset All
+                                        </MudButton>
+                                    </MudText>
+                                    <MudRadioGroup T="string" @bind-Value="AllPermission" @bind-Value:after="SetAllPermissions">
+                                        <MudRadio Color="Color.Secondary" UncheckedColor="Color.Default" Value="Permissions.Read">All @Permissions.Read</MudRadio>
+                                        <MudRadio Color="Color.Secondary" UncheckedColor="Color.Default" Value="Permissions.ReadWrite">All Read & Write</MudRadio>
+                                        <MudRadio Color="Color.Secondary" UncheckedColor="Color.Default" Value="Permissions.Approve">All @Permissions.Approve</MudRadio>
+                                        <MudRadio Color="Color.Secondary" UncheckedColor="Color.Default" Value="Permissions.WriteApprove">All Write & Approve</MudRadio>
+                                    </MudRadioGroup>
+                                </MudPaper>
+                            }
+                            @foreach (var role in User.RoleDetailsList)
+                            {
+                                <MudPaper Elevation="1" Class="px-5 mb-2">
+                                    <MudText Typo="Typo.body1">
+                                        @role.Label
+                                        @if (role.Permission != null)
+                                        {
+                                            <MudButton Color="Color.Error" Variant="Variant.Text" OnClick="() => ResetPermissions(role.Menu_Id)">
+                                                Reset
+                                            </MudButton>
+                                        }
+                                    </MudText>
+                                    <MudRadioGroup T="string" @bind-Value="role.Permission">
+                                        <MudRadio Color="Color.Secondary" UncheckedColor="Color.Default" Value="Permissions.Read">@Permissions.Read</MudRadio>
+                                        <MudRadio Color="Color.Secondary" UncheckedColor="Color.Default" Value="Permissions.ReadWrite">Read & Write</MudRadio>
+                                        <MudRadio Color="Color.Secondary" UncheckedColor="Color.Default" Value="Permissions.Approve">@Permissions.Approve</MudRadio>
+                                        <MudRadio Color="Color.Secondary" UncheckedColor="Color.Default" Value="Permissions.WriteApprove">Write & Approve</MudRadio>
+                                    </MudRadioGroup>
+                                </MudPaper>
+                            }
+                        </MudItem>
+
+
+                    </MudGrid>
+                </MudItem>
+            </MudGrid>
+        </MudForm>
+    </DialogContent>
+
+    <DialogActions>
+        <MudButton OnClick="Save" Color="Color.Secondary" Variant="Variant.Filled" Disabled="@isSubmitting">Save</MudButton>
+        <MudButton OnClick="Reset" Color="Color.Warning" Variant="Variant.Filled">Reset</MudButton>
+        <MudButton OnClick="CloseDialog" Color="Color.Error" Variant="Variant.Filled">Cancel</MudButton>
+    </DialogActions>
+</MudDialog>
+<Loader IsVisible="@IsLoading" />
+
+@code {
+    [CascadingParameter]
+    private IMudDialogInstance? MudDialog { get; set; }
+    [Parameter] public UserDetails User { get; set; }
+    [Parameter] public bool IsEditMode { get; set; }
+    private MudForm form;
+    private bool isSubmitting = false;
+    private SelectListReq selectListReq = new();
+    private HrpLoginByCodeReq hrpLoginByCodeReq = new();
+    private List<RoleMaster> roleList = new();
+    private string AllPermission { get; set; } = "";
+    private List<ListItem> DivList = new();
+    private List<ListItem> McList = new();
+    private List<ListItem> BrandList = new();
+    private List<ListItem> RgnList = new();
+    private HashSet<ListItem> SelectedDivList = new();
+    private HashSet<ListItem> SelectedMcList = new();
+    private HashSet<ListItem> SelectedBrandList = new();
+    private HashSet<ListItem> SelectedRgnList = new();
+    private MudSelectExtended<ListItem> ddlDiv = new();
+    private MudSelectExtended<ListItem> ddlMc = new();
+    private MudSelectExtended<ListItem> ddlBrand = new();
+    private MudSelectExtended<ListItem> ddlRgn = new();
+    private string SelectedDiv => SelectedDivList.Count() == DivList.Count() ? "All" : string.Join(",", SelectedDivList.Where(item => item.IS_SELECTED).Select(item => item.LIST_VALUE));
+    private string SelectedMc => SelectedMcList.Count() == McCount ? "All" : string.Join(",", SelectedMcList.Where(item => item.IS_SELECTED).Select(item => item.LIST_VALUE));
+    private string SelectedBrand => SelectedBrandList.Count() == BrandCount ? "All" : string.Join(",", SelectedBrandList.Where(item => item.IS_SELECTED).Select(item => item.LIST_VALUE));
+    private string SelectedRgn => SelectedRgnList.Count() == RegionCount ? "All" : string.Join(",", SelectedRgnList.Where(item => item.IS_SELECTED).Select(item => item.LIST_VALUE));
+    private bool DivChipVisible = false;
+    private bool McChipVisible = false;
+    private bool BrandChipVisible = false;
+    private bool RgnChipVisible = false;
+    private int McCount = 0;
+    private int BrandCount = 0;
+    private int RegionCount = 0;
+    bool IsLoading = false;
+    private GetAnyListReq DivListReq => new()
+    {
+        CMD = "GET_DIV"
+    };
+    private GetAnyListReq McListReq => new()
+    {
+        CMD = "GET_MC",
+        STRING_VAR1 = string.IsNullOrEmpty(SelectedDiv) ? "" : SelectedDiv
+    };
+    private GetAnyListReq BrandListReq => new()
+    {
+        CMD = "GET_BRAND",
+        STRING_VAR1 = string.IsNullOrEmpty(SelectedDiv) ? "" : SelectedDiv,
+        STRING_VAR2 = string.IsNullOrEmpty(SelectedMc) ? "" : SelectedMc
+    };
+    protected override async Task OnInitializedAsync()
+    {
+        selectListReq.Cmd = CmdNames.Get_Roles_List;
+        var res = await ApiMasterService.CallingAPI<SelectAllRoles, SelectListReq>(AllApiNames.SELECT_ROLES_LIST!, selectListReq);
+        if (res.responseCode == 0)
+        {
+            roleList = res.roleList;
+        }
+        else
+        {
+            Snackbar.Add(res.responseMessage!, Severity.Error);
+            roleList = new();
+        }
+        if (roleList.Count > 0 && !IsEditMode)
+        {
+            User.Role_Id = roleList[0].Id;
+        }
+        StateHasChanged();
+    }
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            IsLoading = true;
+            StateHasChanged();
+            GetAnyListReq McBrandCountReq = new();
+            McBrandCountReq.CMD = "GET_MC";
+            McBrandCountReq.STRING_VAR1 = "All";
+            McBrandCountReq.STRING_VAR2 = "All";
+            var mc = await ApiMasterService.CallingAPI<GetListRes, GetAnyListReq>(AllApiNames.GET_LIST_BASED_ON_CMD!, McBrandCountReq);
+            if (mc.responseCode == 0)
+            {
+                McCount = mc.listItems.Count();
+            }
+            else
+            {
+                Snackbar.Add(mc.responseMessage!, Severity.Error);
+                McCount = 0;
+            }
+            McBrandCountReq.CMD = "GET_BRAND";
+            var brand = await ApiMasterService.CallingAPI<GetListRes, GetAnyListReq>(AllApiNames.GET_LIST_BASED_ON_CMD!, McBrandCountReq);
+            if (brand.responseCode == 0)
+            {
+                BrandCount = brand.listItems.Count();
+            }
+            else
+            {
+                BrandCount = 0;
+                Snackbar.Add(mc.responseMessage!, Severity.Error);
+            }
+            if (User.Id == 0)
+            {
+                await GetDiv();
+            }
+            else
+            {
+                if (string.IsNullOrEmpty(User.Emp_Name) || string.IsNullOrEmpty(User.Emp_Loc_Code))
+                {
+                    await OnFindClick();
+                }
+                await SetAll();
+            }
+            IsLoading = false;
+            StateHasChanged();
+        }
+    }
+    private async Task Reset()
+    {
+        if (SelectedDivList.Count > 0 || SelectedMcList.Count > 0 || SelectedBrandList.Count > 0)
+        {
+            bool? dres = await DialogService.ShowMessageBox("Confirmation", "Are you sure you want to reset Division, Merchandise Category, and Brand ?", yesText: "  Yes!  ", cancelText: "   No   ");
+            if (dres == null)
+            {
+                return;
+            }
+            else
+            {
+                await SetAll();
+            }
+        }
+    }
+    private async Task SetAll()
+    {
+        GetRgn();
+        if (User.RGN!.Length > 0)
+        {
+            if (User.RGN.ToUpper() == "ALL")
+            {
+                DivList.ForEach(item => item.IS_SELECTED = true);
+            }
+            else
+            {
+                var selectedRgnIds = new HashSet<string>(User.RGN.Split(','));
+                RgnList.ForEach(item => item.IS_SELECTED = selectedRgnIds.Contains(item.LIST_VALUE!));
+            }
+            SelectedRgnList = RgnList.Where(d => d.IS_SELECTED).ToHashSet();
+        }
+        await GetDiv();
+
+        if (User.DIV!.Length > 0)
+        {
+            if (User.DIV.ToUpper() == "ALL")
+            {
+                DivList.ForEach(item => item.IS_SELECTED = true);
+            }
+            else
+            {
+                var selectedDivIds = new HashSet<string>(User.DIV.Split(','));
+                DivList.ForEach(item => item.IS_SELECTED = selectedDivIds.Contains(item.LIST_VALUE!));
+            }
+            SelectedDivList = DivList.Where(d => d.IS_SELECTED).ToHashSet();
+        }
+        else
+        {
+            SelectedDivList = new();
+        }
+        await GetMc();
+        if (User.MC!.Length > 0)
+        {
+            if (User.MC.ToUpper() == "ALL")
+            {
+                McList.ForEach(item => item.IS_SELECTED = true);
+            }
+            else
+            {
+                var selectedMcIds = new HashSet<string>(User.MC.Split(','));
+                McList.ForEach(item => item.IS_SELECTED = selectedMcIds.Contains(item.LIST_VALUE!));
+            }
+            SelectedMcList = McList.Where(d => d.IS_SELECTED).ToHashSet();
+        }
+        else
+        {
+            SelectedMcList = new();
+        }
+        await GetBrand();
+        if (User.BRAND_TYPE!.Length > 0)
+        {
+            if (User.BRAND_TYPE.ToUpper() == "ALL")
+            {
+                BrandList.ForEach(item => item.IS_SELECTED = true);
+            }
+            else
+            {
+                var selectedBrandIds = new HashSet<string>(User.BRAND_TYPE.Split(','));
+                BrandList.ForEach(item => item.IS_SELECTED = selectedBrandIds.Contains(item.LIST_VALUE!));
+            }
+            SelectedBrandList = BrandList.Where(d => d.IS_SELECTED).ToHashSet();
+        }
+        else
+        {
+            SelectedBrandList = new();
+        }
+        StateHasChanged();
+    }
+
+    private async Task GetDiv()
+    {
+        var res = await ApiMasterService.CallingAPI<GetListRes, GetAnyListReq>(AllApiNames.GET_LIST_BASED_ON_CMD!, DivListReq);
+        if (res.responseCode == 0)
+        {
+            DivList = res.listItems;
+        }
+        else
+        {
+            Snackbar.Add(res.responseMessage!, Severity.Error);
+            DivList = new();
+        }
+        StateHasChanged();
+    }
+    private void Div_OnSelectedValuesChanged(HashSet<ListItem> values)
+    {
+        SelectedDivList = values;
+    }
+    private async Task Div_Close()
+    {
+        DivChipVisible = false;
+        if (SelectedDivList.Count > 0)
+        {
+            // Set IS_SELECTED = true for all selected items
+            foreach (var item in SelectedDivList)
+            {
+                item.IS_SELECTED = true;
+            }
+            //Reset Mc And Brand
+            McList = new();
+            await GetMc();
+            McList.ForEach(item =>
+            {
+                item.IS_SELECTED = SelectedMcList.Any(s => s.LIST_VALUE == item.LIST_VALUE);
+            });
+            SelectedMcList = McList.Where(d => d.IS_SELECTED).ToHashSet();
+            if (SelectedMcList.Count > 0)
+            {
+                BrandList = new();
+                await GetBrand();
+                BrandList.ForEach(item =>
+                {
+                    item.IS_SELECTED = SelectedBrandList.Any(s => s.LIST_VALUE == item.LIST_VALUE);
+                });
+                SelectedBrandList = BrandList.Where(d => d.IS_SELECTED).ToHashSet();
+            }
+            else
+            {
+                BrandList = new();
+                SelectedBrandList = new();
+            }
+        }
+        else
+        {
+            McList = new();
+            SelectedMcList = new();
+            BrandList = new();
+            SelectedBrandList = new();
+        }
+
+    }
+    private void Div_Open()
+    {
+        DivChipVisible = true;
+    }
+    void CloseDivDropdown()
+    {
+        ddlDiv?.CloseMenu();
+        DivChipVisible = false;
+    }
+    //---------------------------RegionDDL-----
+
+    private void GetRgn()
+    {
+        var rgnsltdlist = User.RGN!.Split(',').ToList();
+
+        var rgnlist = User.RegionList;
+        if (rgnlist.Count > 0)
+        {
+            foreach (var item in rgnlist)
+            {
+                RgnList.Add(new ListItem
+                {
+                    LIST_TEXT = item.Master_Name,
+                    LIST_VALUE = item.Master_ID.ToString(),
+                    IS_SELECTED = rgnsltdlist.Contains(item.Master_ID.ToString()) ? true : false
+                });
+            }
+        }
+        else
+        {
+            Snackbar.Add("Region List is empty.", Severity.Error);
+            RgnList = new();
+        }
+        StateHasChanged();
+    }
+    private void Rgn_OnSelectedValuesChanged(HashSet<ListItem> values)
+    {
+        SelectedRgnList = values;
+    }
+    private void Rgn_Open()
+    {
+        RgnChipVisible = true;
+    }
+    private async Task Rgn_Close()
+    {
+        RgnChipVisible = false;
+        if (SelectedRgnList.Count > 0)
+        {
+            // Set IS_SELECTED = true for all selected items
+            foreach (var item in SelectedRgnList)
+            {
+                item.IS_SELECTED = true;
+            }
+        }
+    }
+    void CloseRgnDropdown()
+    {
+        ddlRgn?.CloseMenu();
+        RgnChipVisible = false;
+    }
+
+    //-----------------------------------------
+
+    private async Task GetMc()
+    {
+        var res = await ApiMasterService.CallingAPI<GetListRes, GetAnyListReq>(AllApiNames.GET_LIST_BASED_ON_CMD!, McListReq);
+        if (res.responseCode == 0)
+        {
+            McList = res.listItems;
+        }
+        else
+        {
+            Snackbar.Add(res.responseMessage!, Severity.Error);
+            McList = new();
+        }
+    }
+    private void Mc_OnSelectedValuesChanged(HashSet<ListItem> values)
+    {
+        SelectedMcList = values;
+    }
+    private async Task Mc_Close()
+    {
+        McChipVisible = false;
+        //Reset Brand
+        BrandList = new();
+        if (SelectedMcList.Count > 0)
+        {
+            // Set IS_SELECTED = true for all selected items
+            foreach (var item in SelectedMcList)
+            {
+                item.IS_SELECTED = true;
+            }
+            BrandList = new();
+            await GetBrand();
+            BrandList.ForEach(item =>
+            {
+                item.IS_SELECTED = SelectedBrandList.Any(s => s.LIST_VALUE == item.LIST_VALUE);
+            });
+            SelectedBrandList = BrandList.Where(d => d.IS_SELECTED).ToHashSet();
+        }
+        else
+        {
+            BrandList = new();
+            SelectedBrandList = new();
+        }
+    }
+    private void Mc_Open()
+    {
+        McChipVisible = true;
+    }
+    void CloseMcDropdown()
+    {
+        ddlMc?.CloseMenu();
+        McChipVisible = false;
+    }
+
+    private async Task GetBrand()
+    {
+        var res = await ApiMasterService.CallingAPI<GetListRes, GetAnyListReq>(AllApiNames.GET_LIST_BASED_ON_CMD!, BrandListReq);
+        if (res.responseCode == 0)
+        {
+            BrandList = res.listItems;
+        }
+        else
+        {
+            Snackbar.Add(res.responseMessage!, Severity.Error);
+            BrandList = new();
+        }
+    }
+    private void Brand_OnSelectedValuesChanged(HashSet<ListItem> values)
+    {
+        SelectedBrandList = values;
+    }
+    private void Brand_Close()
+    {
+        BrandChipVisible = false;
+        if (SelectedBrandList.Count > 0)
+        {
+            // Set IS_SELECTED = true for all selected items
+            foreach (var item in SelectedBrandList)
+            {
+                item.IS_SELECTED = true;
+            }
+        }
+    }
+    private void Brand_Open()
+    {
+        BrandChipVisible = true;
+    }
+    void CloseBrandDropdown()
+    {
+        ddlBrand?.CloseMenu();
+        BrandChipVisible = false;
+    }
+
+    private void ResetPermissions(int Id)
+    {
+        for (int i = 0; i < User.RoleDetailsList.Count; i++)
+        {
+            if (User.RoleDetailsList[i].Menu_Id.Equals(Id))
+            {
+                User.RoleDetailsList[i].Permission = null;
+            }
+        }
+
+    }
+    private void ResetAllPermissions()
+    {
+        for (int i = 0; i < User.RoleDetailsList.Count; i++)
+        {
+            User.RoleDetailsList[i].Permission = null;
+        }
+    }
+    private void SetAllPermissions()
+    {
+
+        if (AllPermission == "" || AllPermission == string.Empty)
+        {
+            for (int i = 0; i < User.RoleDetailsList.Count; i++)
+            {
+                User.RoleDetailsList[i].Permission = null;
+            }
+        }
+        else if (AllPermission == Permissions.Read)
+        {
+            for (int i = 0; i < User.RoleDetailsList.Count; i++)
+            {
+                User.RoleDetailsList[i].Permission = Permissions.Read;
+            }
+        }
+        else if (AllPermission == Permissions.ReadWrite)
+        {
+            for (int i = 0; i < User.RoleDetailsList.Count; i++)
+            {
+                User.RoleDetailsList[i].Permission = Permissions.ReadWrite;
+            }
+        }
+        else if (AllPermission == Permissions.Approve)
+        {
+            for (int i = 0; i < User.RoleDetailsList.Count; i++)
+            {
+                User.RoleDetailsList[i].Permission = Permissions.Approve;
+            }
+        }
+        else if (AllPermission == Permissions.WriteApprove)
+        {
+            for (int i = 0; i < User.RoleDetailsList.Count; i++)
+            {
+                User.RoleDetailsList[i].Permission = Permissions.WriteApprove;
+            }
+        }
+    }
+    //Get_Roles_List
+    private async void Save()
+    {
+        await form.Validate();
+        if (form.IsValid)
+        {
+            bool? dres = await DialogService.ShowMessageBox("Confirmation", User.Id == 0 ? "Are you sure you want to save?" : "Are you sure you want to update this user?", yesText: "  Yes!  ", cancelText: "   No   ");
+            if (dres == null)
+            {
+                return;
+            }
+            else
+            {
+                User.RGN = SelectedRgn;
+                User.DIV = SelectedDiv;
+                User.MC = SelectedMc;
+                User.BRAND_TYPE = SelectedBrand;
+                MudDialog?.Close(DialogResult.Ok(User));
+            }
+        }
+    }
+
+    private void CloseDialog()
+    {
+        MudDialog?.Close();
+    }
+
+    private async Task ShowErrorDialog(string Tital, string message)
+    {
+        await DialogService.ShowMessageBox(Tital, message);
+    }
+    private async Task SetUserRoles()
+    {
+        selectListReq.Id = User!.Id;
+        selectListReq.Cmd = CmdNames.Get_Role_Details_On_User_Id;
+        var roleDetails = await ApiMasterService.CallingAPI<RoleDetailsOnIdRes, SelectListReq>(AllApiNames.SELECT_ROLEDETAILS_ON_ID, selectListReq);
+        if (roleDetails.responseCode == 0)
+        {
+            User.RoleDetailsList = roleDetails.roleDetails;
+        }
+        else
+        {
+            Snackbar.Add(roleDetails.responseMessage!, Severity.Error);
+            User.RoleDetailsList = new();
+        }
+
+    }
+    // Find Button Logic
+    private async Task OnFindClick()
+    {
+        if (!string.IsNullOrEmpty(User.Emp_Code))
+        {
+            selectListReq.Id = 0;
+            selectListReq.StrField = User.Emp_Code;
+            selectListReq.Cmd = CmdNames.Get_User_Details_On_User_Code;
+
+            // Find From CO Portal
+            var res = await ApiMasterService.CallingAPI<GetUserOnEmpCodeRes, SelectListReq>(AllApiNames.SELECT_USER_ON_EMP_CODE, selectListReq);
+            if (res.responseCode != 0)
+            {
+                await ShowErrorDialog("Error", res.responseMessage!);
+                return;
+            }
+            var result = res.userDetails;
+            if (result.Id.Equals(0) || string.IsNullOrEmpty(result.Emp_Name) || string.IsNullOrEmpty(result.Emp_Loc_Code))
+            {
+                // If Not Available on CO Portal Then Find From HR Portal
+                hrpLoginByCodeReq.loginID = User.Emp_Code;
+                var result1 = await ApiMasterService.CallingAPI<HrpLoginRes, HrpLoginByCodeReq>(AllApiNames.HRP_GET_EMP_DETAIL_CODE, hrpLoginByCodeReq);
+                if (result1.responseCode == 0 && result1!.responseMessage == "Success" && result1.employeeList?.Count > 0)
+                {
+                    User.Emp_Code = result1.employeeList[0].empCode;
+                    User.Emp_Name = result1.employeeList[0].empName;
+                    User.Emp_Location = result1.employeeList[0].empLocation;
+                    User.Emp_Loc_Code = result1.employeeList[0].empLocCode;
+                    User.Emp_Dept_Name = result1.employeeList[0].empDeptName;
+                    User.Emp_Desig = result1.employeeList[0].empDesig;
+                    User.Emp_Contact_No = result1.employeeList[0].empContactNo;
+                    User.Emp_Mail_Id = result1.employeeList[0].empMailID;
+                    User.Emp_Rpt_Mng = result1.employeeList[0].empRptMng;
+                    User.Is_Resign = result1.employeeList[0].isResign;
+                    User.Emp_Grade = result1.employeeList[0].empGrade;
+                    User.Emp_Grade_Desc = result1.employeeList[0].empGradeDesc;
+                    User.Emp_Status = result1.employeeList[0].empStatus;
+                    await SetUserRoles();
+                }
+            }
+            else
+            {
+                User = result;
+                await SetUserRoles();
+            }
+            if (User.Id.Equals(0) && User.Emp_Contact_No == null)
+            {
+                await ShowErrorDialog("Warning", "User not found.");
+            }
+        }
+        else
+        {
+            await ShowErrorDialog("Warning", "Please enter a valid Emp Code.");
+        }
+    }
+
+    private async void BulkDivClick(MouseEventArgs args)
+    {
+        var parameters = new DialogParameters
+            {
+                { "Permissions", SelectedDiv },
+                { "Label", "Please enter divisions comma(,) seperated." }
+            };
+
+        var options = new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true };
+        var dialog = await DialogService.ShowAsync<PermissionDialog>("Note – Please enter divisions comma(,) seperated.", parameters, options);
+        // Await the result
+        var result = await dialog.Result;
+        if (!result!.Canceled)
+        {
+            if (result.Data != null)
+            {
+                var permissionValue = result.Data?.ToString();
+                if (permissionValue == "ALL")
+                {
+                    DivList.ForEach(item => item.IS_SELECTED = true);
+                }
+                else
+                {
+                    var selectedDivIds = new HashSet<string>(permissionValue!.Split(','));
+                    DivList.ForEach(item => item.IS_SELECTED = selectedDivIds.Contains(item.LIST_VALUE!));
+                }
+                SelectedDivList = DivList.Where(d => d.IS_SELECTED).ToHashSet();
+                await Div_Close();
+                StateHasChanged();
+            }
+        }
+    }
+    private async void BulkMcClick(MouseEventArgs args)
+    {
+        var parameters = new DialogParameters
+            {
+                { "Permissions", SelectedMc },
+                { "Label", "Please enter MC comma(,) seperated." }
+            };
+
+        var options = new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true };
+        var dialog = await DialogService.ShowAsync<PermissionDialog>("Note – Please enter MC comma(,) seperated.", parameters, options);
+        // Await the result
+        var result = await dialog.Result;
+        if (!result!.Canceled)
+        {
+            if (result.Data != null)
+            {
+                var permissionValue = result.Data?.ToString();
+                if (permissionValue == "ALL")
+                {
+                    McList.ForEach(item => item.IS_SELECTED = true);
+                }
+                else
+                {
+                    var selectedMcIds = new HashSet<string>(permissionValue!.Split(','));
+                    McList.ForEach(item => item.IS_SELECTED = selectedMcIds.Contains(item.LIST_VALUE!));
+                }
+                SelectedMcList = McList.Where(d => d.IS_SELECTED).ToHashSet();
+                await Mc_Close();
+                StateHasChanged();
+            }
+        }
+    }
+    private async void BulkBrandClick(MouseEventArgs args)
+    {
+        var parameters = new DialogParameters
+            {
+                { "Permissions", SelectedBrand },
+                { "Label", "Please enter brands comma(,) seperated." }
+            };
+
+        var options = new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true };
+        var dialog = await DialogService.ShowAsync<PermissionDialog>("Note – Please enter brands comma (,) separated.", parameters, options);
+        // Await the result
+        var result = await dialog.Result;
+        if (!result!.Canceled)
+        {
+            if (result.Data != null)
+            {
+                var permissionValue = result.Data?.ToString();
+                if (permissionValue == "ALL")
+                {
+                    BrandList.ForEach(item => item.IS_SELECTED = true);
+                }
+                else
+                {
+                    var selectedBrandIds = new HashSet<string>(permissionValue!.Split(','));
+                    BrandList.ForEach(item => item.IS_SELECTED = selectedBrandIds.Contains(item.LIST_VALUE!));
+                }
+                SelectedBrandList = BrandList.Where(d => d.IS_SELECTED).ToHashSet();
+                Brand_Close();
+                StateHasChanged();
+            }
+        }
+    }
+}
+<style>
+    .mud-breadcrumbs {
+        padding: 12px 12px;
+    }
+
+    .floating-search-btn {
+        position: fixed;
+        top: 50%;
+        right: 0;
+        transform: translateY(-50%);
+        background-color: #e91e63;
+        color: white;
+        padding: 10px 6px;
+        border-radius: 8px 0 0 8px;
+        cursor: pointer;
+        writing-mode: vertical-rl;
+        text-orientation: mixed;
+        font-weight: bold;
+        z-index: 999;
+        box-shadow: 0 0 8px rgba(0,0,0,0.2);
+    }
+
+        .floating-search-btn:hover {
+            background-color: #c2185b;
+        }
+
+    .search-modal {
+        position: fixed;
+        top: 170px;
+        right: 35px;
+        background-color: white;
+        width: 320px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+        border-radius: 8px;
+        z-index: 1000;
+    }
+
+        .search-modal .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .search-modal .close-btn {
+            background: none;
+            border: none;
+            font-size: 18px;
+            cursor: pointer;
+        }
+
+    .mud-simple-table.mud-table-dense * tr td, .mud-simple-table.mud-table-dense * tr th {
+        padding: 2px 4px
+    }
+
+    .font8 {
+        font-size: 0.8rem;
+    }
+
+    .mud-list-subheader-extended {
+        padding-top: 0px;
+        padding-bottom: 0px;
+        margin-bottom: -12px !important;
+    }
+
+    .mud-list-item-extended {
+        padding-bottom: 0px !important;
+    }
+
+    .mud-list-item-gutters-extended.mud-list-item-dense-extended {
+        padding-left: 4px;
+        padding-right: 4px;
+        padding-top: 0px;
+        padding-bottom: 0px;
+    }
+
+    .mud-list-subheader-gutters-extended {
+        padding-left: 8px;
+        padding-right: 8px;
+        padding-top: 0px !important;
+        padding-bottom: 0px !important;
+    }
+
+    .mud-icon-button-edge-margin-end {
+        color: red !important;
+    }
+
+    .mud-input > input.mud-input-root-outlined, div.mud-input-slot.mud-input-root-outlined {
+        padding: 15px 10px;
+        font-size: 12px;
+        height: 20px !important;
+    }
+
+
+
+    .filter-paper {
+        padding-left: 8px !important;
+        padding-right: 8px !important;
+        padding-top: 25px !important;
+        padding-bottom: 5px !important;
+        margin-left: 22px !important;
+        margin-right: 28px !important;
+        margin-bottom: 20px !important;
+    }
+
+    .mud-link {
+        font-size: 0.8rem !important;
+    }
+
+    .mud-list-item-multiselect-extended.mud-list-item-multiselect-checkbox-extended {
+        padding-inline-end: 0px;
+    }
+
+    .border1pxblack {
+        border: 1px solid #ffffffeb;
+        background-color: #ed008b !important;
+        color: white;
+    }
+
+    .border1pxblack1 {
+        background-color: #ed008b !important;
+        color: white;
+        border: none !important;
+    }
+
+    .my-custom-select {
+        position: relative;
+    }
+
+        .my-custom-select .mud-popover {
+            padding-top: 20px;
+        }
+
+    .filter-close-button {
+        position: absolute;
+        top: 6px;
+        right: 6px;
+        cursor: pointer;
+        background-color: white;
+        border: 1px solid #ccc;
+        border-radius: 50%;
+        padding: 2px;
+        z-index: 99999;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    }
+
+    .mud-list-subheader-extended {
+        top: -6px !important;
+    }
+
+    .mud-list-subheader-extended {
+        position: relative !important;
+    }
+
+    .disabled-div {
+        pointer-events: none; /* Prevent clicks */
+        opacity: 0.6; /* Dimmed look */
+        background-color: #f0f0f0; /* Optional: lighter background */
+        user-select: none; /* Prevent text selection */
+    }
+
+    .mud-dialog-title {
+        border-bottom: 1px solid #1413140d;
+    }
+
+    .mud-dialog-actions {
+        border-top: 1px solid #1413140d;
+    }
+
+    .mud-dialog-content {
+        padding-top: 1.5rem !important;
+        padding-bottom: 1.5rem !important;
+    }
+
+    .mud-dialog-title {
+        padding: 11px !important;
+    }
+
+    .mud-message-box__yes-button {
+        color: white !important;
+        background-color: green !important;
+    }
+
+    .mud-message-box__cancel-button {
+        color: white !important;
+        background-color: red !important;
+    }
+
+    .mud-message-box .mud-dialog-actions {
+        display: flex;
+        flex-direction: row-reverse;
+        justify-content: flex-start;
+    }
+</style>

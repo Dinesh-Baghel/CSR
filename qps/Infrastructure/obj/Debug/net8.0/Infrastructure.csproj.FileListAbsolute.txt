@@ -1,0 +1,173 @@
+D:\Chandra Bhan Singh\WVMM\CWAP - Copy (4)\Infrastructure\bin\Debug\net8.0\Infrastructure.deps.json
+D:\Chandra Bhan Singh\WVMM\CWAP - Copy (4)\Infrastructure\bin\Debug\net8.0\Infrastructure.dll
+D:\Chandra Bhan Singh\WVMM\CWAP - Copy (4)\Infrastructure\bin\Debug\net8.0\Infrastructure.pdb
+D:\Chandra Bhan Singh\WVMM\CWAP - Copy (4)\Infrastructure\bin\Debug\net8.0\Application.dll
+D:\Chandra Bhan Singh\WVMM\CWAP - Copy (4)\Infrastructure\bin\Debug\net8.0\Domain.dll
+D:\Chandra Bhan Singh\WVMM\CWAP - Copy (4)\Infrastructure\bin\Debug\net8.0\MyNewEncDec.dll
+D:\Chandra Bhan Singh\WVMM\CWAP - Copy (4)\Infrastructure\bin\Debug\net8.0\Application.pdb
+D:\Chandra Bhan Singh\WVMM\CWAP - Copy (4)\Infrastructure\bin\Debug\net8.0\Domain.pdb
+D:\Chandra Bhan Singh\WVMM\CWAP - Copy (4)\Infrastructure\obj\Debug\net8.0\Infrastructure.csproj.AssemblyReference.cache
+D:\Chandra Bhan Singh\WVMM\CWAP - Copy (4)\Infrastructure\obj\Debug\net8.0\Infrastructure.GeneratedMSBuildEditorConfig.editorconfig
+D:\Chandra Bhan Singh\WVMM\CWAP - Copy (4)\Infrastructure\obj\Debug\net8.0\Infrastructure.AssemblyInfoInputs.cache
+D:\Chandra Bhan Singh\WVMM\CWAP - Copy (4)\Infrastructure\obj\Debug\net8.0\Infrastructure.AssemblyInfo.cs
+D:\Chandra Bhan Singh\WVMM\CWAP - Copy (4)\Infrastructure\obj\Debug\net8.0\Infrastructure.csproj.CoreCompileInputs.cache
+D:\Chandra Bhan Singh\WVMM\CWAP - Copy (4)\Infrastructure\obj\Debug\net8.0\Infrastr.15EFFBFE.Up2Date
+D:\Chandra Bhan Singh\WVMM\CWAP - Copy (4)\Infrastructure\obj\Debug\net8.0\Infrastructure.dll
+D:\Chandra Bhan Singh\WVMM\CWAP - Copy (4)\Infrastructure\obj\Debug\net8.0\refint\Infrastructure.dll
+D:\Chandra Bhan Singh\WVMM\CWAP - Copy (4)\Infrastructure\obj\Debug\net8.0\Infrastructure.pdb
+D:\Chandra Bhan Singh\WVMM\CWAP - Copy (4)\Infrastructure\obj\Debug\net8.0\ref\Infrastructure.dll
+D:\Chandra Bhan Singh\WVMM\CWAP\Infrastructure\bin\Debug\net8.0\Infrastructure.deps.json
+D:\Chandra Bhan Singh\WVMM\CWAP\Infrastructure\bin\Debug\net8.0\Infrastructure.dll
+D:\Chandra Bhan Singh\WVMM\CWAP\Infrastructure\bin\Debug\net8.0\Infrastructure.pdb
+D:\Chandra Bhan Singh\WVMM\CWAP\Infrastructure\bin\Debug\net8.0\Application.dll
+D:\Chandra Bhan Singh\WVMM\CWAP\Infrastructure\bin\Debug\net8.0\Domain.dll
+D:\Chandra Bhan Singh\WVMM\CWAP\Infrastructure\bin\Debug\net8.0\MyNewEncDec.dll
+D:\Chandra Bhan Singh\WVMM\CWAP\Infrastructure\bin\Debug\net8.0\EncryptionUtility.dll
+D:\Chandra Bhan Singh\WVMM\CWAP\Infrastructure\bin\Debug\net8.0\Application.pdb
+D:\Chandra Bhan Singh\WVMM\CWAP\Infrastructure\bin\Debug\net8.0\Domain.pdb
+D:\Chandra Bhan Singh\WVMM\CWAP\Infrastructure\obj\Debug\net8.0\Infrastructure.csproj.AssemblyReference.cache
+D:\Chandra Bhan Singh\WVMM\CWAP\Infrastructure\obj\Debug\net8.0\Infrastructure.GeneratedMSBuildEditorConfig.editorconfig
+D:\Chandra Bhan Singh\WVMM\CWAP\Infrastructure\obj\Debug\net8.0\Infrastructure.AssemblyInfoInputs.cache
+D:\Chandra Bhan Singh\WVMM\CWAP\Infrastructure\obj\Debug\net8.0\Infrastructure.AssemblyInfo.cs
+D:\Chandra Bhan Singh\WVMM\CWAP\Infrastructure\obj\Debug\net8.0\Infrastructure.csproj.CoreCompileInputs.cache
+D:\Chandra Bhan Singh\WVMM\CWAP\Infrastructure\obj\Debug\net8.0\Infrastr.15EFFBFE.Up2Date
+D:\Chandra Bhan Singh\WVMM\CWAP\Infrastructure\obj\Debug\net8.0\Infrastructure.dll
+D:\Chandra Bhan Singh\WVMM\CWAP\Infrastructure\obj\Debug\net8.0\refint\Infrastructure.dll
+D:\Chandra Bhan Singh\WVMM\CWAP\Infrastructure\obj\Debug\net8.0\Infrastructure.pdb
+D:\Chandra Bhan Singh\WVMM\CWAP\Infrastructure\obj\Debug\net8.0\ref\Infrastructure.dll
+D:\Chandra Bhan Singh\Projects\BSR\Infrastructure\bin\Debug\net8.0\Infrastructure.deps.json
+D:\Chandra Bhan Singh\Projects\BSR\Infrastructure\bin\Debug\net8.0\Infrastructure.dll
+D:\Chandra Bhan Singh\Projects\BSR\Infrastructure\bin\Debug\net8.0\Infrastructure.pdb
+D:\Chandra Bhan Singh\Projects\BSR\Infrastructure\bin\Debug\net8.0\Application.dll
+D:\Chandra Bhan Singh\Projects\BSR\Infrastructure\bin\Debug\net8.0\Domain.dll
+D:\Chandra Bhan Singh\Projects\BSR\Infrastructure\bin\Debug\net8.0\MyNewEncDec.dll
+D:\Chandra Bhan Singh\Projects\BSR\Infrastructure\bin\Debug\net8.0\EncryptionUtility.dll
+D:\Chandra Bhan Singh\Projects\BSR\Infrastructure\bin\Debug\net8.0\Application.pdb
+D:\Chandra Bhan Singh\Projects\BSR\Infrastructure\bin\Debug\net8.0\Domain.pdb
+D:\Chandra Bhan Singh\Projects\BSR\Infrastructure\obj\Debug\net8.0\Infrastructure.csproj.AssemblyReference.cache
+D:\Chandra Bhan Singh\Projects\BSR\Infrastructure\obj\Debug\net8.0\Infrastructure.GeneratedMSBuildEditorConfig.editorconfig
+D:\Chandra Bhan Singh\Projects\BSR\Infrastructure\obj\Debug\net8.0\Infrastructure.AssemblyInfoInputs.cache
+D:\Chandra Bhan Singh\Projects\BSR\Infrastructure\obj\Debug\net8.0\Infrastructure.AssemblyInfo.cs
+D:\Chandra Bhan Singh\Projects\BSR\Infrastructure\obj\Debug\net8.0\Infrastructure.csproj.CoreCompileInputs.cache
+D:\Chandra Bhan Singh\Projects\BSR\Infrastructure\obj\Debug\net8.0\Infrastr.15EFFBFE.Up2Date
+D:\Chandra Bhan Singh\Projects\BSR\Infrastructure\obj\Debug\net8.0\Infrastructure.dll
+D:\Chandra Bhan Singh\Projects\BSR\Infrastructure\obj\Debug\net8.0\refint\Infrastructure.dll
+D:\Chandra Bhan Singh\Projects\BSR\Infrastructure\obj\Debug\net8.0\Infrastructure.pdb
+D:\Chandra Bhan Singh\Projects\BSR\Infrastructure\obj\Debug\net8.0\ref\Infrastructure.dll
+D:\Chandra Bhan Singh\Projects\BSR_WithoutQr\Infrastructure\bin\Debug\net8.0\Infrastructure.deps.json
+D:\Chandra Bhan Singh\Projects\BSR_WithoutQr\Infrastructure\bin\Debug\net8.0\Infrastructure.dll
+D:\Chandra Bhan Singh\Projects\BSR_WithoutQr\Infrastructure\bin\Debug\net8.0\Infrastructure.pdb
+D:\Chandra Bhan Singh\Projects\BSR_WithoutQr\Infrastructure\bin\Debug\net8.0\Application.dll
+D:\Chandra Bhan Singh\Projects\BSR_WithoutQr\Infrastructure\bin\Debug\net8.0\Domain.dll
+D:\Chandra Bhan Singh\Projects\BSR_WithoutQr\Infrastructure\bin\Debug\net8.0\MyNewEncDec.dll
+D:\Chandra Bhan Singh\Projects\BSR_WithoutQr\Infrastructure\bin\Debug\net8.0\EncryptionUtility.dll
+D:\Chandra Bhan Singh\Projects\BSR_WithoutQr\Infrastructure\bin\Debug\net8.0\Application.pdb
+D:\Chandra Bhan Singh\Projects\BSR_WithoutQr\Infrastructure\bin\Debug\net8.0\Domain.pdb
+D:\Chandra Bhan Singh\Projects\BSR_WithoutQr\Infrastructure\obj\Debug\net8.0\Infrastructure.csproj.AssemblyReference.cache
+D:\Chandra Bhan Singh\Projects\BSR_WithoutQr\Infrastructure\obj\Debug\net8.0\Infrastructure.GeneratedMSBuildEditorConfig.editorconfig
+D:\Chandra Bhan Singh\Projects\BSR_WithoutQr\Infrastructure\obj\Debug\net8.0\Infrastructure.AssemblyInfoInputs.cache
+D:\Chandra Bhan Singh\Projects\BSR_WithoutQr\Infrastructure\obj\Debug\net8.0\Infrastructure.AssemblyInfo.cs
+D:\Chandra Bhan Singh\Projects\BSR_WithoutQr\Infrastructure\obj\Debug\net8.0\Infrastructure.csproj.CoreCompileInputs.cache
+D:\Chandra Bhan Singh\Projects\BSR_WithoutQr\Infrastructure\obj\Debug\net8.0\Infrastr.15EFFBFE.Up2Date
+D:\Chandra Bhan Singh\Projects\BSR_WithoutQr\Infrastructure\obj\Debug\net8.0\Infrastructure.dll
+D:\Chandra Bhan Singh\Projects\BSR_WithoutQr\Infrastructure\obj\Debug\net8.0\refint\Infrastructure.dll
+D:\Chandra Bhan Singh\Projects\BSR_WithoutQr\Infrastructure\obj\Debug\net8.0\Infrastructure.pdb
+D:\Chandra Bhan Singh\Projects\BSR_WithoutQr\Infrastructure\obj\Debug\net8.0\ref\Infrastructure.dll
+D:\QPS Project\BSR_WithoutQr\Infrastructure\bin\Debug\net8.0\Infrastructure.deps.json
+D:\QPS Project\BSR_WithoutQr\Infrastructure\bin\Debug\net8.0\Infrastructure.dll
+D:\QPS Project\BSR_WithoutQr\Infrastructure\bin\Debug\net8.0\Infrastructure.pdb
+D:\QPS Project\BSR_WithoutQr\Infrastructure\bin\Debug\net8.0\Application.dll
+D:\QPS Project\BSR_WithoutQr\Infrastructure\bin\Debug\net8.0\Domain.dll
+D:\QPS Project\BSR_WithoutQr\Infrastructure\bin\Debug\net8.0\MyNewEncDec.dll
+D:\QPS Project\BSR_WithoutQr\Infrastructure\bin\Debug\net8.0\EncryptionUtility.dll
+D:\QPS Project\BSR_WithoutQr\Infrastructure\bin\Debug\net8.0\Application.pdb
+D:\QPS Project\BSR_WithoutQr\Infrastructure\bin\Debug\net8.0\Domain.pdb
+D:\QPS Project\BSR_WithoutQr\Infrastructure\obj\Debug\net8.0\Infrastructure.csproj.AssemblyReference.cache
+D:\QPS Project\BSR_WithoutQr\Infrastructure\obj\Debug\net8.0\Infrastructure.GeneratedMSBuildEditorConfig.editorconfig
+D:\QPS Project\BSR_WithoutQr\Infrastructure\obj\Debug\net8.0\Infrastructure.AssemblyInfoInputs.cache
+D:\QPS Project\BSR_WithoutQr\Infrastructure\obj\Debug\net8.0\Infrastructure.AssemblyInfo.cs
+D:\QPS Project\BSR_WithoutQr\Infrastructure\obj\Debug\net8.0\Infrastructure.csproj.CoreCompileInputs.cache
+D:\QPS Project\BSR_WithoutQr\Infrastructure\obj\Debug\net8.0\Infrastr.15EFFBFE.Up2Date
+D:\QPS Project\BSR_WithoutQr\Infrastructure\obj\Debug\net8.0\Infrastructure.dll
+D:\QPS Project\BSR_WithoutQr\Infrastructure\obj\Debug\net8.0\refint\Infrastructure.dll
+D:\QPS Project\BSR_WithoutQr\Infrastructure\obj\Debug\net8.0\Infrastructure.pdb
+D:\QPS Project\BSR_WithoutQr\Infrastructure\obj\Debug\net8.0\ref\Infrastructure.dll
+D:\QPS Project\BSR_WithoutQrTest\Infrastructure\bin\Debug\net8.0\Infrastructure.deps.json
+D:\QPS Project\BSR_WithoutQrTest\Infrastructure\bin\Debug\net8.0\Infrastructure.dll
+D:\QPS Project\BSR_WithoutQrTest\Infrastructure\bin\Debug\net8.0\Infrastructure.pdb
+D:\QPS Project\BSR_WithoutQrTest\Infrastructure\bin\Debug\net8.0\Application.dll
+D:\QPS Project\BSR_WithoutQrTest\Infrastructure\bin\Debug\net8.0\Domain.dll
+D:\QPS Project\BSR_WithoutQrTest\Infrastructure\bin\Debug\net8.0\MyNewEncDec.dll
+D:\QPS Project\BSR_WithoutQrTest\Infrastructure\bin\Debug\net8.0\EncryptionUtility.dll
+D:\QPS Project\BSR_WithoutQrTest\Infrastructure\bin\Debug\net8.0\Application.pdb
+D:\QPS Project\BSR_WithoutQrTest\Infrastructure\bin\Debug\net8.0\Domain.pdb
+D:\QPS Project\BSR_WithoutQrTest\Infrastructure\obj\Debug\net8.0\Infrastructure.csproj.AssemblyReference.cache
+D:\QPS Project\BSR_WithoutQrTest\Infrastructure\obj\Debug\net8.0\Infrastructure.GeneratedMSBuildEditorConfig.editorconfig
+D:\QPS Project\BSR_WithoutQrTest\Infrastructure\obj\Debug\net8.0\Infrastructure.AssemblyInfoInputs.cache
+D:\QPS Project\BSR_WithoutQrTest\Infrastructure\obj\Debug\net8.0\Infrastructure.AssemblyInfo.cs
+D:\QPS Project\BSR_WithoutQrTest\Infrastructure\obj\Debug\net8.0\Infrastructure.csproj.CoreCompileInputs.cache
+D:\QPS Project\BSR_WithoutQrTest\Infrastructure\obj\Debug\net8.0\Infrastr.15EFFBFE.Up2Date
+D:\QPS Project\BSR_WithoutQrTest\Infrastructure\obj\Debug\net8.0\Infrastructure.dll
+D:\QPS Project\BSR_WithoutQrTest\Infrastructure\obj\Debug\net8.0\refint\Infrastructure.dll
+D:\QPS Project\BSR_WithoutQrTest\Infrastructure\obj\Debug\net8.0\Infrastructure.pdb
+D:\QPS Project\BSR_WithoutQrTest\Infrastructure\obj\Debug\net8.0\ref\Infrastructure.dll
+D:\QPS Project\QPSApp\Infrastructure\bin\Debug\net8.0\Infrastructure.deps.json
+D:\QPS Project\QPSApp\Infrastructure\bin\Debug\net8.0\Infrastructure.dll
+D:\QPS Project\QPSApp\Infrastructure\bin\Debug\net8.0\Infrastructure.pdb
+D:\QPS Project\QPSApp\Infrastructure\bin\Debug\net8.0\Application.dll
+D:\QPS Project\QPSApp\Infrastructure\bin\Debug\net8.0\Domain.dll
+D:\QPS Project\QPSApp\Infrastructure\bin\Debug\net8.0\MyNewEncDec.dll
+D:\QPS Project\QPSApp\Infrastructure\bin\Debug\net8.0\EncryptionUtility.dll
+D:\QPS Project\QPSApp\Infrastructure\bin\Debug\net8.0\Application.pdb
+D:\QPS Project\QPSApp\Infrastructure\bin\Debug\net8.0\Domain.pdb
+D:\QPS Project\QPSApp\Infrastructure\obj\Debug\net8.0\Infrastructure.csproj.AssemblyReference.cache
+D:\QPS Project\QPSApp\Infrastructure\obj\Debug\net8.0\Infrastructure.GeneratedMSBuildEditorConfig.editorconfig
+D:\QPS Project\QPSApp\Infrastructure\obj\Debug\net8.0\Infrastructure.AssemblyInfoInputs.cache
+D:\QPS Project\QPSApp\Infrastructure\obj\Debug\net8.0\Infrastructure.AssemblyInfo.cs
+D:\QPS Project\QPSApp\Infrastructure\obj\Debug\net8.0\Infrastructure.csproj.CoreCompileInputs.cache
+D:\QPS Project\QPSApp\Infrastructure\obj\Debug\net8.0\Infrastr.15EFFBFE.Up2Date
+D:\QPS Project\QPSApp\Infrastructure\obj\Debug\net8.0\Infrastructure.dll
+D:\QPS Project\QPSApp\Infrastructure\obj\Debug\net8.0\refint\Infrastructure.dll
+D:\QPS Project\QPSApp\Infrastructure\obj\Debug\net8.0\Infrastructure.pdb
+D:\QPS Project\QPSApp\Infrastructure\obj\Debug\net8.0\ref\Infrastructure.dll
+D:\My Projects\QPS_PORTAL\Infrastructure\bin\Debug\net8.0\Infrastructure.deps.json
+D:\My Projects\QPS_PORTAL\Infrastructure\bin\Debug\net8.0\Infrastructure.dll
+D:\My Projects\QPS_PORTAL\Infrastructure\bin\Debug\net8.0\Infrastructure.pdb
+D:\My Projects\QPS_PORTAL\Infrastructure\bin\Debug\net8.0\Application.dll
+D:\My Projects\QPS_PORTAL\Infrastructure\bin\Debug\net8.0\Domain.dll
+D:\My Projects\QPS_PORTAL\Infrastructure\bin\Debug\net8.0\MyNewEncDec.dll
+D:\My Projects\QPS_PORTAL\Infrastructure\bin\Debug\net8.0\EncryptionUtility.dll
+D:\My Projects\QPS_PORTAL\Infrastructure\bin\Debug\net8.0\Application.pdb
+D:\My Projects\QPS_PORTAL\Infrastructure\bin\Debug\net8.0\Domain.pdb
+D:\My Projects\QPS_PORTAL\Infrastructure\obj\Debug\net8.0\Infrastructure.csproj.AssemblyReference.cache
+D:\My Projects\QPS_PORTAL\Infrastructure\obj\Debug\net8.0\Infrastructure.GeneratedMSBuildEditorConfig.editorconfig
+D:\My Projects\QPS_PORTAL\Infrastructure\obj\Debug\net8.0\Infrastructure.AssemblyInfoInputs.cache
+D:\My Projects\QPS_PORTAL\Infrastructure\obj\Debug\net8.0\Infrastructure.AssemblyInfo.cs
+D:\My Projects\QPS_PORTAL\Infrastructure\obj\Debug\net8.0\Infrastructure.csproj.CoreCompileInputs.cache
+D:\My Projects\QPS_PORTAL\Infrastructure\obj\Debug\net8.0\Infrastructure.sourcelink.json
+D:\My Projects\QPS_PORTAL\Infrastructure\obj\Debug\net8.0\Infrastr.15EFFBFE.Up2Date
+D:\My Projects\QPS_PORTAL\Infrastructure\obj\Debug\net8.0\Infrastructure.dll
+D:\My Projects\QPS_PORTAL\Infrastructure\obj\Debug\net8.0\refint\Infrastructure.dll
+D:\My Projects\QPS_PORTAL\Infrastructure\obj\Debug\net8.0\Infrastructure.pdb
+D:\My Projects\QPS_PORTAL\Infrastructure\obj\Debug\net8.0\ref\Infrastructure.dll
+D:\QPS Project\QPS\Infrastructure\bin\Debug\net8.0\Infrastructure.deps.json
+D:\QPS Project\QPS\Infrastructure\bin\Debug\net8.0\Infrastructure.dll
+D:\QPS Project\QPS\Infrastructure\bin\Debug\net8.0\Infrastructure.pdb
+D:\QPS Project\QPS\Infrastructure\bin\Debug\net8.0\Application.dll
+D:\QPS Project\QPS\Infrastructure\bin\Debug\net8.0\Domain.dll
+D:\QPS Project\QPS\Infrastructure\bin\Debug\net8.0\MyNewEncDec.dll
+D:\QPS Project\QPS\Infrastructure\bin\Debug\net8.0\EmailService.dll
+D:\QPS Project\QPS\Infrastructure\bin\Debug\net8.0\EncryptionUtility.dll
+D:\QPS Project\QPS\Infrastructure\bin\Debug\net8.0\Application.pdb
+D:\QPS Project\QPS\Infrastructure\bin\Debug\net8.0\Domain.pdb
+D:\QPS Project\QPS\Infrastructure\obj\Debug\net8.0\Infrastructure.csproj.AssemblyReference.cache
+D:\QPS Project\QPS\Infrastructure\obj\Debug\net8.0\Infrastructure.GeneratedMSBuildEditorConfig.editorconfig
+D:\QPS Project\QPS\Infrastructure\obj\Debug\net8.0\Infrastructure.AssemblyInfoInputs.cache
+D:\QPS Project\QPS\Infrastructure\obj\Debug\net8.0\Infrastructure.AssemblyInfo.cs
+D:\QPS Project\QPS\Infrastructure\obj\Debug\net8.0\Infrastructure.csproj.CoreCompileInputs.cache
+D:\QPS Project\QPS\Infrastructure\obj\Debug\net8.0\Infrastructure.sourcelink.json
+D:\QPS Project\QPS\Infrastructure\obj\Debug\net8.0\Infrastr.15EFFBFE.Up2Date
+D:\QPS Project\QPS\Infrastructure\obj\Debug\net8.0\Infrastructure.dll
+D:\QPS Project\QPS\Infrastructure\obj\Debug\net8.0\refint\Infrastructure.dll
+D:\QPS Project\QPS\Infrastructure\obj\Debug\net8.0\Infrastructure.pdb
+D:\QPS Project\QPS\Infrastructure\obj\Debug\net8.0\ref\Infrastructure.dll

@@ -1,0 +1,163 @@
+﻿@if (IsVisible)
+{
+    <div class="modal" style="display: block;" role="dialog">
+        <div class="modal-dialog modal-sm" role="document">
+            <div class="modal-content surbey_s">
+                <div class="modal-header">
+                    <h4>Scan Barcode from Camera</h4>
+                </div>
+                <div class="modal-body">
+                     @if (!string.IsNullOrEmpty(ErrorMessage))
+                        {
+                            <MudText Color="Color.Error" Typo="Typo.body1" Class="my-2">
+                                Error: @ErrorMessage
+                            </MudText>
+                        }
+                    <div class="video-container">
+                        <BarcodeReader @ref="barcodeReader"
+                                       StartCameraAutomatically="true"
+                                       OnBarcodeReceived="BarcodeReceived"
+                                       ShowStart="false"
+                                       ShowStop="false"
+                                       ShowReset="false"
+                                       ShowToggleTorch="false"
+                                       ShowVideoDeviceList="false"
+                                       OnErrorReceived="@(EventCallback.Factory.Create<BlazorBarcodeScanner.ZXing.JS.ErrorReceivedEventArgs>(this, BarcodeError))"
+                                        />
+                    </div>
+                    
+                </div>
+                <div class="modal-footer">
+                        <button class=" btn btn-danger" @onclick='() => Close("")'>Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+}
+@code {
+    private BarcodeReader barcodeReader;
+    public bool IsVisible = false;
+    private TaskCompletionSource<string>? _tcs;
+    private string ErrorMessage = "";
+
+    public async Task<string> ShowAsync()
+    {
+        _tcs = new TaskCompletionSource<string>();
+        IsVisible = true;
+        StateHasChanged();
+
+        return await _tcs.Task;
+    }
+
+    private async Task StopScanning()
+    {
+        if (barcodeReader != null)
+        {
+            await barcodeReader.StopDecoding();
+        }
+    }
+
+    private async void BarcodeReceived(BarcodeReceivedEventArgs args)
+    {
+        await StopScanning();
+        Close(args.BarcodeText);
+    }
+
+    private async void BarcodeError(BlazorBarcodeScanner.ZXing.JS.ErrorReceivedEventArgs args)
+    {
+        // Set the error message.
+        ErrorMessage = args.Message;
+        await StopScanning();
+        // Close(string.Empty);
+        // This is the crucial step to force the UI to re-render and show the message.
+        StateHasChanged();
+    }
+
+    private void Close(string result)
+    {
+        IsVisible = false;
+        _tcs?.TrySetResult(result);
+        StateHasChanged();
+    }
+}
+<style>
+    .modal {
+        position: fixed;
+        top: 0;
+        z-index: 5000;
+        width: 100vw;
+        height: 100vh;
+        display: flex;
+        align-items: center; /* Vertical center */
+        justify-content: center; /* Horizontal center */
+        background-color: rgba(0, 0, 0, 0.5); /* Optional: dimmed background */
+    }
+
+    .modal-dialog {
+        max-width: 500px;
+        width: 95%;
+        margin-top: 20vh !important;
+    }
+
+    .modal-content {
+        border-radius: 8px;
+        box-shadow: 0 8px 20px rgba(0,0,0,0.25);
+        overflow: hidden;
+        background-color: #f5f5f5;
+    }
+
+    .modal-header {
+        padding: 5px;
+        background-color: #ed008b;
+        border-bottom: 1px solid #ddd;
+        padding-left: 16px;
+        color: white;
+    }
+
+    .modal-footer {
+        text-align: right;
+        border-top: 1px solid #ddd;
+        padding: 5px;
+        background-color: white;
+        border-bottom: 1px solid #ddd;
+        padding-left: 16px;
+    }
+
+    .modal-body {
+        padding: 20px;
+        font-size: 1rem;
+    }
+
+    .zxing-title
+    {
+        display:none;
+    }
+
+    .video-container  {
+        text-align-last: center;
+    }
+
+    .zxing-result-container
+    {
+        display: none;
+    }
+    /* Container for the video */
+.video-container {
+    position: relative;
+    width: 100%; /* Make the container fill the width of its parent */
+    padding-top: 75%; /* Sets the aspect ratio (480 / 640 = 0.75 or 75%) */
+    overflow: hidden;
+}
+
+/* Style the video element itself */
+.video-container video {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* This is the key property */
+}
+    
+</style>

@@ -1,0 +1,539 @@
+﻿@using Admin.Components.Pages.UserMaster
+@using Admin.Components.Shared
+@using EmailService.Models
+@using MudExtensions
+@using System.Text.RegularExpressions
+@using System.Security.Claims
+
+
+<MudDialog>
+    <DialogContent>
+        <MudForm @ref="form">
+            <MudGrid>
+                <MudItem xs="12" md="12">
+                    <MudGrid>
+                        <MudItem xs="12" md="12">
+                            <MudChip T="string" Variant="Variant.Outlined" Color="Color.Secondary">PO Details </MudChip>
+                        </MudItem>
+                        <!-- Vendor Code -->
+                        <MudItem xs="12" md="2">
+                            <MudTextField T="string" Label="PO Number" ReadOnly="true" @bind-Value="PO.PoNumber" Required="true" />
+                        </MudItem>
+                        <MudItem xs="12" md="2">
+                            <MudTextField Label="Total Qty." @bind-Value="PO.POTotalQty" ReadOnly="true" />
+                        </MudItem>
+                        <!-- Vendor Name -->
+                        <MudItem xs="12" md="2">
+                            <MudTextField T="string" Label="Vendor Code" ReadOnly="true" @bind-Value="PO.VendorCode" Required="true" />
+                        </MudItem>
+                        <MudItem xs="12" md="4">
+                            <MudTextField T="string" Label="Vendor Name" ReadOnly="true" @bind-Value="PO.VendorName" Required="true" />
+                        </MudItem>
+                        <MudItem xs="12" md="2">
+                            <MudSelect T="int" Label="Select Region" @bind-Value="PO.RegionId" ReadOnly="true" Required="true">
+                                @foreach (var item in PO.RegionList)
+                                {
+                                    <MudSelectItem Value="@item.Master_ID">
+                                        @( $"{item.Master_Name})")
+                                    </MudSelectItem>
+                                }
+                            </MudSelect>
+                        </MudItem>
+                        <MudItem xs="12" md="6">
+                            <MudTextField T="string" Label="Fabric" ReadOnly="true" @bind-Value="PO.Fabric" />
+                        </MudItem>
+                        <MudItem xs="12" md="2">
+                            <MudTextField T="string" Label="Color" ReadOnly="true" @bind-Value="PO.Color" />
+                        </MudItem>
+                        <MudItem xs="12" md="2">
+                            <MudTextField Label="Offered Qty." @bind-Value="PO.OfferedQty" />
+                        </MudItem>
+                        <MudItem xs="12" md="2">
+                            <MudDatePicker @bind-Date="PO.DateOfInspection" Label="Date Of Inspection" ReadOnly="true" Required="true" />
+                        </MudItem>
+                        <MudItem xs="12" md="6">
+                            <MudSelect T="int"
+                                       Label="Select Inspection Location"
+                                       Value="@PO.AddressId"
+                                       Required="true" ReadOnly="true">
+                                @foreach (var item in PO.AddressList)
+                                {
+                                    <MudSelectItem Value="@item.AddressId">
+                                        @( $"{item.AddressLine1}, {item.City}, {item.RegionDescription} ({item.PinCode})")
+                                    </MudSelectItem>
+                                }
+                                <MudSelectItem Value="0">
+                                    Other
+                                </MudSelectItem>
+                            </MudSelect>
+
+                        </MudItem>
+                        <MudItem xs="12" md="3">
+                            @*  <MudDatePicker @bind-Date="PO.QA_ASSIGNED_DOI" Label="Allocate Date Of Inspection" Required="true" /> *@
+                            <MudDatePicker @bind-Date="PO.SelectedDate"
+                                           Label="Allocate Date"
+                                           Required="true" />
+
+
+                        </MudItem>
+                        <MudItem xs="12" md="3">
+                            <MudTimePicker @bind-Time="PO.SelectedTime"
+                                           Label="Allocate Time"
+                                           Required="true"
+                                           TimeFormat="HH:mm" />
+                        </MudItem>
+                        <!-- Role Selection -->
+                        <MudItem xs="12" md="12">
+                            <MudChip T="string" Variant="Variant.Outlined" Color="Color.Secondary">List of Line Items </MudChip>
+                        </MudItem>
+                        <MudItem xs="12" md="12">
+                            <MudTable T="PODetails" Items="PO.Details" Hover="true" Dense="true" Bordered="true" Striped="true" SortLabel="Sort By">
+                                <HeaderContent>
+                                    <MudTh><MudTableSortLabel SortBy="new Func<PODetails, object>(x => x.LineItem)">LINE ITEM</MudTableSortLabel></MudTh>
+                                    <MudTh Style="width:80px;"><MudTableSortLabel SortBy="new Func<PODetails, object>(x => x.Article)">ARTICLE</MudTableSortLabel></MudTh>
+                                    <MudTh><MudTableSortLabel SortBy="new Func<PODetails, object>(x => x.ArticleDesc)">ARTICLE DESCRIPTION</MudTableSortLabel></MudTh>
+                                    <MudTh><MudTableSortLabel SortBy="new Func<PODetails, object>(x => x.PrepackQty)">PREPACK QTY.</MudTableSortLabel></MudTh>
+                                    <MudTh><MudTableSortLabel SortBy="new Func<PODetails, object>(x => x.PurchaseTotQty)">TOTAL QTY.</MudTableSortLabel></MudTh>
+                                    <MudTh><MudTableSortLabel SortBy="new Func<PODetails, object>(x => x.PrepackQtyEaches)">PREPACK QTY. EACHES</MudTableSortLabel></MudTh>
+                                    <MudTh><MudTableSortLabel SortBy="new Func<PODetails, object>(x => x.Eaches)">EACHES</MudTableSortLabel></MudTh>
+                                </HeaderContent>
+                                <RowTemplate>
+                                    <MudTd DataLabel="LINE ITME">@context.LineItem</MudTd>
+                                    <MudTd DataLabel="ARTICLE">@context.Article</MudTd>
+                                    <MudTd DataLabel="DESCRIPTION">@context.ArticleDesc</MudTd>
+                                    <MudTd DataLabel="TOTAL QTY.">@context.PrepackQty</MudTd>
+                                    <MudTd DataLabel="TOTAL QTY.">@context.PurchaseTotQty</MudTd>
+                                    <MudTd DataLabel="TOTAL QTY.">@context.PrepackQtyEaches</MudTd>
+                                    <MudTd DataLabel="TOTAL QTY.">@context.Eaches</MudTd>
+                                </RowTemplate>
+                                <PagerContent>
+                                    <MudTablePager PageSizeOptions="new int[] { 10, 25, 50, 100 }" />
+                                </PagerContent>
+                            </MudTable>
+                        </MudItem>
+                    </MudGrid>
+                </MudItem>
+            </MudGrid>
+        </MudForm>
+    </DialogContent>
+
+    <DialogActions>
+        <MudButton OnClick="Save" Color="Color.Info" Variant="Variant.Filled" Disabled="@isSubmitting">Assign</MudButton>
+        <MudButton OnClick="CloseDialog" Color="Color.Error" Variant="Variant.Filled">Cancel</MudButton>
+    </DialogActions>
+</MudDialog>
+<Loader IsVisible="@IsLoading" />
+
+@code {
+
+
+    bool isShow;
+    [CascadingParameter]
+    private IMudDialogInstance? MudDialog { get; set; }
+    [Parameter]
+    public POHeader PO { get; set; } = new();
+    [Parameter] public bool IsEditMode { get; set; }
+    public bool IsMaked { get; set; } = false;
+
+    private bool isFatched { get; set; }
+
+    private MudForm form;
+    private bool isSubmitting = false;
+    bool IsLoading = false;
+    private int User_Id = 0;
+    private string LoggedVendorCode = string.Empty;
+
+    private SelectListReq selectListReq = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        var user = HttpContextAccessor.HttpContext?.User;
+        // Replace "YourCustomClaimType" with the actual claim type
+        var uid = user!.Claims.FirstOrDefault(c => c.Type == CustomClaimTypes.User_Id)?.Value;
+        User_Id = Convert.ToInt32(uid);
+        LoggedVendorCode = user!.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value!;
+        if (PO != null)
+        {
+            isFatched = IsEditMode;
+            await GetInspectors();
+            StateHasChanged();
+        }
+        else
+        {
+            PO = new();
+            isFatched = false;
+        }
+
+
+    }
+
+    private async Task GetInspectors()
+    {
+        selectListReq.Id = 0;
+        selectListReq.StrField = PO.RegionId.ToString();
+        selectListReq.Cmd = CmdNames.Get_Region_Wise_Inspectors;
+        var res = await ApiMasterService.CallingAPI<GetAllUsersRes, SelectListReq>(AllApiNames.GET_ALL_USERS, selectListReq);
+        if (res.responseCode == 0)
+        {
+            if (res.UserDetailsList.Count > 0)
+            {
+                foreach (var item in res.UserDetailsList)
+                {
+                    PO.InspectorList.Add(new MasterData
+                    {
+                        Master_ID = int.Parse(item.Emp_Code!),
+                        Master_Name = item.Emp_Name!.ToString(),
+                    });
+                }
+            }
+        }
+        else
+        {
+            //pagedUsers = new();
+            Snackbar.Add(res.responseMessage!, Severity.Error);
+        }
+
+    }
+
+    private async Task Reset()
+    {
+        bool? dres = await DialogService.ShowMessageBox("Confirmation", "Are you sure you want to reset the form ?", yesText: "  Yes!  ", cancelText: "   No   ");
+        if (dres == null)
+        {
+            return;
+        }
+        else
+        {
+            PO = new();
+            IsEditMode = false;
+            isFatched = false;
+            StateHasChanged();
+        }
+    }
+    //Get_Roles_List
+    private async void Save()
+    {
+
+        if (PO.InspId <= 0)
+        {
+            await ShowErrorDialog("Validation", "Inspection ID is required.");
+            return;
+        }
+        if (string.IsNullOrEmpty(PO.QA_ASSIGNED_DOI.ToString()))
+        {
+            await ShowErrorDialog("Validation", "Inspection date is required.");
+            return;
+        }
+
+        bool? dres = await DialogService.ShowMessageBox("Confirmation", "Do you want to update Inspection details?", yesText: "  Yes!  ", cancelText: "   No   ");
+        if (dres == null)
+        {
+            return;
+        }
+        else
+        {
+            await form.Validate();
+
+            if (form.IsValid)
+            {
+                PO.CreatedBy = User_Id;// Set the CREATED BY
+                UpdateDOIRequest reqObj = new UpdateDOIRequest()
+                {
+                    InspId = PO.InspId,
+                    CreatedBy = User_Id,
+                    QA_ASSIGNED_DOI = PO.QA_ASSIGNED_DOI
+
+                };
+
+                var res1 = await ApiMasterService.CallingAPI<GenRes, UpdateDOIRequest>(AllApiNames.UPDATE_DOI!, reqObj);
+                if (res1.responseCode.Equals(0))
+                {
+                    var selectRequest = new SelectListReq
+                    {
+                        Id = 0,
+                        Cmd = CmdNames.Get_Vendor_By_Code,
+                        ResponseType = "",
+                        StrField = PO.VendorCode
+                    };
+                    var toEmails = "";
+                    var existingVendor = await ApiMasterService.CallingAPI<GetVendorByCode, SelectListReq>(AllApiNames.GET_VENDOR_BY_CODE, selectRequest);
+                    if (existingVendor.responseCode == 0 && existingVendor.responseMessage!.ToUpper() == "SUCCESS")
+                    {
+                        if (!string.IsNullOrEmpty(existingVendor.VendorModel.VENDOR_CODE))
+                        {
+                            toEmails = string.Join(";", existingVendor.VendorAddressList.Select(a => a.EMAIL_IDS));
+                        }
+                    }
+
+
+                    var serverSettings = mapper.Map<ServerSettings>(EmailServerSettings);
+                    var Vendor = $"{PO.VendorName}  <b>({PO.VendorCode})</b>";
+                    var Location = $"{PO.InspectionLocation}";
+                   
+                    var userSettings = new UserMailSettings
+                    {
+
+                        From = EmailServerSettings.From,// "noreply@vishalwholesale.co.in",
+                        To = toEmails,
+                        Subject = $"Final Date of Inspection Confirmed – [{PO.InspId}]",
+                        Body =
+                            $"Dear {Vendor},<br/><br/>" +
+                            $"This is to inform you that the final date of inspection for your submitted inspection request has been scheduled and confirmed by the Quality Assurance team.<br/><br/>" +
+                            $"<b>Inspection Details:: </b><br/>" +
+                            $"<b>Request ID: </b>{PO.InspId}<br/>" +
+                            $"<b>Final Date & Time of Inspection: </b>{PO.QA_ASSIGNED_DOI}<br/>" +
+                            $"<b>Location: </b>{Location}<br/></br>" +
+                            $"Please ensure that all required documents, materials, and arrangements are in place prior to the inspection date<br/><br/>" +
+                            $"You may log in to the Quality Process System (QPS) to review the request details.<br/>" +
+                            $"Login URL: 🔗 <a href='https://qps.vishalmegamart.com:8024/'>https://qps.vishalmegamart.com:8024/</a><br/>" +
+                            $"<b>Note : </b>In case of any concerns or required clarifications, kindly contact the QA team." +
+                            $"<br/><br/><br/>Regards,<br/>" +
+                            $"<b>Quality Process System (QPS)</b><br/><br/>"+
+                            $"This is an automated notification. Please do not reply to this email.",
+
+                        IsBodyHtml = true,
+                    };
+                    var result = sender.SendMail(serverSettings, userSettings);
+                    // sent the mail to QA
+                    if (result.isSuccess)
+                    {
+                        Snackbar.Add("Date of inspection assigned successfully.", Severity.Success);
+                    }
+                    else
+                    {
+                        Snackbar.Add("Date of inspection assigned successfully but email not sent.", Severity.Success);
+                    }
+                    MudDialog?.Close();
+                }
+                else
+                {
+                    await ShowErrorDialog("Validation!", res1.responseMessage!);
+                }
+            }
+        }
+
+    }
+
+    private void CloseDialog()
+    {
+        MudDialog?.Close();
+    }
+    private async Task ShowErrorDialog(string Tital, string message)
+    {
+        await DialogService.ShowMessageBox(Tital, message);
+    }
+
+}
+<style>
+    .muddividr {
+        margin: 0 !important;
+        border-color: #f408b2 !important;
+        border-width: 2px;
+    }
+
+    .mud-breadcrumbs {
+        padding: 12px 12px;
+    }
+
+    .floating-search-btn {
+        position: fixed;
+        top: 50%;
+        right: 0;
+        transform: translateY(-50%);
+        background-color: #e91e63;
+        color: white;
+        padding: 10px 6px;
+        border-radius: 8px 0 0 8px;
+        cursor: pointer;
+        writing-mode: vertical-rl;
+        text-orientation: mixed;
+        font-weight: bold;
+        z-index: 999;
+        box-shadow: 0 0 8px rgba(0,0,0,0.2);
+    }
+
+        .floating-search-btn:hover {
+            background-color: #c2185b;
+        }
+
+    .search-modal {
+        position: fixed;
+        top: 170px;
+        right: 35px;
+        background-color: white;
+        width: 320px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+        border-radius: 8px;
+        z-index: 1000;
+    }
+
+        .search-modal .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .search-modal .close-btn {
+            background: none;
+            border: none;
+            font-size: 18px;
+            cursor: pointer;
+        }
+
+    .mud-simple-table.mud-table-dense * tr td, .mud-simple-table.mud-table-dense * tr th {
+        padding: 2px 4px
+    }
+
+    .font8 {
+        font-size: 0.8rem;
+    }
+
+    .mud-list-subheader-extended {
+        padding-top: 0px;
+        padding-bottom: 0px;
+        margin-bottom: -12px !important;
+    }
+
+    .mud-list-item-extended {
+        padding-bottom: 0px !important;
+    }
+
+    .mud-list-item-gutters-extended.mud-list-item-dense-extended {
+        padding-left: 4px;
+        padding-right: 4px;
+        padding-top: 0px;
+        padding-bottom: 0px;
+    }
+
+    .mud-list-subheader-gutters-extended {
+        padding-left: 8px;
+        padding-right: 8px;
+        padding-top: 0px !important;
+        padding-bottom: 0px !important;
+    }
+
+    .mud-icon-button-edge-margin-end {
+        color: red !important;
+    }
+
+    .mud-input > input.mud-input-root-outlined, div.mud-input-slot.mud-input-root-outlined {
+        padding: 15px 10px;
+        font-size: 12px;
+        height: 20px !important;
+    }
+
+
+
+    .filter-paper {
+        padding-left: 8px !important;
+        padding-right: 8px !important;
+        padding-top: 25px !important;
+        padding-bottom: 5px !important;
+        margin-left: 22px !important;
+        margin-right: 28px !important;
+        margin-bottom: 20px !important;
+    }
+
+    .mud-link {
+        font-size: 0.8rem !important;
+    }
+
+    .mud-list-item-multiselect-extended.mud-list-item-multiselect-checkbox-extended {
+        padding-inline-end: 0px;
+    }
+
+    .border1pxblack {
+        border: 1px solid #ffffffeb;
+        background-color: #ed008b !important;
+        color: white;
+    }
+
+    .border1pxblack1 {
+        background-color: #ed008b !important;
+        color: white;
+        border: none !important;
+    }
+
+    .my-custom-select {
+        position: relative;
+    }
+
+        .my-custom-select .mud-popover {
+            padding-top: 20px;
+        }
+
+    .filter-close-button {
+        position: absolute;
+        top: 6px;
+        right: 6px;
+        cursor: pointer;
+        background-color: white;
+        border: 1px solid #ccc;
+        border-radius: 50%;
+        padding: 2px;
+        z-index: 99999;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    }
+
+    .mud-list-subheader-extended {
+        top: -6px !important;
+    }
+
+    .mud-list-subheader-extended {
+        position: relative !important;
+    }
+
+    .disabled-div {
+        pointer-events: none; /* Prevent clicks */
+        opacity: 0.6; /* Dimmed look */
+        background-color: #f0f0f0; /* Optional: lighter background */
+        user-select: none; /* Prevent text selection */
+    }
+
+    .mud-dialog-title {
+        border-bottom: 1px solid #1413140d;
+    }
+
+    .mud-dialog-actions {
+        border-top: 1px solid #1413140d;
+    }
+
+    .mud-dialog-content {
+        padding-top: 1.5rem !important;
+        padding-bottom: 1.5rem !important;
+    }
+
+    .mud-dialog-title {
+        padding: 11px !important;
+    }
+
+    .mud-message-box__yes-button {
+        color: white !important;
+        background-color: green !important;
+    }
+
+    .mud-message-box__cancel-button {
+        color: white !important;
+        background-color: red !important;
+    }
+
+    .mud-message-box .mud-dialog-actions {
+        display: flex;
+        flex-direction: row-reverse;
+        justify-content: flex-start;
+    }
+</style>
+<style>
+
+    .mud-dialog-title {
+        color: white !important;
+        background: linear-gradient(to right, #0e6cb1, #ffffff) !important;
+    }
+
+    .mud-dialog-actions {
+        background: linear-gradient(to right, #3b7ed12b, #ffffff) !important
+    }
+
+</style>

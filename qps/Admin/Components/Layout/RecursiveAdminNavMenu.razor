@@ -1,0 +1,32 @@
+﻿<MudNavGroup Title="@MenuItem.Label" Class="ms-1">
+    <MudNavLink Href="@BuildUrl(MenuItem.Id)" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Edit" IconColor="Color.Inherit">
+        Edit
+    </MudNavLink>
+
+    @foreach (var child in GetChildMenus(MenuItem.Id))
+    {
+        @if (GetChildMenus(child.Id).Any())
+        {
+            <RecursiveAdminNavMenu MenuItem="child" AllMenus="AllMenus" />
+        }
+        else
+        {
+            <MudNavLink Href="@BuildUrl(child.Id)" Match="NavLinkMatch.All" Class="f15"> @child.Label </MudNavLink>
+        }
+    }
+</MudNavGroup>
+
+@code {
+    [Parameter] public MenusList MenuItem { get; set; } = default!;
+    [Parameter] public List<MenusList> AllMenus { get; set; } = default!;
+
+    private List<MenusList> GetChildMenus(int parentId)
+        => AllMenus.Where(m => m.Parent_Id == parentId).ToList();
+
+    private string BuildUrl(int pageId)
+    {
+        var eqs = new EncryptedQueryString();
+        eqs.Add("Page_Id", pageId.ToString());
+        return "Menu-Master?output=" + eqs.ToString();
+    }
+}

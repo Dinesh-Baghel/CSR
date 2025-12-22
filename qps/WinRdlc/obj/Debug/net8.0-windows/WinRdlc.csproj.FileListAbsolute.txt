@@ -1,0 +1,6 @@
+D:\QPS Project\BSR_WithoutQrTest\WinRdlc\obj\Debug\net8.0-windows\WinRdlc.Form1.resources
+D:\QPS Project\BSR_WithoutQrTest\WinRdlc\obj\Debug\net8.0-windows\WinRdlc.csproj.GenerateResource.cache
+D:\QPS Project\BSR_WithoutQrTest\WinRdlc\obj\Debug\net8.0-windows\WinRdlc.GeneratedMSBuildEditorConfig.editorconfig
+D:\QPS Project\BSR_WithoutQrTest\WinRdlc\obj\Debug\net8.0-windows\WinRdlc.AssemblyInfoInputs.cache
+D:\QPS Project\BSR_WithoutQrTest\WinRdlc\obj\Debug\net8.0-windows\WinRdlc.AssemblyInfo.cs
+D:\QPS Project\BSR_WithoutQrTest\WinRdlc\obj\Debug\net8.0-windows\WinRdlc.csproj.CoreCompileInputs.cache

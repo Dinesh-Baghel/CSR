@@ -1,0 +1,246 @@
+﻿@using MudBlazor
+@using System.Text.RegularExpressions
+
+<MudPaper Class="pa-4" Elevation="2">
+
+    <MudTimeline>
+        @foreach (var log in _history.OrderBy(h => h.VERIFIED_AT))
+        {
+            string mainStr = log.COMMENTS;
+            string pattern = @"Admin ]";
+            bool exists = Regex.IsMatch(mainStr, pattern);
+            string admintxt = exists ? " By Admin": "";
+
+            <MudTimelineItem Color="GetStatusColor(log.STATUS_ID)" TimelineAlign="TimelineAlign.End">
+                <ItemOpposite>
+                    <MudText Color="GetStatusColor(log.STATUS_ID)" Typo="Typo.h6">  @log.VERIFIED_AT.ToString("dd-MMM-yyyy HH:mm:ss")</MudText>
+                </ItemOpposite>
+                <ItemContent>
+                    <MudAlert Severity="GetSeverity(log.STATUS_ID)" Variant="Variant.Outlined" NoIcon="true" Class="my-2">
+                        <MudText Color="GetStatusColor(log.STATUS_ID)" Typo="Typo.h6" GutterBottom="true">@log.STATUS @admintxt</MudText>
+                        <MudText Typo="Typo.body2" Class="mb-1">
+                            <b> Action taken By:</b> @log.EMP_NAME
+                        </MudText>
+                        @if (!string.IsNullOrWhiteSpace(log.COMMENTS))
+                        {
+                            <MudText Typo="Typo.body2" Class="text-secondary">"@log.COMMENTS"</MudText>
+                        }
+                        @if (log.LAST_LOG == "Y")
+                        {
+                            <MudChip T="String" Color="Color.Success" Variant="Variant.Filled" Size="Size.Small">Current</MudChip>
+                        }
+                    </MudAlert>
+                </ItemContent>
+
+            </MudTimelineItem>
+
+        }
+    </MudTimeline>
+    <MudGrid Class="mt-4">
+        <MudItem xs="12" sm="12" md="4">
+            <MudText Typo="Typo.h6" Class="hdnd">Created</MudText>
+        </MudItem>
+        <MudItem xs="12" sm="12" md="4">
+            <MudText Typo="Typo.h6" Class="hdnd">Accepted/Declined</MudText>
+        </MudItem>
+        <MudItem xs="12" sm="12" md="4">
+            <MudText Typo="Typo.h6" Class="hdnd">Pass/Fail</MudText>
+        </MudItem>
+
+        <MudItem xs="12" sm="12" md="4">
+            @foreach (var thumb in ATTACHMENTS.Split(","))
+            {
+                if (thumb.Contains("."))
+                {
+                    <a href="@thumb" target="_blank">
+                        @if (thumb.Split(".")[1] == "pdf")
+                        {
+                            <img @key="@thumb" src="@thumb" width="100" height="100" alt="Product" class="rounded-lg mud-elevation-25 img-thumb" onerror="this.onerror=null;this.src='resources/media/images/pdf.jpg';" />
+                        }
+                        else
+                        {
+                            <img @key="@thumb" src="@thumb" width="100" height="100" alt="Product" class="rounded-lg mud-elevation-25 img-thumb" @onmouseover="@(() => OnImageMouseOver(thumb))" @onmouseout="@(() => OnImageMouseOut())" onerror="this.onerror=null;this.src='resources/media/images/noimage.jpg';" />
+                        }
+                    </a>
+                    <MudPopover Open="@(imgPath == @thumb && imgPath != "")" Fixed="true" AnchorOrigin="Origin.CenterRight" TransformOrigin="Origin.CenterLeft" style="width:40%;transform: translate(0%,-20%); z-index:9999; background-color:lightgray;" Class="py-1 px-1 centered-popover">
+                        <ChildContent>
+                            <img src="@imgPath" alt="Product" style="width:100%; height:auto; border-radius:8px; cursor: pointer;" @onclick="@(() => OpenInNewTab(thumb))" @onmouseover="@(() => OnImageMouseOver(thumb))" @onmouseout="@(() => OnImageMouseOut())" onerror="this.onerror=null;this.src='resources/media/images/noimage.jpg';" />
+                        </ChildContent>
+                    </MudPopover>
+                }
+
+                else
+                {
+                    <MudText Typo="Typo.button">No Attachment</MudText>
+                }
+            }
+        </MudItem>
+        <MudItem xs="12" sm="12" md="4">
+            @foreach (var thumb in ATTACHMENTS_STEP2.Split(","))
+            {
+                if (thumb.Contains("."))
+                {
+                    <a href="@thumb" target="_blank">
+                        @if (thumb.Split(".")[1] == "pdf")
+                        {
+                            <img @key="@thumb" src="@thumb" width="100" height="100" alt="Product" class="rounded-lg mud-elevation-25 img-thumb" onerror="this.onerror=null;this.src='resources/media/images/pdf.jpg';" />
+                        }
+                        else
+                        {
+                            <img @key="@thumb" src="@thumb" width="100" height="100" alt="Product" class="rounded-lg mud-elevation-25 img-thumb" @onmouseover="@(() => OnImageMouseOver(thumb))" @onmouseout="@(() => OnImageMouseOut())" onerror="this.onerror=null;this.src='resources/media/images/noimage.jpg';" />
+                        }
+
+                    </a>
+                    <MudPopover Open="@(imgPath == @thumb && imgPath != "")" Fixed="true" AnchorOrigin="Origin.CenterRight" TransformOrigin="Origin.CenterLeft" style="width:40%;transform: translate(0%,-20%);  background-color:lightgray;" Class="py-1 px-1 centered-popover">
+                        <ChildContent>
+                            <img src="@imgPath" alt="Product" style="width:100%; height:auto; border-radius:8px; cursor: pointer;" @onclick="@(() => OpenInNewTab(thumb))" @onmouseover="@(() => OnImageMouseOver(thumb))" @onmouseout="@(() => OnImageMouseOut())" onerror="this.onerror=null;this.src='resources/media/images/noimage.jpg';" />
+                        </ChildContent>
+                    </MudPopover>
+                }
+                else
+                {
+                    <MudText Typo="Typo.button">No Attachment</MudText>
+                }
+
+            }
+        </MudItem>
+        <MudItem xs="12" sm="12" md="4">
+            @foreach (var thumb in ATTACHMENTS_STEP3.Split(","))
+            {
+                if (thumb.Contains("."))
+                {
+                    <a href="@thumb" target="_blank">
+                        @if (thumb.Split(".")[1] == "pdf")
+                        {
+                            <img @key="@thumb" src="@thumb" width="100" height="100" alt="Product" class="rounded-lg mud-elevation-25 img-thumb" onerror="this.onerror=null;this.src='resources/media/images/pdf.jpg';" />
+                        }
+                        else
+                        {
+                            <img @key="@thumb" src="@thumb" width="100" height="100" alt="Product" class="rounded-lg mud-elevation-25 img-thumb" @onmouseover="@(() => OnImageMouseOver(thumb))" @onmouseout="@(() => OnImageMouseOut())" onerror="this.onerror=null;this.src='resources/media/images/noimage.jpg';" />
+                        }
+                    </a>
+                    <MudPopover Open="@(imgPath == @thumb && imgPath != "")" Fixed="true" AnchorOrigin="Origin.CenterRight" TransformOrigin="Origin.CenterLeft" style="width:40%;transform: translate(0%,-20%); z-index:9999; background-color:lightgray;" Class="py-1 px-1 centered-popover">
+                        <ChildContent>
+                            <img src="@imgPath" alt="Product" style="width:100%; height:auto; border-radius:8px; cursor: pointer;" @onclick="@(() => OpenInNewTab(thumb))" @onmouseover="@(() => OnImageMouseOver(thumb))" @onmouseout="@(() => OnImageMouseOut())" onerror="this.onerror=null;this.src='resources/media/images/noimage.jpg';" />
+                        </ChildContent>
+                    </MudPopover>
+                }
+                else
+                {
+                    <MudText Typo="Typo.button">No Attachment</MudText>
+                }
+            }
+        </MudItem>
+    </MudGrid>
+
+</MudPaper>
+<style>
+    .centered-popover {
+        top: 50% !important;
+        left: 50% !important;
+        transform: translate(-50%, -50%) !important;
+        position: fixed !important;
+        width: 90%; /* make it fit mobile */
+        max-width: 600px; /* but don’t stretch too much on desktop */
+        max-height: 80vh; /* prevent overflow on small screens */
+        overflow: auto; /* scroll if content exceeds screen */
+        background-color: lightgray;
+        border-radius: 8px;
+    }
+
+    .img-thumb {
+        max-width: 100px; /* don’t grow too big */
+        width: 100%; /* scale with parent */
+        height: auto; /* keep aspect ratio */
+    }
+
+    .hdnd {
+        background: #f13090;
+        padding: 0;
+        height: 30px;
+        text-align: center;
+        color: white;
+    }
+
+    .mud-alert-message {
+        padding: 0px 0 !important;
+    }
+
+</style>
+
+@code {
+
+    private void OpenInNewTab(string url)
+    {
+        JS.InvokeVoidAsync("open", url, "_blank");
+    }
+
+    private SelectListReq selectSelectAllSelectListReq = new();
+    [Parameter]
+    public List<PpsLogHistory> _history { get; set; } = new();
+    [CascadingParameter] IMudDialogInstance MudDialog { get; set; }
+    [Parameter]
+    public string ATTACHMENTS { get; set; } = "";
+    [Parameter]
+    public string ATTACHMENTS_STEP2 { get; set; } = "";
+    [Parameter]
+    public string ATTACHMENTS_STEP3 { get; set; } = "";
+
+    private bool dialogOpen;
+
+    private string GetStatusText(int statusId) => statusId switch
+    {
+        1 => "New",
+        2 => "Accepted",
+        3 => "Declined",
+        4 => "Passed",
+        5 => "Failed",
+        _ => "Unknown"
+    };
+
+    private Color GetStatusColor(int statusId) => statusId switch
+    {
+        1 => Color.Info,     // New
+        2 => Color.Warning,  // Accepted
+        3 => Color.Error,    // Declined
+        4 => Color.Success,  // Passed
+        5 => Color.Error,  // Failed
+        _ => Color.Default
+    };
+
+    private Severity GetSeverity(int statusId) => statusId switch
+    {
+        1 => Severity.Info,     // New
+        2 => Severity.Warning,  // Accepted
+        3 => Severity.Error,    // Declined
+        4 => Severity.Success,  // Passed
+        5 => Severity.Error,  // Failed
+        _ => Severity.Normal
+
+    };
+
+    private string GetStatusIcon(int statusId) => statusId switch
+    {
+        1 => Icons.Material.Filled.Create,
+        2 => Icons.Material.Filled.Check,
+        3 => Icons.Material.Filled.Cancel,
+        4 => Icons.Material.Filled.Verified,
+        5 => Icons.Material.Filled.Error,
+        _ => Icons.Material.Filled.Info
+    };
+
+    private string imgPath;
+    private void OnImageMouseOver(string imagepath)
+    {
+        dialogOpen = true;
+        imgPath = imagepath;
+
+    }
+    private void OnImageMouseOut()
+    {
+        dialogOpen = false;
+        imgPath = "";
+
+    }
+
+}

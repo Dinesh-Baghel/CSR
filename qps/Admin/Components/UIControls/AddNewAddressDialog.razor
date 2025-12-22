@@ -1,0 +1,172 @@
+﻿@using System.Text.RegularExpressions
+@using Admin.Components.Shared
+<MudDialog>
+    <DialogContent>
+        <MudForm @ref="form">
+            <MudGrid>
+
+                <MudItem xs="12" md="12">
+                    <MudChip T="string" Variant="Variant.Outlined" Color="Color.Secondary">Inspection Location Details </MudChip>
+                </MudItem>
+
+                <MudItem xs="12" md="12">
+                    <MudTextField @bind-Value="Vendor.Address" Label="Address" Multiline="true" FullWidth="true" AdornmentAriaLabel="Add Address" Required="true" />
+                </MudItem>
+
+                <MudItem xs="12" md="12">
+                    <MudTextField T="string" Label="City" @bind-Value="Vendor.City" Required="true" />
+                </MudItem>
+                <MudItem xs="12" md="12">
+                    <MudTextField T="string" Label="Post Code" @bind-Value="Vendor.PostCode" Required="true" />
+                </MudItem>
+                <MudItem xs="12" md="12">
+                    <MudTextField T="string" Label="Contact No" @bind-Value="Vendor.ContactNo" Required="true" />
+                </MudItem>
+                <MudItem xs="12" md="12">
+                    <MudTextField T="string" Label="Email Id" @bind-Value="Vendor.EmailId" Required="true" />
+
+                </MudItem>
+            </MudGrid>
+        </MudForm>
+    </DialogContent>
+
+    <DialogActions>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="Submit">Save</MudButton>
+        <MudButton Color="Color.Secondary" Variant="Variant.Filled" OnClick="Cancel">Cancel</MudButton>
+    </DialogActions>
+</MudDialog>
+<Loader IsVisible="@IsLoading" />
+
+@code {
+    bool IsLoading = false;
+    private MudForm form;
+    [CascadingParameter]
+    private IMudDialogInstance? MudDialog { get; set; }
+    [Parameter]
+    public POHeader PO { get; set; } = new();
+    public VendorDetail Vendor { get; set; } = new();
+    private int User_Id = 0;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var user = HttpContextAccessor.HttpContext?.User;
+        var uid = user!.Claims.FirstOrDefault(c => c.Type == CustomClaimTypes.User_Id)?.Value;
+        User_Id = Convert.ToInt32(uid);
+    }
+
+    private async Task<bool> IsValidate()
+    {
+        bool isPass = true;
+
+        if (string.IsNullOrEmpty(PO.VendorCode))
+        {
+            await DialogService.ShowMessageBox("Validation", "Vendor code is required");
+            isPass = false;
+        }
+        if (!string.IsNullOrEmpty(Vendor.Address))
+        {
+            bool isValid = Regex.IsMatch(Vendor.Address, @"^[A-Za-z0-9\s.,\/\-#]{5,200}$");
+            if (!isValid)
+            {
+                await DialogService.ShowMessageBox("Info", $"Address '{Vendor.Address}' is invalid.");
+                isPass = false;
+            }
+        }
+        if (!string.IsNullOrEmpty(Vendor.City))
+        {
+            bool isValid = Regex.IsMatch(Vendor.City, @"^[A-Za-z\s]{2,50}$");
+            if (!isValid)
+            {
+                await DialogService.ShowMessageBox("Info", $"City '{Vendor.City}' is invalid.");
+                isPass = false;
+            }
+        }
+        if (!string.IsNullOrEmpty(Vendor.PostCode))
+        {
+            bool isValid = Regex.IsMatch(Vendor.PostCode, @"^\d{6}$");
+            if (!isValid)
+            {
+                await DialogService.ShowMessageBox("Info", $"Pin Code '{Vendor.PostCode}' is invalid.");
+                isPass = false;
+            }
+        }
+        if (!string.IsNullOrEmpty(Vendor.ContactNo))
+        {
+            List<string> mobNos = Vendor.ContactNo.TrimEnd(',').Split(',', StringSplitOptions.RemoveEmptyEntries).Select(e => e.Trim()).ToList(); ;
+
+            foreach (var id in mobNos)
+            {
+                bool isValid = Regex.IsMatch(id, @"^[6-9]\d{9}$");
+                if (!isValid)
+                {
+                    await DialogService.ShowMessageBox("Info", $"Mobile Number '{id}' is invalid.");
+                    isPass = false;
+                }
+
+            }
+
+        }
+        if (!string.IsNullOrEmpty(Vendor.EmailId))
+        {
+            List<string> emailIds = Vendor.EmailId.TrimEnd(';').Split(';', StringSplitOptions.RemoveEmptyEntries).Select(e => e.Trim()).ToList(); ;
+
+            foreach (var id in emailIds)
+            {
+                bool isValid = Regex.IsMatch(id, @"^[^@\s]+@[^@\s]+\.[^@\s]+$");
+                if (!isValid)
+                {
+                    await DialogService.ShowMessageBox("Info", $"Email-id '{id}' is invalid.");
+                    isPass = false;
+                }
+
+            }
+
+        }
+
+
+        return isPass;
+
+    }
+
+    private async Task Submit(MouseEventArgs args)
+    {
+        await form.Validate();
+
+        if (form.IsValid)
+        {
+            var validated = await IsValidate();
+            if (validated)
+            {
+                Vendor _vendor = new();
+                _vendor.VendorCode = PO.VendorCode;
+                _vendor.CreatedBy = User_Id;
+                _vendor.VendorName = "";
+                var Address = new VendorAddressDetail
+                {
+                    AddressGUId = Guid.NewGuid(),
+                    AddressLine1 = Vendor.Address,
+                    City = Vendor.City,
+                    PinCode = Vendor.PostCode,
+                    Mobile_Numbers = Vendor.ContactNo,
+                    Email_Ids = Vendor.EmailId
+                };
+                _vendor.VendorAddresses.Add(Address);
+                var res1 = await ApiMasterService.CallingAPI<GenRes, Vendor>(AllApiNames.ADD_ADDRESS!, _vendor);
+                if (res1.responseCode.Equals(0))
+                {
+                    Snackbar.Add("Address saved successfully.", Severity.Success);
+                    MudDialog?.Close(DialogResult.Ok(res1.recordId));
+                }
+                else
+                {
+                    await DialogService.ShowMessageBox("Error!", res1.responseMessage!);
+                }
+            }
+        }
+    }
+    
+    private void Cancel()
+    {
+        MudDialog?.Cancel();
+    }
+}

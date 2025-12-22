@@ -1,0 +1,300 @@
+﻿@page "/Vendor-Master"
+@using Admin.Components.Pages.UserMaster
+@using EmailService.Models
+@attribute [Authorize]
+<MudGrid Class="justify-end">
+    <MudItem>
+        <MudBreadcrumbs Items="_items">
+            <ItemTemplate Context="item">
+                <MudLink Href="@item.Href">@item.Text.ToUpper()</MudLink>
+            </ItemTemplate>
+        </MudBreadcrumbs>
+    </MudItem>
+</MudGrid>
+<MudStack Row="true" AlignItems="AlignItems.End" Justify="Justify.FlexEnd" Class="mb-2">
+    @*   <MudTooltip Text="Update divisions, MC and brands permissions by excel upload.">
+        <MudButton OnClick="OpenUploadDialog" StartIcon="@Icons.Material.Filled.UploadFile" Variant="Variant.Filled" Color="Color.Success">
+            Upload Permissions
+        </MudButton>
+    </MudTooltip> *@
+    <MudButton OnClick="() => OpenRoleDialog()" StartIcon="@Icons.Material.Filled.Add" Variant="Variant.Filled" Color="Color.Secondary">
+        Add New Vendor
+    </MudButton>
+</MudStack>
+<MudTable Items="filteredVendor" @ref="mudTable" Dense="true">
+    <ToolBarContent>
+        <MudSpacer />
+        <MudTextField T="string" Value="@searchQuery" ValueChanged="OnSearchChanged" Placeholder="Search" Adornment="Adornment.Start"
+                      AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+    </ToolBarContent>
+    <HeaderContent>
+        <MudTh>Vendor Code</MudTh>
+        <MudTh>Vendor Name</MudTh>
+        <MudTh>GST No.</MudTh>
+        <MudTh>Status</MudTh>
+        <MudTh>Email</MudTh>
+        <MudTh>Created By</MudTh>
+        <MudTh>Created At</MudTh>
+        <MudTh>Actions</MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd>@context.VendorCode</MudTd>
+        <MudTd>@(context.VendorName)</MudTd>
+        <MudTd>@(context.GSTNo)</MudTd>
+        <MudTd>
+            <MudChip T="string" Color="@(context.IsActive? Color.Info: Color.Warning)">
+                @(context.IsActive ? "Active" : "Inactive")
+            </MudChip>
+        </MudTd>
+        <MudTd>
+            <MudChip T="string" Color="@(context.IsSentEmail? Color.Success: (context.IsActive ? Color.Error : Color.Surface))" OnClick="() => OpenSentMail(context)">
+                @(context.IsSentEmail ? "Sent" : "Not Sent")
+            </MudChip>
+        </MudTd>
+        <MudTd>@(context.CreatedByName)</MudTd>
+        <MudTd>@(context.CreatedDate)</MudTd>
+        <MudTd>
+            <MudButton OnClick="() => OpenRoleDialog(context)" StartIcon="@Icons.Material.Filled.Edit" Color="Color.Secondary" Variant="Variant.Text" />
+        </MudTd>
+    </RowTemplate>
+    <NoRecordsContent>
+        <MudText>No matching records found</MudText>
+    </NoRecordsContent>
+    <LoadingContent>
+        <MudText>Loading...</MudText>
+    </LoadingContent>
+    <PagerContent>
+        <MudTablePager PageSizeOptions="@pageSizeOptions" />
+    </PagerContent>
+</MudTable>
+
+
+
+@code {
+    private SelectListReq selectListReq = new();
+    private List<Vendor> filteredVendor = new();
+    private List<Vendor> pagedVendors = new(); // Users to be shown on the current page
+    private MudTable<Vendor> mudTable;
+    private string searchQuery = string.Empty;
+    private int pageSize => BsrSettings.AdminPageSize; // Items per page
+    private int[] pageSizeOptions => new[]
+    {
+        pageSize * 1,
+        pageSize * 2,
+        pageSize * 3,
+        pageSize * 4,
+        pageSize * 5
+    };
+    private int currentPage = 0; // Current page index
+    private int User_Id = 0; //  Current logged in user id
+    private Modules modules;
+    private List<BreadcrumbItem> _items = new List<BreadcrumbItem>
+    {
+        new BreadcrumbItem("Home", href: "/V1/Login2BsrAccount"),
+        new BreadcrumbItem("Vendor List", href: "#", disabled: true)
+    };
+    protected override async Task OnInitializedAsync()
+    {
+        @*  this code for Admin purpose if applicable
+        modules = await MenuService.GetModules();
+        if (!modules.User_Management)
+        {
+            NavigationManager.NavigateTo("/");
+        } *@
+        var user = HttpContextAccessor.HttpContext?.User;
+        var uid = user!.Claims.FirstOrDefault(c => c.Type == CustomClaimTypes.User_Id)?.Value;
+        User_Id = Convert.ToInt32(uid);
+        await GetVendors();
+    }
+    private async Task GetVendors()
+    {
+        pagedVendors = new();
+        selectListReq.Id = 0;
+        selectListReq.Cmd = CmdNames.Get_All_Vendors;
+        var res = await ApiMasterService.CallingAPI<GetAllVendors, SelectListReq>(AllApiNames.GET_ALL_VENDORS, selectListReq);
+        if (res.responseCode == 0)
+        {
+            if (res.VendorsList == null)
+            {
+                Snackbar.Add("No record found.", Severity.Error);
+            }
+            else
+            {
+                foreach (var vendor in res.VendorsList)
+                {
+                    pagedVendors.Add(mapper.Map<Vendor>(vendor));
+                }
+            }
+        }
+        else
+        {
+            Snackbar.Add(res.responseMessage!, Severity.Error);
+        }
+
+        filteredVendor = pagedVendors;
+        // ApplyPaging(); // Apply pagination to the full list
+    }
+    private void OnSearchChanged(string searchQuery)
+    {
+        this.searchQuery = searchQuery;
+        FilterRoles(); // Apply search filter
+    }
+    private void FilterRoles()
+    {
+        if (string.IsNullOrWhiteSpace(searchQuery))
+        {
+            filteredVendor = pagedVendors; // Show all Users if search is empty
+        }
+        else
+        {
+            filteredVendor = pagedVendors
+                .Where(role => role.VendorCode!.Contains(searchQuery, StringComparison.OrdinalIgnoreCase) ||
+                       role.VendorName!.ToString().Contains(searchQuery, StringComparison.OrdinalIgnoreCase) ||
+                       role.VendorAddresses.Any()!.ToString().Contains(searchQuery, StringComparison.OrdinalIgnoreCase))
+                .ToList();
+
+            ApplyPaging(); // Re-apply pagination after search
+        }
+    }
+    private void ApplyPaging()
+    {
+        var startIndex = currentPage * pageSize;
+        filteredVendor = filteredVendor.Skip(startIndex).Take(pageSize).ToList(); // Paginate the filtered Users
+    }
+    private void OnPageChanged(int newPage)
+    {
+        currentPage = newPage;
+        ApplyPaging(); // Update paged users when the page is changed
+    }
+    private async Task OpenRoleDialog(Vendor? user = null)
+    {
+        if (user != null)
+        {
+            selectListReq.Id = user!.VendorId;
+            selectListReq.Cmd = CmdNames.Get_Vendor_Address;
+            var res = await ApiMasterService.CallingAPI<GetAddressByVendorCode, SelectListReq>(AllApiNames.GET_VENDOR_ADDRESS, selectListReq);
+            if (res.responseCode == 0 && res.responseMessage!.ToUpper() == "SUCCESS")
+            {
+                user.VendorGUId = Guid.NewGuid();
+                user.VendorAddresses.Clear();
+                foreach (var addrss in res.AddressList)
+                {
+                    var vadd = mapper.Map<VendorAddressDetail>(addrss);
+                    vadd.AddressGUId = Guid.NewGuid();
+                    user.VendorAddresses.Add(vadd);
+                }
+
+            }
+        }
+
+        var parameters = new DialogParameters
+        {
+            { "_vendor",  user  },
+            { "IsEditMode", user != null }
+        };
+        var options = new DialogOptions { CloseButton = true, MaxWidth = MaxWidth.Large, FullWidth = true };
+
+        var dialog = DialogService.Show<VendorMasterDialog>("Vendor Details", parameters, options);
+
+        var result = await dialog.Result;
+        if (!result!.Canceled)
+        {
+
+            await GetVendors();
+        }
+    }
+    private async Task OpenUploadDialog()
+    {
+        var options = new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true };
+        var dialog = await DialogService.ShowAsync<PermissionExcelUpload>("File Upload Dialog", options);
+        var res = await dialog.Result;
+        await GetVendors();
+    }
+    private async Task ShowErrorDialog(string message)
+    {
+        await DialogService.ShowMessageBox(title: "Error", markupMessage: (MarkupString)message, yesText: "OK");
+    }
+
+    private async Task OpenSentMail(Vendor? user = null)
+    {
+        if (user != null)
+        {
+            if (user.IsActive)
+            {
+                var resAdd = await DialogService.ShowMessageBox(title: "Confirmation!", markupMessage: (MarkupString)"Do you want to send mail?", yesText: "Yes", noText: "No");
+                if (resAdd.Value)
+                {
+                    selectListReq.Id = user!.VendorId;
+                    selectListReq.Cmd = CmdNames.Get_Vendor_Address;
+                    var res = await ApiMasterService.CallingAPI<GetAddressByVendorCode, SelectListReq>(AllApiNames.GET_VENDOR_ADDRESS, selectListReq);
+                    if (res.responseCode == 0 && res.responseMessage!.ToUpper() == "SUCCESS")
+                    {
+                        user.VendorGUId = Guid.NewGuid();
+                        user.VendorAddresses.Clear();
+                        foreach (var addrss in res.AddressList)
+                        {
+                            var vadd = mapper.Map<VendorAddressDetail>(addrss);
+                            vadd.AddressGUId = Guid.NewGuid();
+                            user.VendorAddresses.Add(vadd);
+                        }
+
+                    }
+
+                    if (user.IsActive)
+                    {
+                        //--Email Sending start
+                        user.CreatedBy = User_Id;
+
+                        var randomPassword = _passwordHasher.GenerateRandomPassword(8);
+                        user.PassWord = _passwordHasher.HashPassword(randomPassword);
+
+                        var toEmails = string.Join(";", user.VendorAddresses.Select(a => a.Email_Ids));
+                        var serverSettings = mapper.Map<ServerSettings>(EmailServerSettings);
+                        var userSettings = new UserMailSettings
+                        {
+                            From = EmailServerSettings.From,// "noreply@vishalwholesale.co.in",
+                            To = toEmails,
+                            Subject = $"Vendor account creation...reg.",
+                            Body =
+                                $"Hi {user.VendorName},<br/><br/>" +
+                                $"Your account has been successfully <b>created</b> for inspection activities.<br/><br/>" +
+                                $"Please use the following credentials to log in:<br/>" +
+                                $"Login ID: <b>{user.VendorCode}</b><br/>" +
+                                $"Password: <b>{randomPassword}</b><br/>" +
+                                $"Login URL: 🔗 <a href='https://qps.vishalmegamart.com:8024/'>https://qps.vishalmegamart.com:8024/</a><br/><br/>" +
+                                $"<b>Note : </b> For security purposes, please change your password after your first login.",
+
+                            IsBodyHtml = true,
+                        };
+                        var result = sender.SendMail(serverSettings, userSettings);
+
+                        user.IsSentEmail = result.isSuccess;
+
+                        //--Email Sending start
+                    }
+
+                    var res1 = await ApiMasterService.CallingAPI<GenRes, Vendor>(AllApiNames.SET_VENDOR!, user);
+                    if (res1.responseCode.Equals(0))
+                    {
+                        Snackbar.Add("Email sent and status saved successfully.", Severity.Success);
+                        await GetVendors();
+                        StateHasChanged();
+                    }
+                    else
+                    {
+                        await DialogService.ShowMessageBox(title: "Error!", markupMessage: (MarkupString)res1.responseMessage!, yesText: "OK");
+                    }
+
+                }
+            }
+        }
+
+    }
+}
+<style>
+    .mud-table-container {
+        max-height: 48vh;
+    }
+</style>
+
+

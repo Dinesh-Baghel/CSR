@@ -1,0 +1,230 @@
+﻿@page "/User-Master"
+@attribute [Authorize]
+<MudGrid Class="justify-end">
+    <MudItem>
+        <MudBreadcrumbs Items="_items">
+            <ItemTemplate Context="item">
+                <MudLink Href="@item.Href">@item.Text.ToUpper()</MudLink>
+            </ItemTemplate>
+        </MudBreadcrumbs>
+    </MudItem>
+</MudGrid>
+<MudStack Row="true" AlignItems="AlignItems.End" Justify="Justify.FlexEnd" Class="mb-2">
+    <MudTooltip Text="Update divisions, MC and brands permissions by excel upload.">
+        <MudButton OnClick="OpenUploadDialog" StartIcon="@Icons.Material.Filled.UploadFile" Variant="Variant.Filled" Color="Color.Success">
+            Upload Permissions
+        </MudButton>
+    </MudTooltip>
+    <MudButton OnClick="() => OpenRoleDialog()" StartIcon="@Icons.Material.Filled.Add" Variant="Variant.Filled" Color="Color.Secondary">
+        Add New User
+    </MudButton>
+</MudStack>
+<MudTable Items="filteredUsers" @ref="mudTable" Dense="true">
+    <ToolBarContent>
+        <MudSpacer />
+        <MudTextField T="string" Value="@searchQuery" ValueChanged="OnSearchChanged" Placeholder="Search" Adornment="Adornment.Start"
+                      AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+    </ToolBarContent>
+    <HeaderContent>
+        <MudTh>Emp Code</MudTh>
+        <MudTh>Emp Name</MudTh>
+        <MudTh>Contact No</MudTh>
+        <MudTh>Mail Id</MudTh>
+        <MudTh>Designation</MudTh>
+        <MudTh>Role</MudTh>
+        <MudTh>Actions</MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd>@context.Emp_Code</MudTd>
+        <MudTd>@(context.Emp_Name)</MudTd>
+        <MudTd>@(context.Emp_Contact_No)</MudTd>
+        <MudTd>@(context.Emp_Mail_Id)</MudTd>
+        <MudTd>@(context.Emp_Desig)</MudTd>
+        <MudTd>@(context.Role_Name)</MudTd>
+        <MudTd>
+            <MudButton OnClick="() => OpenRoleDialog(context)" StartIcon="@Icons.Material.Filled.Edit" Color="Color.Secondary" Variant="Variant.Text" />
+        </MudTd>
+    </RowTemplate>
+    <NoRecordsContent>
+        <MudText>No matching records found</MudText>
+    </NoRecordsContent>
+    <LoadingContent>
+        <MudText>Loading...</MudText>
+    </LoadingContent>
+    <PagerContent>
+        <MudTablePager PageSizeOptions="@pageSizeOptions" />
+    </PagerContent>
+</MudTable>
+
+
+
+@code {
+    private SelectListReq selectListReq = new();
+    private List<UserDetails> filteredUsers = new();
+    private List<UserDetails> pagedUsers = new(); // Users to be shown on the current page
+    private MudTable<UserDetails> mudTable;
+    private string searchQuery = string.Empty;
+    private int pageSize => BsrSettings.AdminPageSize; // Items per page
+    private int[] pageSizeOptions => new[]
+    {
+        pageSize * 1,
+        pageSize * 2,
+        pageSize * 3,
+        pageSize * 4,
+        pageSize * 5
+    };
+    private int currentPage = 0; // Current page index
+    private int User_Id = 0; //  Current logged in user id
+    private Modules modules;
+    private List<BreadcrumbItem> _items = new List<BreadcrumbItem>
+    {
+        new BreadcrumbItem("Home", href: "/V1/Login2BsrAccount"),
+        new BreadcrumbItem("User List", href: "#", disabled: true)
+    };
+    protected override async Task OnInitializedAsync()
+    {
+        modules = await MenuService.GetModules();
+        if (!modules.User_Management)
+        {
+            NavigationManager.NavigateTo("/");
+        }
+        var user = HttpContextAccessor.HttpContext?.User;
+        // Replace "YourCustomClaimType" with the actual claim type
+        var uid = user!.Claims.FirstOrDefault(c => c.Type == CustomClaimTypes.User_Id)?.Value;
+        User_Id = Convert.ToInt32(uid);
+        await GetUsers();
+    }
+    private async Task GetUsers()
+    {
+        selectListReq.Id = 0;
+        selectListReq.Cmd = CmdNames.Get_All_Users;
+        var res = await ApiMasterService.CallingAPI<GetAllUsersRes, SelectListReq>(AllApiNames.GET_ALL_USERS, selectListReq);
+        if (res.responseCode == 0)
+        {
+            pagedUsers = res.UserDetailsList;
+        }
+        else
+        {
+            pagedUsers = new();
+            Snackbar.Add(res.responseMessage!, Severity.Error);
+        }
+        pagedUsers = res.UserDetailsList;
+        filteredUsers = pagedUsers;
+        // ApplyPaging(); // Apply pagination to the full list
+    }
+    private void OnSearchChanged(string searchQuery)
+    {
+        this.searchQuery = searchQuery;
+        FilterRoles(); // Apply search filter
+    }
+    private void FilterRoles()
+    {
+        if (string.IsNullOrWhiteSpace(searchQuery))
+        {
+            filteredUsers = pagedUsers; // Show all Users if search is empty
+        }
+        else
+        {
+            filteredUsers = pagedUsers
+                .Where(role => role.Emp_Code!.Contains(searchQuery, StringComparison.OrdinalIgnoreCase) ||
+                       role.Emp_Name!.ToString().Contains(searchQuery, StringComparison.OrdinalIgnoreCase) ||
+                       role.Emp_Contact_No!.ToString().Contains(searchQuery, StringComparison.OrdinalIgnoreCase))
+                .ToList();
+
+            ApplyPaging(); // Re-apply pagination after search
+        }
+    }
+    private void ApplyPaging()
+    {
+        var startIndex = currentPage * pageSize;
+        filteredUsers = filteredUsers.Skip(startIndex).Take(pageSize).ToList(); // Paginate the filtered Users
+    }
+    private void OnPageChanged(int newPage)
+    {
+        currentPage = newPage;
+        ApplyPaging(); // Update paged users when the page is changed
+    }
+    private async Task OpenRoleDialog(UserDetails? user = null)
+    {
+        if (user != null)
+        {
+            if (User_Id == user.Id)
+            {
+                await ShowErrorDialog("You are not authorize to update yourself.");
+                return;
+            }
+        }
+        selectListReq.Id = user == null ? 0 : user!.Id;
+        selectListReq.Cmd = CmdNames.Get_Role_Details_On_User_Id;
+        var res = await ApiMasterService.CallingAPI<RoleDetailsOnIdRes, SelectListReq>(AllApiNames.SELECT_ROLEDETAILS_ON_ID, selectListReq);
+        var roleDetails = new List<RoleDetails>();
+        if (res.responseCode == 0)
+        {
+            roleDetails = res.roleDetails;
+        }
+        else
+        {
+            Snackbar.Add(res.responseMessage!, Severity.Error);
+        }
+        if (roleDetails.Count > 0 && user != null)
+        {
+            user!.RoleDetailsList = roleDetails;
+        }
+
+      
+        selectListReq.Id = 0;
+        selectListReq.Cmd = CmdNames.Get_Region;
+        selectListReq.StrField = "";
+        var regionList = await ApiMasterService.CallingAPI<MasterDataList, SelectListReq>(AllApiNames.GET_MASTER_DATA, selectListReq);
+        if (regionList.masterDataList.Count > 0 && user != null)
+        {
+            user!.RegionList = regionList.masterDataList;
+        }
+
+        var parameters = new DialogParameters
+        {
+            { "User",  user != null ? user.Copy() : new UserDetails() {RoleDetailsList = roleDetails} },
+            { "IsEditMode", user != null }
+        };
+        var options = new DialogOptions { CloseButton = true, MaxWidth = MaxWidth.Large, FullWidth = true };
+        var dialog = DialogService.Show<UserMasterDialog>("User Details", parameters, options);
+
+        var result = await dialog.Result;
+        if (!result!.Canceled)
+        {
+            var updatedUser = result.Data as UserDetails;
+            if (updatedUser != null)
+            {
+                updatedUser.Inserted_Updated_By = User_Id;
+                var res1 = await ApiMasterService.CallingAPI<GenRes, UserDetails>(AllApiNames.SET_USER!, updatedUser);
+                if (res1.responseCode.Equals(0))
+                {
+                    await GetUsers();
+                    mudTable?.NavigateTo(0);
+                }
+                else
+                {
+                    await ShowErrorDialog(res.responseMessage!);
+                    // Show Error Message
+                }
+            }
+        }
+    }
+    private async Task OpenUploadDialog()
+    {
+        var options = new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true };
+        var dialog = await DialogService.ShowAsync<PermissionExcelUpload>("File Upload Dialog", options);
+        var res = await dialog.Result;
+        await GetUsers();
+    }
+    private async Task ShowErrorDialog(string message)
+    {
+        await DialogService.ShowMessageBox(title: "Error", markupMessage: (MarkupString)message, yesText: "OK");
+    }
+}
+<style>
+    .mud-table-container {
+        max-height: 48vh;
+    }
+</style>
+

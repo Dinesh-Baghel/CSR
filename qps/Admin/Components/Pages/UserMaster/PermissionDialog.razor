@@ -1,0 +1,43 @@
+﻿<MudDialog>
+    <DialogContent>
+        <MudForm @ref="form">
+            <MudGrid>
+                <MudItem xs="12" md="12">
+                    <MudTextField Lines="6" T="string" Label="@Label" @bind-Value="Permissions" Variant="Variant.Outlined" Placeholder="" Clearable="true" Immediate="true" Required="true" />
+                </MudItem>
+            </MudGrid>
+        </MudForm>
+    </DialogContent>
+
+    <DialogActions>
+        <MudButton OnClick="Save" Color="Color.Secondary" Variant="Variant.Filled">Save</MudButton>
+        <MudButton OnClick="Reset" Color="Color.Warning" Variant="Variant.Filled">Reset</MudButton>
+        <MudButton OnClick="CloseDialog" Color="Color.Error" Variant="Variant.Filled">Cancel</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    private MudForm form;
+    [CascadingParameter]
+    private IMudDialogInstance? MudDialog { get; set; }
+    [Parameter]
+    public string? Permissions { get; set; }
+    [Parameter]
+    public string? Label { get; set; }
+    private async void Save()
+    {
+        await form.Validate();
+        if (form.IsValid)
+        {
+           MudDialog?.Close(DialogResult.Ok(Permissions));
+        }
+    }
+    private void Reset()
+    {
+       Permissions = "";
+    }
+    private void CloseDialog()
+    {
+        MudDialog?.Close();
+    }
+}

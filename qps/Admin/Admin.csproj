@@ -1,0 +1,78 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+	<PropertyGroup>
+		<TargetFramework>net8.0</TargetFramework>
+		<Nullable>enable</Nullable>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<UserSecretsId>aspnet-Admin-0858f57c-d9cd-4a5d-ab4e-ca5e3c778733</UserSecretsId>
+		<Version>1.0.0</Version>
+		<AssemblyVersion>1.0.0</AssemblyVersion>
+		<FileVersion>1.0.0</FileVersion>
+	</PropertyGroup>
+
+
+	<ItemGroup>
+		<PackageReference Include="BlazorBarcodeScanner.ZXing.JS" Version="1.0.4" />
+		<PackageReference Include="Blazored.TextEditor" Version="1.1.3" />
+		<PackageReference Include="ClosedXML" Version="0.105.0" />
+		<PackageReference Include="CodeBeam.MudBlazor.Extensions" Version="8.2.4" />
+
+		<PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="8.*" />
+		<PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.*" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.*" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="8.*" />
+		<PackageReference Include="MudBlazor" Version="8.10.0" />
+		<PackageReference Include="Extensions.MudBlazor.StaticInput" Version="3.2.0" />
+		<PackageReference Include="SixLabors.ImageSharp" Version="3.1.11" />
+		<PackageReference Include="System.Data.SqlClient" Version="4.9.0" />
+		<PackageReference Include="System.Drawing.Common" Version="9.0.4" />
+
+	</ItemGroup>
+
+
+	<ItemGroup>
+		<ProjectReference Include="..\Application\Application.csproj" />
+		<ProjectReference Include="..\Infrastructure\Infrastructure.csproj" />
+	</ItemGroup>
+
+
+	<ItemGroup>
+		<Reference Include="EmailService">
+			<HintPath>..\Dependencies\EmailService\EmailService.dll</HintPath>
+		</Reference>
+		<Reference Include="EncryptionUtility">
+			<HintPath>..\Dependencies\EncryptionUtility\EncryptionUtility.dll</HintPath>
+		</Reference>
+		<Reference Include="MyNewEncDec">
+			<HintPath>..\Dependencies\MyNewEncDec\MyNewEncDec.dll</HintPath>
+		</Reference>
+		<Reference Include="VmmCaptcha">
+			<HintPath>..\Dependencies\VmmCaptcha\VmmCaptcha.dll</HintPath>
+		</Reference>
+	</ItemGroup>
+
+
+	<ItemGroup>
+		<Compile Update="Components\ReportsDataSets\BsrReportDataSet.Designer.cs">
+			<DependentUpon>BsrReportDataSet.xsd</DependentUpon>
+			<DesignTime>True</DesignTime>
+			<AutoGen>True</AutoGen>
+		</Compile>
+	</ItemGroup>
+
+
+	<ItemGroup>
+		<None Update="Components\ReportsDataSets\BsrReportDataSet.xsd">
+			<SubType>Designer</SubType>
+			<LastGenOutput>BsrReportDataSet.Designer.cs</LastGenOutput>
+			<Generator>MSDataSetGenerator</Generator>
+		</None>
+	</ItemGroup>
+
+
+	<ItemGroup>
+		<Folder Include="Common\" />
+		<Folder Include="wwwroot\Images\PPS\" />
+	</ItemGroup>
+
+</Project>

@@ -1,0 +1,747 @@
+﻿@using Admin.Components.Pages.UserMaster
+@using Admin.Components.Shared
+@using EmailService.Models
+@using MudExtensions
+@using System.Text.RegularExpressions
+@using System.Security.Claims
+
+
+<MudDialog>
+    <DialogContent>
+        <MudForm @ref="form">
+            <MudGrid>
+                <MudItem xs="12" md="12">
+                    <MudGrid>
+                       @*  <MudItem xs="12" md="12">
+                            <MudChip T="string" Variant="Variant.Outlined" Color="Color.Secondary">PO Details </MudChip>
+                        </MudItem> *@
+                        <!-- Vendor Code -->
+                        <MudItem xs="12" md="2">
+                            <MudTextField T="string" Label="PO Number" ReadOnly="isFatched" @bind-Value="PO.PoNumber" Required="true" />
+                        </MudItem>
+                        <MudItem xs="12" md="2">
+                            <MudTextField Label="Total Qty." @bind-Value="PO.POTotalQty" ReadOnly="true" />
+                        </MudItem>
+                        <!-- Vendor Name -->
+                        <MudItem xs="12" md="2">
+                            <MudTextField T="string" Label="Vendor Code" ReadOnly="true" @bind-Value="PO.VendorCode" Required="true" />
+                        </MudItem>
+                        <MudItem xs="12" md="4">
+                            <MudTextField T="string" Label="Vendor Name" ReadOnly="true" @bind-Value="PO.VendorName" Required="true" />
+                        </MudItem>
+                        <MudItem xs="12" md="2">
+                            <MudSelect T="int" Label="Select Region" @bind-Value="PO.RegionId" Required="true" ReadOnly="true">
+                                @foreach (var item in PO.RegionList)
+                                {
+                                    <MudSelectItem Value="@item.Master_ID">
+                                        @( $"{item.Master_Name})")
+                                    </MudSelectItem>
+                                }
+                            </MudSelect>
+                        </MudItem>
+                        <MudItem xs="12" md="4">
+                            <MudTextField T="string" Label="Fabric" ReadOnly="true" @bind-Value="PO.Fabric" />
+                        </MudItem>
+                        <MudItem xs="12" md="2">
+                            <MudTextField T="string" Label="Color" ReadOnly="true" @bind-Value="PO.Color" />
+                        </MudItem>
+                        <MudItem xs="12" md="2">
+                            <MudTextField Label="Offered Qty." @bind-Value="PO.OfferedQty" />
+                        </MudItem>
+                        <MudItem xs="12" md="2">
+                            <MudTextField Label="Date of Inspection" Value="@(PO.DateOfInspection?.ToString("dd-MMM-yyyy HH:mm"))" ReadOnly="true" />
+                        </MudItem>
+                        <MudItem xs="12" md="2">
+                            <MudTextField T="string" Label="DoI Assigned by QA" Value="@(PO.QA_ASSIGNED_DOI?.ToString("dd-MMM-yyyy HH:mm"))" ReadOnly="true" />
+                        </MudItem>
+                        <MudItem xs="12" md="12">
+                            <MudSelect T="int" Label="Select Inspection Location" Value="@PO.AddressId" ReadOnly="true" >
+                                @foreach (var item in PO.AddressList)
+                                {
+                                    <MudSelectItem Value="@item.AddressId">
+                                        @( $"{item.AddressLine1}, {item.City}, {item.RegionDescription} ({item.PinCode})")
+                                    </MudSelectItem>
+                                }
+                            </MudSelect>
+                        </MudItem>
+
+                        <!-- Role Selection -->
+                      @*   <MudItem xs="12" md="12">
+                            <MudChip T="string" Variant="Variant.Outlined" Color="Color.Secondary">List of Line Items </MudChip>
+                        </MudItem> *@
+                        <MudItem xs="12" md="12">
+                            <MudTable T="PODetails" Items="PO.Details" Hover="true" Dense="true" Bordered="true" Striped="true" SortLabel="Sort By">
+                                <HeaderContent>
+                                    <MudTh><MudTableSortLabel SortBy="new Func<PODetails, object>(x => x.LineItem)">LINE ITEM</MudTableSortLabel></MudTh>
+                                    <MudTh Style="width:80px;"><MudTableSortLabel SortBy="new Func<PODetails, object>(x => x.Article)">ARTICLE</MudTableSortLabel></MudTh>
+                                    <MudTh><MudTableSortLabel SortBy="new Func<PODetails, object>(x => x.ArticleDesc)">ARTICLE DESCRIPTION</MudTableSortLabel></MudTh>
+                                    <MudTh><MudTableSortLabel SortBy="new Func<PODetails, object>(x => x.PrepackQty)">PREPACK QTY.</MudTableSortLabel></MudTh>
+                                    <MudTh><MudTableSortLabel SortBy="new Func<PODetails, object>(x => x.PurchaseTotQty)">TOTAL QTY.</MudTableSortLabel></MudTh>
+                                    <MudTh><MudTableSortLabel SortBy="new Func<PODetails, object>(x => x.PrepackQtyEaches)">PREPACK QTY. EACHES</MudTableSortLabel></MudTh>
+                                    <MudTh><MudTableSortLabel SortBy="new Func<PODetails, object>(x => x.Eaches)">EACHES</MudTableSortLabel></MudTh>
+                                    @* <MudTh></MudTh> *@
+                                </HeaderContent>
+                                <RowTemplate>
+                                    <MudTd DataLabel="LINE ITME">@context.LineItem</MudTd>
+                                    <MudTd DataLabel="ARTICLE">@context.Article</MudTd>
+                                    <MudTd DataLabel="DESCRIPTION">@context.ArticleDesc</MudTd>
+                                    <MudTd DataLabel="TOTAL QTY.">@context.PrepackQty</MudTd>
+                                    <MudTd DataLabel="TOTAL QTY.">@context.PurchaseTotQty</MudTd>
+                                    <MudTd DataLabel="TOTAL QTY.">@context.PrepackQtyEaches</MudTd>
+                                    <MudTd DataLabel="TOTAL QTY.">@context.Eaches</MudTd>
+                                </RowTemplate>
+                                <PagerContent>
+                                    <MudTablePager PageSizeOptions="new int[] { 10, 25, 50, 100 }" />
+                                </PagerContent>
+                            </MudTable>
+                        </MudItem>
+                    </MudGrid>
+                </MudItem>
+            </MudGrid>
+        </MudForm>
+    </DialogContent>
+
+    <DialogActions>
+        <MudChip T="string" Variant="Variant.Outlined" Color="Color.Warning">Status : @PO.Insp_Req_Status  </MudChip>
+    </DialogActions>
+</MudDialog>
+<Loader IsVisible="@IsLoading" />
+
+@code {
+
+    bool isShow;
+    [CascadingParameter]
+    private IMudDialogInstance? MudDialog { get; set; }
+    [Parameter]
+    public POHeader PO { get; set; } = new();
+    [Parameter] public bool IsEditMode { get; set; }
+    public bool IsMaked { get; set; } = false;
+
+    private bool isFatched { get; set; }
+
+    private MudForm form;
+    private bool isSubmitting = false;
+    bool IsLoading = false;
+    private int User_Id = 0;
+    private string LoggedVendorCode = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var user = HttpContextAccessor.HttpContext?.User;
+        // Replace "YourCustomClaimType" with the actual claim type
+        var uid = user!.Claims.FirstOrDefault(c => c.Type == CustomClaimTypes.User_Id)?.Value;
+        User_Id = Convert.ToInt32(uid);
+        LoggedVendorCode = user!.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value!;
+        if (PO != null)
+        {
+            isFatched = IsEditMode;
+        }
+        else
+        {
+            PO = new();
+            isFatched = false;
+        }
+
+    }
+
+    private async Task Reset()
+    {
+        bool? dres = await DialogService.ShowMessageBox("Confirmation", "Are you sure you want to reset the form ?", yesText: "  Yes!  ", cancelText: "   No   ");
+        if (dres == null)
+        {
+            return;
+        }
+        else
+        {
+            PO = new();
+            IsEditMode = false;
+            isFatched = false;
+            StateHasChanged();
+        }
+    }
+    //Get_Roles_List
+    private async void Save()
+    {
+
+        if (string.IsNullOrEmpty(PO.VendorCode))
+        {
+            await ShowErrorDialog("Validation", "Vendor Code & Vendor Name are required.");
+            return;
+        }
+        if (PO.Details.Count == 0)
+        {
+            await ShowErrorDialog("Validation", "At least one line item is required.");
+            return;
+        }
+
+
+
+        bool? dres = await DialogService.ShowMessageBox("Confirmation", "Do you want to save Inspection details?", yesText: "  Yes!  ", cancelText: "   No   ");
+        if (dres == null)
+        {
+            return;
+        }
+        else
+        {
+            await form.Validate();
+
+            if (form.IsValid)
+            {
+                PO.CreatedBy = User_Id;// Set the CREATED BY
+
+                var res1 = await ApiMasterService.CallingAPI<GenRes, POHeader>(AllApiNames.SAVE_INSPECTION!, PO);
+                if (res1.responseCode.Equals(0))
+                {
+                    var users = await GetUsers();
+                    var toEmails = string.Join(";", users.Where(a => a.Role_Id == 1007).Select(a => a.Emp_Mail_Id));
+                    var serverSettings = mapper.Map<ServerSettings>(EmailServerSettings);
+                    var Vendor = $"{PO.VendorName}  <b>({PO.VendorCode})</b>";
+                    var Product = $"<b>PO~</b>{PO.PoNumber}, <b>Color~</b>{PO.Color}, <b>Fabric~</b>{PO.Fabric}, <b>Offered Quantity~</b>{PO.OfferedQty}";
+                    var DOI = $"{PO.DateOfInspection.ToString()}";
+                    var Location = $"{PO.InspectionLocation}";
+                    var SubmittedOn = $"{PO.CreatedOn}";
+                    var userSettings = new UserMailSettings
+                    {
+
+                        From = EmailServerSettings.From,// "noreply@vishalwholesale.co.in",
+                        To = toEmails,
+                        Subject = $"New Inspection Request Submitted – [{res1.recordId}]",
+                        Body =
+                            $"Dear QA Team,<br/><br/>" +
+                            $"Kindly review the inspection request and take the necessary action to schedule and confirm the final date of inspection.<br/><br/>" +
+                            $"<b>Vendor Name: </b>{Vendor}<br/>" +
+                            $"<b>Product: </b>{Product}<br/>" +
+                            $"<b>Proposed Date of Inspection: </b>{DOI}<br/>" +
+                            $"<b>Location: </b>{Location}<br/>" +
+                            $"<b>Submitted On: </b>{SubmittedOn}<br/><br/>" +
+
+                            $"You may log in to the Quality Process System (QPS) to review the request details.<br/>" +
+                            $"Login URL: 🔗 <a href='https://qps.vishalmegamart.com:8024/'>https://qps.vishalmegamart.com:8024/</a><br/>" +
+                            $"<b>Note : </b>For any clarification, please coordinate with the respective vendor." +
+                            $"<br/><br/><br/>Regards,<br/>" +
+                            $"<b>Quality Process System (QPS)</b><br/><br/>",
+
+                        IsBodyHtml = true,
+                    };
+                    var result = sender.SendMail(serverSettings, userSettings);
+                    // sent the mail to QA
+                    if (result.isSuccess)
+                    {
+                        Snackbar.Add("PO record saved successfully.", Severity.Success);
+                    }
+                    else
+                    {
+                        Snackbar.Add("PO record saved successfully but email not sent.", Severity.Success);
+                    }
+                    MudDialog?.Close();
+                }
+                else
+                {
+                    await ShowErrorDialog("Error!", res1.responseMessage!);
+                }
+
+
+            }
+        }
+
+    }
+    private async Task<List<UserDetails>> GetUsers()
+    {
+        var selectRequest = new SelectListReq
+        {
+            Id = 0,
+            Cmd = CmdNames.Get_All_Users,
+        };
+
+        var res = await ApiMasterService.CallingAPI<GetAllUsersRes, SelectListReq>(AllApiNames.GET_ALL_USERS, selectRequest);
+
+        if (res.responseCode == 0)
+        {
+            return res.UserDetailsList;
+        }
+        else
+        {
+            Snackbar.Add(res.responseMessage!, Severity.Error);
+            return new();
+        }
+    }
+    private void CloseDialog()
+    {
+        MudDialog?.Close();
+    }
+    private async Task ShowErrorDialog(string Tital, string message)
+    {
+        await DialogService.ShowMessageBox(Tital, message);
+    }
+    // Find Button Logic
+    private async Task OnFindClick()
+    {
+        if (!string.IsNullOrEmpty(PO.PoNumber))
+        {
+            // Prepare request safely
+            var selectRequest = new SelectListReq
+            {
+                Id = 0,
+                Cmd = CmdNames.Get_PO_Details,
+                StrField = PO.PoNumber      // null-safe
+            };
+            // Find the PO in local db
+            IsLoading = true;
+            var existingPO = await ApiMasterService.CallingAPI<POResponse, SelectListReq>(AllApiNames.GET_PO_DETAILS, selectRequest);
+            IsLoading = false;
+
+            if (existingPO.responseCode == 0 && existingPO.responseMessage!.ToUpper() == "SUCCESS")
+            {
+                if (!string.IsNullOrEmpty(existingPO.POHeader.PO_NUMBER))
+                {
+                    await ShowErrorDialog("Info", "PO details already exist.");
+
+                    //-----------------------
+                    PO = mapper.Map<POHeader>(existingPO.POHeader);
+                    PO.Details.Clear();
+                    foreach (var podetail in existingPO.PODetails)
+                    {
+                        PO.Details.Add(mapper.Map<PODetails>(podetail));
+                    }
+
+                    selectRequest.Cmd = CmdNames.Get_Vendor_By_Code;
+                    selectRequest.StrField = PO.VendorCode;     // null-safe
+                    IsLoading = true;
+                    var existingVendor = await ApiMasterService.CallingAPI<GetVendorByCode, SelectListReq>(AllApiNames.GET_VENDOR_BY_CODE, selectRequest);
+                    IsLoading = false;
+                    if (existingVendor.responseCode == 0 && existingVendor.responseMessage!.ToUpper() == "SUCCESS")
+                    {
+                        if (!string.IsNullOrEmpty(existingVendor.VendorModel.VENDOR_CODE))
+                        {
+                            selectRequest.Id = existingVendor.VendorModel.VENDOR_ID;
+                            selectRequest.Cmd = CmdNames.Get_Vendor_Address;
+                            Vendor _vendor = mapper.Map<Vendor>(existingVendor.VendorModel);
+                            _vendor.VendorGUId = Guid.NewGuid();
+                            _vendor.VendorAddresses.Clear();
+                            foreach (var addrss in existingVendor.VendorAddressList)
+                            {
+                                PO.AddressList.Add(mapper.Map<VendorAddressDetail>(addrss));
+                            }
+                        }
+                    }
+
+                    selectRequest = new SelectListReq
+                    {
+                        Id = 0,
+                        Cmd = CmdNames.Get_Region,
+                        StrField = ""     // null-safe
+                    };
+                    // Find the PO in local db
+                    IsLoading = true;
+                    var regionList = await ApiMasterService.CallingAPI<MasterDataList, SelectListReq>(AllApiNames.GET_MASTER_DATA, selectRequest);
+                    IsLoading = false;
+                    PO.RegionList = regionList.masterDataList;
+
+
+                    isFatched = true;
+                    return;
+                    //-------------------------
+                }
+            }
+
+            //------------------------------
+            string pno = PO.PoNumber;
+            var req = new SAP_API_DATA_Req
+            {
+                Param = PO.PoNumber,  // Ensure no null
+                TaskName = "SAP_PO_DETAILS"
+            };
+
+            IsLoading = true;
+            var sapApiData = await ApiMasterService
+                .CallingAPI<ApiData, SAP_API_DATA_Req>(AllApiNames.GET_SAP_API!, req)
+                .ConfigureAwait(false);
+            IsLoading = false;
+
+            if (sapApiData is not null)
+            {
+                IsLoading = true;
+                var poDetails = await ApiMasterService
+                    .CallingSAPAPI<POSAPResponse, string>(string.Empty, sapApiData)
+                    .ConfigureAwait(false);
+                IsLoading = false;
+                if (poDetails.APPS_FOOTWEAR_DETAILS != null)
+                {
+                    if (poDetails.APPS_FOOTWEAR_DETAILS.Any() == true)  // Safe and concise
+                    {
+                        var Podtl = poDetails.APPS_FOOTWEAR_DETAILS.First();
+
+                        if (Podtl is not null)  // extra guard
+                        {
+                            PO = PO.MapToHeader(poDetails);
+
+                            if (LoggedVendorCode == PO.VendorCode)
+                            {
+
+                                selectRequest.Cmd = CmdNames.Get_Vendor_By_Code;
+                                selectRequest.StrField = PO.VendorCode;     // null-safe
+
+                                var existingVendor = await ApiMasterService.CallingAPI<GetVendorByCode, SelectListReq>(AllApiNames.GET_VENDOR_BY_CODE, selectRequest);
+
+                                if (existingVendor.responseCode == 0 && existingVendor.responseMessage!.ToUpper() == "SUCCESS")
+                                {
+                                    if (!string.IsNullOrEmpty(existingVendor.VendorModel.VENDOR_CODE))
+                                    {
+                                        selectRequest.Id = existingVendor.VendorModel.VENDOR_ID;
+                                        selectRequest.Cmd = CmdNames.Get_Vendor_Address;
+                                        Vendor _vendor = mapper.Map<Vendor>(existingVendor.VendorModel);
+                                        _vendor.VendorGUId = Guid.NewGuid();
+                                        _vendor.VendorAddresses.Clear();
+                                        foreach (var addrss in existingVendor.VendorAddressList)
+                                        {
+                                            PO.AddressList.Add(mapper.Map<VendorAddressDetail>(addrss));
+                                        }
+                                    }
+                                }
+
+                                isFatched = true;
+                            }
+                            else
+                            {
+                                await ShowErrorDialog("Info", "This PO number is not assigned to you.");
+                                PO = new();
+                                PO.PoNumber = pno;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        await ShowErrorDialog("Info", "PO not found.");
+                        PO = new();
+                        PO.PoNumber = pno;
+                    }
+                }
+                else
+                {
+                    await ShowErrorDialog("Info", "Requesting server is not responding.");
+                    PO = new();
+                    PO.PoNumber = pno;
+                }
+
+
+            }
+            else
+            {
+                await ShowErrorDialog("Error", "SAP_PO_DETAILS Api not found.");
+                return;
+            }
+
+        }
+        else
+        {
+            await ShowErrorDialog("Warning", "Please enter a valid PO Number");
+        }
+    }
+    private async void AddToAddressList()
+    {
+        await form.Validate();
+
+        if (form.IsValid)
+        {
+
+        }
+    }
+    private async void EditItem(PODetails request)
+    {
+
+        // bool? dres = await DialogService.ShowMessageBox("Confirmation", "Are you sure you want to delete this item?", yesText: "  Yes!  ", cancelText: "   No   ");
+        // if (dres == null)
+        // {
+        //     return;
+        // }
+        // else
+        // {
+        //     _vendor.VendorAddresses.Remove(request);
+        //     StateHasChanged();
+        // }
+
+        var parameters = new DialogParameters
+        {
+            { "_vendor",  new Vendor()  },
+            { "IsEditMode", false }
+        };
+        var options = new DialogOptions { CloseButton = true, MaxWidth = MaxWidth.Medium, FullWidth = true };
+        // options.DisableBackdropClick = true;
+        // options.NoHeader = false;
+        // options.Position = DialogPosition.Center;
+
+        var dialog = DialogService.Show<POLineItemDetails>("PO Line Item Detials", parameters, options);
+
+        var result = await dialog.Result;
+
+    }
+
+    private async Task OnLocationChanged(int newValue)
+    {
+        PO.AddressId = newValue;
+
+        if (newValue == 0)  // If "Other" selected
+        {
+            var parameters = new DialogParameters
+            {
+                ["PO"] = PO // optional
+            };
+
+            var options = new DialogOptions
+            {
+                CloseButton = true,
+                MaxWidth = MaxWidth.Small,
+                FullWidth = true
+            };
+
+            var dialog = DialogService.Show<AddNewAddressDialog>("Add New Address", parameters, options);
+            var result = await dialog.Result;
+            if (!result!.Canceled)
+            {
+                int addId = (int)result.Data;
+                UpdateAddressList(addId);
+            }
+            StateHasChanged();
+        }
+    }
+    private async void UpdateAddressList(int addId)
+    {
+        var selectRequest = new SelectListReq
+        {
+            Id = 0,
+            Cmd = CmdNames.Get_Vendor_By_Code,
+            StrField = PO.VendorCode    // null-safe
+        };
+
+        IsLoading = true;
+        var existingVendor = await ApiMasterService.CallingAPI<GetVendorByCode, SelectListReq>(AllApiNames.GET_VENDOR_BY_CODE, selectRequest);
+        IsLoading = false;
+        if (existingVendor.responseCode == 0 && existingVendor.responseMessage!.ToUpper() == "SUCCESS")
+        {
+            if (!string.IsNullOrEmpty(existingVendor.VendorModel.VENDOR_CODE))
+            {
+                PO.AddressId = addId;
+                PO.AddressList.Clear();
+                foreach (var addrss in existingVendor.VendorAddressList)
+                {
+                    PO.AddressList.Add(mapper.Map<VendorAddressDetail>(addrss));
+                }
+                StateHasChanged();
+            }
+        }
+    }
+
+}
+<style>
+    .muddividr {
+        margin: 0 !important;
+        border-color: #f408b2 !important;
+        border-width: 2px;
+    }
+
+    .mud-breadcrumbs {
+        padding: 12px 12px;
+    }
+
+    .floating-search-btn {
+        position: fixed;
+        top: 50%;
+        right: 0;
+        transform: translateY(-50%);
+        background-color: #e91e63;
+        color: white;
+        padding: 10px 6px;
+        border-radius: 8px 0 0 8px;
+        cursor: pointer;
+        writing-mode: vertical-rl;
+        text-orientation: mixed;
+        font-weight: bold;
+        z-index: 999;
+        box-shadow: 0 0 8px rgba(0,0,0,0.2);
+    }
+
+        .floating-search-btn:hover {
+            background-color: #c2185b;
+        }
+
+    .search-modal {
+        position: fixed;
+        top: 170px;
+        right: 35px;
+        background-color: white;
+        width: 320px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+        border-radius: 8px;
+        z-index: 1000;
+    }
+
+        .search-modal .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .search-modal .close-btn {
+            background: none;
+            border: none;
+            font-size: 18px;
+            cursor: pointer;
+        }
+
+    .mud-simple-table.mud-table-dense * tr td, .mud-simple-table.mud-table-dense * tr th {
+        padding: 2px 4px
+    }
+
+    .font8 {
+        font-size: 0.8rem;
+    }
+
+    .mud-list-subheader-extended {
+        padding-top: 0px;
+        padding-bottom: 0px;
+        margin-bottom: -12px !important;
+    }
+
+    .mud-list-item-extended {
+        padding-bottom: 0px !important;
+    }
+
+    .mud-list-item-gutters-extended.mud-list-item-dense-extended {
+        padding-left: 4px;
+        padding-right: 4px;
+        padding-top: 0px;
+        padding-bottom: 0px;
+    }
+
+    .mud-list-subheader-gutters-extended {
+        padding-left: 8px;
+        padding-right: 8px;
+        padding-top: 0px !important;
+        padding-bottom: 0px !important;
+    }
+
+    .mud-icon-button-edge-margin-end {
+        color: red !important;
+    }
+
+    .mud-input > input.mud-input-root-outlined, div.mud-input-slot.mud-input-root-outlined {
+        padding: 15px 10px;
+        font-size: 12px;
+        height: 20px !important;
+    }
+
+
+
+    .filter-paper {
+        padding-left: 8px !important;
+        padding-right: 8px !important;
+        padding-top: 25px !important;
+        padding-bottom: 5px !important;
+        margin-left: 22px !important;
+        margin-right: 28px !important;
+        margin-bottom: 20px !important;
+    }
+
+    .mud-link {
+        font-size: 0.8rem !important;
+    }
+
+    .mud-list-item-multiselect-extended.mud-list-item-multiselect-checkbox-extended {
+        padding-inline-end: 0px;
+    }
+
+    .border1pxblack {
+        border: 1px solid #ffffffeb;
+        background-color: #ed008b !important;
+        color: white;
+    }
+
+    .border1pxblack1 {
+        background-color: #ed008b !important;
+        color: white;
+        border: none !important;
+    }
+
+    .my-custom-select {
+        position: relative;
+    }
+
+        .my-custom-select .mud-popover {
+            padding-top: 20px;
+        }
+
+    .filter-close-button {
+        position: absolute;
+        top: 6px;
+        right: 6px;
+        cursor: pointer;
+        background-color: white;
+        border: 1px solid #ccc;
+        border-radius: 50%;
+        padding: 2px;
+        z-index: 99999;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    }
+
+    .mud-list-subheader-extended {
+        top: -6px !important;
+    }
+
+    .mud-list-subheader-extended {
+        position: relative !important;
+    }
+
+    .disabled-div {
+        pointer-events: none; /* Prevent clicks */
+        opacity: 0.6; /* Dimmed look */
+        background-color: #f0f0f0; /* Optional: lighter background */
+        user-select: none; /* Prevent text selection */
+    }
+
+    .mud-dialog-title {
+        border-bottom: 1px solid #1413140d;
+    }
+
+    .mud-dialog-actions {
+        border-top: 1px solid #1413140d;
+    }
+
+    .mud-dialog-content {
+        padding-top: 1.5rem !important;
+        padding-bottom: 1.5rem !important;
+    }
+
+    .mud-dialog-title {
+        padding: 11px !important;
+    }
+
+    .mud-message-box__yes-button {
+        color: white !important;
+        background-color: green !important;
+    }
+
+    .mud-message-box__cancel-button {
+        color: white !important;
+        background-color: red !important;
+    }
+
+    .mud-message-box .mud-dialog-actions {
+        display: flex;
+        flex-direction: row-reverse;
+        justify-content: flex-start;
+    }
+</style>
+<style>
+
+    .mud-dialog-title {
+        color: white !important;
+        background: linear-gradient(to right, #0e6cb1, #ffffff) !important;
+    }
+
+    .mud-dialog-actions {
+        background: linear-gradient(to right, #3b7ed12b, #ffffff) !important
+    }
+
+</style>

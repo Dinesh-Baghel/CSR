@@ -1,0 +1,43 @@
+D:\Chandra Bhan Singh\WVMM\CWAP\Domain\bin\Release\net8.0\Domain.deps.json
+D:\Chandra Bhan Singh\WVMM\CWAP\Domain\bin\Release\net8.0\Domain.dll
+D:\Chandra Bhan Singh\WVMM\CWAP\Domain\bin\Release\net8.0\Domain.pdb
+D:\Chandra Bhan Singh\WVMM\CWAP\Domain\bin\Release\net8.0\EncryptionUtility.dll
+D:\Chandra Bhan Singh\WVMM\CWAP\Domain\obj\Release\net8.0\Domain.csproj.AssemblyReference.cache
+D:\Chandra Bhan Singh\WVMM\CWAP\Domain\obj\Release\net8.0\Domain.GeneratedMSBuildEditorConfig.editorconfig
+D:\Chandra Bhan Singh\WVMM\CWAP\Domain\obj\Release\net8.0\Domain.AssemblyInfoInputs.cache
+D:\Chandra Bhan Singh\WVMM\CWAP\Domain\obj\Release\net8.0\Domain.AssemblyInfo.cs
+D:\Chandra Bhan Singh\WVMM\CWAP\Domain\obj\Release\net8.0\Domain.csproj.CoreCompileInputs.cache
+D:\Chandra Bhan Singh\WVMM\CWAP\Domain\obj\Release\net8.0\Domain.csproj.Up2Date
+D:\Chandra Bhan Singh\WVMM\CWAP\Domain\obj\Release\net8.0\Domain.dll
+D:\Chandra Bhan Singh\WVMM\CWAP\Domain\obj\Release\net8.0\refint\Domain.dll
+D:\Chandra Bhan Singh\WVMM\CWAP\Domain\obj\Release\net8.0\Domain.pdb
+D:\Chandra Bhan Singh\WVMM\CWAP\Domain\obj\Release\net8.0\ref\Domain.dll
+D:\Chandra Bhan Singh\Projects\BSR\Domain\bin\Release\net8.0\Domain.deps.json
+D:\Chandra Bhan Singh\Projects\BSR\Domain\bin\Release\net8.0\Domain.dll
+D:\Chandra Bhan Singh\Projects\BSR\Domain\bin\Release\net8.0\Domain.pdb
+D:\Chandra Bhan Singh\Projects\BSR\Domain\bin\Release\net8.0\EncryptionUtility.dll
+D:\Chandra Bhan Singh\Projects\BSR\Domain\obj\Release\net8.0\Domain.csproj.AssemblyReference.cache
+D:\Chandra Bhan Singh\Projects\BSR\Domain\obj\Release\net8.0\Domain.GeneratedMSBuildEditorConfig.editorconfig
+D:\Chandra Bhan Singh\Projects\BSR\Domain\obj\Release\net8.0\Domain.AssemblyInfoInputs.cache
+D:\Chandra Bhan Singh\Projects\BSR\Domain\obj\Release\net8.0\Domain.AssemblyInfo.cs
+D:\Chandra Bhan Singh\Projects\BSR\Domain\obj\Release\net8.0\Domain.csproj.CoreCompileInputs.cache
+D:\Chandra Bhan Singh\Projects\BSR\Domain\obj\Release\net8.0\Domain.csproj.Up2Date
+D:\Chandra Bhan Singh\Projects\BSR\Domain\obj\Release\net8.0\Domain.dll
+D:\Chandra Bhan Singh\Projects\BSR\Domain\obj\Release\net8.0\refint\Domain.dll
+D:\Chandra Bhan Singh\Projects\BSR\Domain\obj\Release\net8.0\Domain.pdb
+D:\Chandra Bhan Singh\Projects\BSR\Domain\obj\Release\net8.0\ref\Domain.dll
+D:\QPS Project\QPS\Domain\bin\Release\net8.0\Domain.deps.json
+D:\QPS Project\QPS\Domain\bin\Release\net8.0\Domain.dll
+D:\QPS Project\QPS\Domain\bin\Release\net8.0\Domain.pdb
+D:\QPS Project\QPS\Domain\bin\Release\net8.0\EncryptionUtility.dll
+D:\QPS Project\QPS\Domain\obj\Release\net8.0\Domain.csproj.AssemblyReference.cache
+D:\QPS Project\QPS\Domain\obj\Release\net8.0\Domain.GeneratedMSBuildEditorConfig.editorconfig
+D:\QPS Project\QPS\Domain\obj\Release\net8.0\Domain.AssemblyInfoInputs.cache
+D:\QPS Project\QPS\Domain\obj\Release\net8.0\Domain.AssemblyInfo.cs
+D:\QPS Project\QPS\Domain\obj\Release\net8.0\Domain.csproj.CoreCompileInputs.cache
+D:\QPS Project\QPS\Domain\obj\Release\net8.0\Domain.sourcelink.json
+D:\QPS Project\QPS\Domain\obj\Release\net8.0\Domain.csproj.Up2Date
+D:\QPS Project\QPS\Domain\obj\Release\net8.0\Domain.dll
+D:\QPS Project\QPS\Domain\obj\Release\net8.0\refint\Domain.dll
+D:\QPS Project\QPS\Domain\obj\Release\net8.0\Domain.pdb
+D:\QPS Project\QPS\Domain\obj\Release\net8.0\ref\Domain.dll

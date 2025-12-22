@@ -1,0 +1,757 @@
+﻿@using MudBlazor
+@using EmailService.Models
+@using System.Security.Claims
+@using static Admin.Components.Pages.QPS.QpsDashboard
+@using Microsoft.AspNetCore.Components.Forms
+@using SixLabors.ImageSharp
+@using SixLabors.ImageSharp.Processing
+@using SixLabors.ImageSharp.Formats
+@using SixLabors.ImageSharp.Formats.Jpeg
+@using SixLabors.ImageSharp.Formats.Png
+@using System.IO;
+@inject IWebHostEnvironment Env
+@inject IDialogService DialogService
+
+<div class="pps-tracker">
+    <div class="pps-step">
+        <div class="@CircleClass(1)">1</div>
+        <span>New</span>
+    </div>
+
+    <div class="pps-connector @ConnectorClass(2)"></div>
+
+    <div class="pps-step">
+        <div class="@CircleClass(2)">2</div>
+        @{
+            if (Request.STATUS_ID == 2 || Request.STATUS_ID > 3)
+            {
+                <span>Accepted</span>
+            }
+            if (Request.STATUS_ID == 3)
+            {
+                <span>Declined</span>
+            }
+        }
+
+    </div>
+
+    <div class="pps-connector @ConnectorClass(3)"></div>
+
+    <div class="pps-step">
+        <div class="@CircleClass(3)">3</div>
+        @{
+            if (Request.STATUS_ID == 4)
+            {
+                <span>Passed</span>
+            }
+            if (Request.STATUS_ID == 5)
+            {
+                <span>Failed</span>
+            }
+        }
+
+    </div>
+</div>
+<style>
+
+    .pps-tracker {
+        display: flex;
+        align-items: baseline;
+        gap: 0px;
+        padding: 0px 20px 10px 20px;
+        flex-wrap: wrap;
+    }
+
+
+    .pps-step {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        min-width: 0px;
+        text-align: center;
+    }
+
+    .pps-connector {
+        flex: 1;
+        height: 4px;
+        background: #e0e0e0;
+        border-radius: 2px;
+        min-width: 30px;
+    }
+
+        .pps-connector.active {
+            background: #2e7d32;
+        }
+
+    .pps-circle {
+        position: relative;
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        background: #bdbdbd;
+        color: #424242;
+    }
+
+        .pps-circle.active {
+            background: #2e7d32;
+            color: #fff;
+        }
+
+        .pps-circle.current {
+            background: #ff008b;
+            color: #fff;
+        }
+
+        .pps-circle::before {
+            content: "";
+            position: absolute;
+            top: 20px;
+            left: 2px;
+            right: 20px;
+            bottom: 20px;
+            border-radius: 50%;
+            /* background: var(--circle-color, gray);  dynamic inner fill */
+            z-index: 0;
+        }
+
+        .pps-circle span {
+            position: relative;
+            z-index: 1;
+            color: white;
+            font-weight: bold;
+        }
+
+    .pps-step {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+</style>
+
+<MudDialog>
+    <DialogContent>
+        <MudForm Model="@Request" ValidSubmit="Submit">
+            @if (Request.Generic_Article != "" && Request.Generic_Article != "NF")
+            {
+
+                <MudText Typo="Typo.h4">
+                    Status : <span style="color: #ff008b;"> @Request.Status</span>
+                </MudText>
+                if ((Request.STATUS_ID != 4 && Request.STATUS_ID != 5 && Request.STATUS_ID != 3) || isAdmin)
+                {
+                    <MudTextField T="string" Label="Comments" Variant="Variant.Text" @bind-Value="CommentsText" Required=true />
+                    <MudPaper Class="pa-2 mt-2">
+                        <MudStack Row="true">
+                            <MudFileUpload T="IReadOnlyList<IBrowserFile>" Accept=".png, .jpg, .pdf, .word" FilesChanged="UploadFiles" MaximumFileCount="10" MaxFileSize="@(10 * 1024 * 1024)">
+                                <ActivatorContent>
+                                    <MudButton Variant="Variant.Filled" Color="MudBlazor.Color.Primary" StartIcon="@Icons.Material.Filled.CloudUpload">
+                                        Upload only image or pdf files upto 3MB size
+                                    </MudButton>
+                                </ActivatorContent>
+                                <SelectedTemplate>
+                                    @if (files != null)
+                                    {
+                                        <MudList T="string">
+                                            @foreach (var file in files)
+                                            {
+                                                <MudListItem Icon="@Icons.Material.Filled.AttachFile">
+                                                    @file.Name <code>@(file.Size / 1024) KB</code>
+                                                    <MudButton Variant="Variant.Outlined" OnClick="@(() => Remove(file))">remove</MudButton>
+                                                </MudListItem>
+                                            }
+                                        </MudList>
+                                    }
+                                </SelectedTemplate>
+                            </MudFileUpload>
+                        </MudStack>
+                        <MudStack Row="true">
+                            @if (largSizeFiles.Count > 0)
+                            {
+                                <div style="display:flex;flex-wrap:wrap;gap:10px;">
+                                    <MudText>Sorry, the following file(s) are too large to upload. Please choose a file smaller than 3 MB.</MudText>
+                                    @foreach (var path in largSizeFiles)
+                                    {
+                                        <code>@path <br /></code>
+                                    }
+                                </div>
+                            }
+                        </MudStack>
+                    </MudPaper>
+                }
+
+                <MudStack Row="true" Justify="Justify.FlexEnd" Spacing="1" Class="mt-3 mb-3">
+                    @if (Request.Status == "Accepted")
+                    {
+
+                        <MudButton Disabled="@(files.Count == 0)" Color="MudBlazor.Color.Success" Variant="Variant.Filled" OnClick="@(() => ConfirmAction("Pass", 4))">
+                            Pass
+                        </MudButton>
+                        <MudButton Disabled="@(files.Count == 0)" Color="MudBlazor.Color.Error" Variant="Variant.Filled" OnClick="@(() => ConfirmAction("Fail", 5))">
+                            Fail
+                        </MudButton>
+                        if (isAdmin)
+                        {
+                            <MudButton Disabled="@(files.Count == 0)" Color="MudBlazor.Color.Error" Variant="Variant.Filled" OnClick="@(() => ConfirmAction("Decline", 3))">
+                                Decline
+                            </MudButton>
+
+                        }
+
+
+                    }
+                    @if (Request.Status == "Declined" && isAdmin)
+                    {
+                        <MudButton Disabled="@(files.Count == 0)" Color="MudBlazor.Color.Success" Variant="Variant.Filled" OnClick="@(() => ConfirmAction("Accept", 2))">
+                            Accept
+                        </MudButton>
+                    }
+                    @if (Request.Status == "Failed" && isAdmin)
+                    {
+                        <MudButton Disabled="@(files.Count == 0)" Color="MudBlazor.Color.Success" Variant="Variant.Filled" OnClick="@(() => ConfirmAction("Pass", 4))">
+                            Pass
+                        </MudButton>
+                    }
+                    @if (Request.Status == "Passed" && isAdmin)
+                    {
+                        <MudButton Disabled="@(files.Count == 0)" Color="MudBlazor.Color.Error" Variant="Variant.Filled" OnClick="@(() => ConfirmAction("Fail", 5))">
+                            Fail
+                        </MudButton>
+                    }
+                    @if (Request.Status == "New")
+                    {
+                        <MudButton Color="MudBlazor.Color.Success" Variant="Variant.Filled" OnClick="@(() => ConfirmAction("Accept", 2))">
+                            Accept
+                        </MudButton>
+                        <MudButton Color="MudBlazor.Color.Error" Variant="Variant.Filled" OnClick="@(() => ConfirmAction("Decline", 3))">
+                            Decline
+                        </MudButton>
+
+                    }
+
+                    @if (files.Count > 0)
+                    {
+                        <MudButton Variant="Variant.Filled" Color="MudBlazor.Color.Primary" StartIcon="@Icons.Material.Filled.Clear" OnClick="ClearAsync">Remove All Files</MudButton>
+                    }
+                </MudStack>
+                <MudStack>
+                    <MudPaper Class="pa-4">
+                        <MudStack Row="true">
+                            <ReadOnlyField Label="Generic Article" Value="@(Request.Generic_Article + " ~ " + Request.Article_Description)" />
+                        </MudStack>
+                        <MudStack Row="true">
+                            <ReadOnlyField Label="Merchandise Category" Value="@(Request.Mc + " ~ " + Request.Mc_Description)" />
+                            <ReadOnlyField Label="Division" Value="@(Request.Division + " ~ " + Request.Division_Description)" />
+                        </MudStack>
+                        <MudStack Row="true">
+                            <ReadOnlyField Label="Color" Value="@Request.Color" />
+                            <ReadOnlyField Label="MRP" Value="@Request.Mrp" />
+                        </MudStack>
+                        <MudStack Row="true">
+                            <ReadOnlyField Label="Type" Value="@Request.PP_Type" />
+                            <ReadOnlyField Label="Qty" Value="@Request.Qty.ToString()" />
+                        </MudStack>
+                        <MudStack Row="true">
+                            <ReadOnlyField Label="Vendor" Value="@(Request.Vendor_Code + " ~ " + Request.Vendor_Name)" />
+                        </MudStack>
+                    </MudPaper>
+                    <MudPaper Class="pa-4">
+                        <MudStack Row="true">
+                            <ReadOnlyField Label="Created By" Value="@Request.CREATED_BY" />
+                            <ReadOnlyField Label="Created Date" Value="@Request.Created_At.ToString()" />
+                        </MudStack>
+                        <MudStack Row="true">
+                            <ReadOnlyField Label="Verified By" Value="@Request.VERIFIED_BY" />
+                            <ReadOnlyField Label="Verified Date" Value="@Request.VERIFIED_AT" />
+                        </MudStack>
+                    </MudPaper>
+                </MudStack>
+
+                <MudGrid Class="mt-4">
+                    <MudItem xs="12" sm="12" md="4">
+                        <MudText Typo="Typo.h6" Class="hdnd">Created</MudText>
+                    </MudItem>
+                    <MudItem xs="12" sm="12" md="4">
+                        <MudText Typo="Typo.h6" Class="hdnd">Accepted/Declined</MudText>
+                    </MudItem>
+                    <MudItem xs="12" sm="12" md="4">
+                        <MudText Typo="Typo.h6" Class="hdnd">Pass/Fail</MudText>
+                    </MudItem>
+
+                    <MudItem xs="12" sm="12" md="4">
+                        @foreach (var thumb in Request.ATTACHMENTS.Split(","))
+                        {
+                            if (thumb.Contains("."))
+                            {
+                                <a href="@thumb" target="_blank">
+                                    @if (thumb.Split(".")[1] == "pdf")
+                                    {
+                                        <img @key="@thumb" src="@thumb" width="100" height="100" alt="Product" class="rounded-lg mud-elevation-25 img-thumb" onerror="this.onerror=null;this.src='resources/media/images/pdf.jpg';" />
+                                    }
+                                    else
+                                    {
+                                        <img @key="@thumb" src="@thumb" width="100" height="100" alt="Product" class="rounded-lg mud-elevation-25 img-thumb" @onmouseover="@(() => OnImageMouseOver(thumb))" @onmouseout="@(() => OnImageMouseOut())" onerror="this.onerror=null;this.src='resources/media/images/noimage.jpg';" />
+                                    }
+                                </a>
+                                <MudPopover Open="@(imgPath == @thumb && imgPath != "")" Fixed="true" AnchorOrigin="Origin.CenterRight" TransformOrigin="Origin.CenterLeft" style="width:40%;transform: translate(0%,-20%); z-index:9999; background-color:lightgray;" Class="py-50 px-1 centered-popover">
+                                    <ChildContent>
+
+                                        <img src="@imgPath" alt="Product" style="width:100%; height:auto; border-radius:8px; cursor: pointer;" @onclick="@(() => OpenInNewTab(thumb))" @onmouseover="@(() => OnImageMouseOver(thumb))" @onmouseout="@(() => OnImageMouseOut())" onerror="this.onerror=null;this.src='resources/media/images/noimage.jpg';" />
+
+                                    </ChildContent>
+                                </MudPopover>
+                            }
+                            else
+                            {
+                                <MudText Typo="Typo.button">No Attachment</MudText>
+                            }
+                        }
+                    </MudItem>
+                    <MudItem xs="12" sm="12" md="4">
+                        @foreach (var thumb in Request.ATTACHMENTS_STEP2.Split(","))
+                        {
+                            if (thumb.Contains("."))
+                            {
+                                <a href="@thumb" target="_blank">
+                                    @if (thumb.Split(".")[1] == "pdf")
+                                    {
+                                        <img @key="@thumb" src="@thumb" width="100" height="100" alt="Product" class="rounded-lg mud-elevation-25 img-thumb" onerror="this.onerror=null;this.src='resources/media/images/pdf.jpg';" />
+                                    }
+                                    else
+                                    {
+                                        <img @key="@thumb" src="@thumb" width="100" height="100" alt="Product" class="rounded-lg mud-elevation-25 img-thumb" @onmouseover="@(() => OnImageMouseOver(thumb))" @onmouseout="@(() => OnImageMouseOut())" onerror="this.onerror=null;this.src='resources/media/images/noimage.jpg';" />
+                                    }
+                                </a>
+                                <MudPopover Open="@(imgPath == @thumb && imgPath != "")" Fixed="true" AnchorOrigin="Origin.CenterRight" TransformOrigin="Origin.CenterLeft" style="width:40%;transform: translate(0%,-20%);  background-color:lightgray;" Class="py-50 px-1 centered-popover">
+                                    <ChildContent>
+
+                                        <img src="@imgPath" alt="Product" style="width:100%; height:auto; border-radius:8px; cursor: pointer;" @onclick="@(() => OpenInNewTab(thumb))" @onmouseover="@(() => OnImageMouseOver(thumb))" @onmouseout="@(() => OnImageMouseOut())" onerror="this.onerror=null;this.src='resources/media/images/noimage.jpg';" />
+
+                                    </ChildContent>
+                                </MudPopover>
+                            }
+                            else
+                            {
+                                <MudText Typo="Typo.button">No Attachment</MudText>
+                            }
+                        }
+                    </MudItem>
+                    <MudItem xs="12" sm="12" md="4">
+                        @foreach (var thumb in Request.ATTACHMENTS_STEP3.Split(","))
+                        {
+                            if (thumb.Contains("."))
+                            {
+                                <a href="@thumb" target="_blank">
+                                    @if (thumb.Split(".")[1] == "pdf")
+                                    {
+                                        <img @key="@thumb" src="@thumb" width="100" height="100" alt="Product" class="rounded-lg mud-elevation-25 img-thumb" onerror="this.onerror=null;this.src='resources/media/images/pdf.jpg';" />
+                                    }
+                                    else
+                                    {
+                                        <img @key="@thumb" src="@thumb" width="100" height="100" alt="Product" class="rounded-lg mud-elevation-25 img-thumb" @onmouseover="@(() => OnImageMouseOver(thumb))" @onmouseout="@(() => OnImageMouseOut())" onerror="this.onerror=null;this.src='resources/media/images/noimage.jpg';" />
+                                    }
+                                </a>
+                                <MudPopover Open="@(imgPath == @thumb && imgPath != "")" Fixed="true" AnchorOrigin="Origin.CenterRight" TransformOrigin="Origin.CenterLeft" style="width:40%;transform: translate(0%,-20%); z-index:9999; background-color:lightgray;" Class="py-50 px-1 centered-popover">
+                                    <ChildContent>
+
+                                        <img src="@imgPath" alt="Product" style="width:100%; height:auto; border-radius:8px; cursor: pointer;" @onclick="@(() => OpenInNewTab(thumb))" @onmouseover="@(() => OnImageMouseOver(thumb))" @onmouseout="@(() => OnImageMouseOut())" onerror="this.onerror=null;this.src='resources/media/images/noimage.jpg';" />
+
+                                    </ChildContent>
+                                </MudPopover>
+                            }
+                            else
+                            {
+                                <MudText Typo="Typo.button">No Attachment</MudText>
+                            }
+                        }
+                    </MudItem>
+
+                </MudGrid>
+            }
+            else if (Request.Generic_Article == "NF")
+            {
+                <MudAlert Severity="Severity.Error" Elevation="0" Variant="Variant.Filled">
+                    We couldn’t find a matching generic article. Verify the number and try again.
+                </MudAlert>
+            }
+            else
+            {
+
+            }
+        </MudForm>
+    </DialogContent>
+
+
+</MudDialog>
+<QPSOverlay @ref="Overlay" />
+
+<style>
+    .centered-popover {
+        top: 50% !important;
+        left: 50% !important;
+        transform: translate(-50%, -50%) !important;
+        position: fixed !important;
+        width: 90%; /* make it fit mobile */
+        max-width: 600px; /* but don’t stretch too much on desktop */
+        max-height: 80vh; /* prevent overflow on small screens */
+        overflow: auto; /* scroll if content exceeds screen */
+        background-color: lightgray;
+        border-radius: 8px;
+    }
+
+    .img-thumb {
+        max-width: 100px; /* don’t grow too big */
+        width: 100%; /* scale with parent */
+        height: auto; /* keep aspect ratio */
+    }
+
+    .hdnd {
+        background: #f13090;
+        padding: 0;
+        height: 30px;
+        text-align: center;
+        color: white;
+    }
+</style>
+
+@code {
+    private string step1txt { get; set; }
+    private string step2txt { get; set; }
+    private string step3txt { get; set; }
+
+    private QPSOverlay? Overlay;
+    private string FormatErrorText { get; set; } = string.Empty;
+    private void OpenInNewTab(string url)
+    {
+        JS.InvokeVoidAsync("open", url, "_blank");
+    }
+
+    [CascadingParameter] IMudDialogInstance MudDialog { get; set; }
+    [Parameter] public PpsRequest Request { get; set; } = new();
+    private string? CommentsText { get; set; }
+
+    private const string UploadFolder = "wwwroot/Images/PPS";
+    private const string relPath = "/Images/PPS";
+    private const long MaxFileSize = 1536 * 1024 * 1024; // 1.5GB
+    private string empcode;
+    private string imgPath;
+
+    private List<string> uploadedFiles = new();
+    private List<string> largSizeFiles = new();
+    IList<IBrowserFile> files = new List<IBrowserFile>();
+    private List<string> Thumbnails = new();
+
+    private void ClearAsync()
+    {
+        files.Clear();
+        StateHasChanged();
+    }
+    private void Remove(IBrowserFile item)
+    {
+        files.Remove(item);
+        StateHasChanged();
+    }
+
+    public class InMemoryBrowserFile : IBrowserFile
+    {
+        private readonly byte[] _fileBytes;
+
+        public InMemoryBrowserFile(byte[] fileBytes, string name, string contentType)
+        {
+            _fileBytes = fileBytes;
+            Name = name;
+            Size = fileBytes.Length;
+            LastModified = DateTimeOffset.Now;
+            ContentType = contentType;
+        }
+
+        public DateTimeOffset LastModified { get; }
+        public string Name { get; }
+        public long Size { get; }
+        public string ContentType { get; }
+
+        public Stream OpenReadStream(long maxAllowedSize = 512000, CancellationToken cancellationToken = default)
+        {
+            return new MemoryStream(_fileBytes);
+        }
+    }
+
+    private async Task UploadFiles(IReadOnlyList<IBrowserFile> _files)
+    {
+        if (_files.Count < 20)
+        {
+            Overlay?.Show();
+            foreach (var file in _files)
+            {
+                // if (file.Size > 3000000) // 3 MB
+                // {
+                //     var sizeKB = file.Size / 1024.0;
+                //     var sizeMB = file.Size / 1024.0 / 1024.0;
+                //     FormatErrorText = $"❌ File '{file.Name}' is too large. " +
+                //                       $"Allowed: 3 MB. Yours: {sizeKB:F2} KB (~{sizeMB:F2} MB).";
+                // }
+
+                var uploadsFolder = Path.Combine(Env.WebRootPath, "uploads");
+                if (!Directory.Exists(uploadsFolder))
+                    Directory.CreateDirectory(uploadsFolder);
+
+                var ext = Path.GetExtension(file.Name).ToLower();
+                var uniqueFileName = $"{Guid.NewGuid()}{ext}";
+                var filePath = Path.Combine(uploadsFolder, uniqueFileName);
+
+                if (ext == ".jpg" || ext == ".jpeg" || ext == ".png")
+                {
+                    // Log original size
+                    long originalSize = file.Size;
+                    // Console.WriteLine($"Original Size: {originalSize / 1024.0:F2} KB ({file.Name})");
+
+                    // Open image with ImageSharp
+                    using var stream = file.OpenReadStream(maxAllowedSize: 10 * 1024 * 1024); // limit: 10 MB
+                    using var image = await Image.LoadAsync(stream);
+
+                    // ✅ Resize if too wide
+                    if (image.Width > 1024)
+                    {
+                        var scale = 1024.0 / image.Width;
+                        var newHeight = (int)(image.Height * scale);
+                        image.Mutate(x => x.Resize(1024, newHeight));
+                    }
+
+                    using var outputStream = new MemoryStream();
+                    // ✅ Choose encoder based on format
+                    IImageEncoder encoder = ext switch
+                    {
+                        ".jpg" or ".jpeg" => new JpegEncoder { Quality = 80 }, // compress jpeg
+                        ".png" => new PngEncoder { CompressionLevel = PngCompressionLevel.Level6 }, // compress png
+                        _ => new JpegEncoder { Quality = 80 } // default
+                    };
+
+                    await image.SaveAsync(outputStream, encoder);
+                    // await image.SaveAsync(filePath, encoder);
+                    long compressedSize = outputStream.Length;
+                    // Console.WriteLine($"Compressed Size: {compressedSize / 1024.0:F2} KB ({file.Name})");
+
+                    if (compressedSize <= (3 * 1024 * 1024))
+                    {
+                        // You can now save outputStream.ToArray() to DB or file system
+                        //File.WriteAllBytes($"{filePath}", outputStream.ToArray());
+                        //uploadedFiles.Add("/uploads/" + uniqueFileName);
+
+                        IBrowserFile compressedFile = new InMemoryBrowserFile(outputStream.ToArray(), $"{file.Name}", "image/jpeg");
+                        this.files.Add(compressedFile);
+                    }
+                    else
+                    {
+                        largSizeFiles.Add($"{file.Name}");
+                    }
+                }
+                else
+                {
+                    long originalSize = file.Size;
+                    if (originalSize <= (3 * 1024 * 1024))
+                    {
+                        this.files.Add(file);
+                    }
+                    else
+                    {
+                        largSizeFiles.Add($"{file.Name}");
+                    }
+
+                }
+
+                // if (file.Size > 3000000) // 3 MB limit
+                // {
+                //     var sizeKB = file.Size / 1024.0;   // in KB
+                //     var sizeMB = file.Size / 1024.0 / 1024.0; // in MB
+
+                //     FormatErrorText = $"File '{file.Name}' exceeds the maximum allowed size of 3 MB. " +
+                //                       $"(Your file: {sizeKB:F2} KB ≈ {sizeMB:F2} MB)";
+                // }
+                // else
+                // {
+                //     FormatErrorText = string.Empty;
+                // }
+            }
+            Overlay?.Hide();
+        }
+
+    }
+
+    // This value will be set based on PPS status from DB
+    // 1 = New, 2 = Accepted/Declined, 3 = Passed/Failed
+    int Stage = 1;
+    private int User_Id = 0;
+    private bool isAdmin = false;
+
+    private async Task ConfirmAction(string action, int statusId)
+    {
+        if (!string.IsNullOrEmpty(CommentsText))
+        {
+            bool? confirmed = await DialogService.ShowMessageBox(
+                title: "Confirmation",
+                markupMessage: (MarkupString)$"Are you sure you want to <b>{action}</b> this PPS Request?",
+                yesText: "Yes", noText: "No");
+
+            if (confirmed == true)
+            {
+                List<string> fileNames = new();
+                UpdateStausPpsRequest updateStausPpsRequest = new();
+                updateStausPpsRequest.Request_Id = Request.Request_Id;
+                updateStausPpsRequest.StatusId = statusId;
+                updateStausPpsRequest.Comments = isAdmin ? CommentsText + " [ Modified By Admin ]" : CommentsText;
+                updateStausPpsRequest.User_Id = empcode;
+
+                if ((statusId == 4 || statusId == 5) && files.Count.Equals(0))
+                {
+                    await DialogService.ShowMessageBox("Image Validation", $"Pass/Fail image(s) must be uploaded.");
+                    return;
+                }
+
+                if (!files.Count.Equals(0))
+                {
+                    // Ensure the directory exists
+                    var folderPath = Path.Combine(Directory.GetCurrentDirectory(), UploadFolder);
+                    if (!Directory.Exists(folderPath))
+                    {
+                        Directory.CreateDirectory(folderPath);
+                    }
+
+                    foreach (var file in files)
+                    {
+                        // Generate a unique file name to prevent overwriting
+                        var fileName = Guid.NewGuid() + Path.GetExtension(file.Name);
+                        var filePath = Path.Combine(folderPath, fileName);
+
+                        // Save the file
+                        await using var fileStream = new FileStream(filePath, FileMode.Create);
+                        await file.OpenReadStream(MaxFileSize).CopyToAsync(fileStream);
+
+                        // Update ContentDetails.File_Url with the relative path
+                        fileNames.Add(Path.Combine(relPath, fileName).Replace("\\", "/"));
+                    }
+                    // Clear the file upload component and file names list
+                    ClearAsync();
+
+                    updateStausPpsRequest.ATTACHMENTS = string.Join(",", fileNames);
+                }
+
+
+                Overlay?.Show();
+                var result = await ApiMasterService.CallingAPI<InUpRes, UpdateStausPpsRequest>(AllApiNames.UPDATE_STATUS_PPS_REQUEST, updateStausPpsRequest);
+                Overlay?.Hide();
+
+                if (result.responseCode.Equals(0))
+                {
+                    Snackbar.Add("PPS status update successfully.", Severity.Success);
+                    StateHasChanged();
+                    MudDialog.Close();
+                    var users = await GetUsers();
+                    var toEmails = string.Join(";", users.Where(a => a.Emp_Code == Request.Buyer_Id).Select(a => a.Emp_Mail_Id));
+
+                    // SendEmail();
+                    var serverSettings = mapper.Map<ServerSettings>(EmailServerSettings);
+                    var userSettings = new UserMailSettings
+                    {
+                        From = EmailServerSettings.From,
+                        To = toEmails,
+                        Subject = $"PPS request creation...reg.",
+                        Body = "Hi Team!, <br/>PPS request has been successfully <b>" + action + "</b> for generic article <h3>" + Request.Article_Description + " [ " + Request.Generic_Article + " ]. </h3>",
+                        IsBodyHtml = true,
+                        // Attachments = new List<string> { @"D:\test.pdf" }
+                    };
+
+                    var result1 = sender.SendMail(serverSettings, userSettings);
+                }
+                else
+                {
+                    foreach (var item in fileNames)
+                        File.Delete("wwwroot" + item);
+                    await DialogService.ShowMessageBox("Error", $"Failed to update PPS Request. Error {result.responseMessage}.");
+                }
+                StateHasChanged();
+            }
+        }
+        else
+        {
+            await DialogService.ShowMessageBox("Validation", $"Comment is required.");
+        }
+    }
+
+    private async Task<List<UserDetails>> GetUsers()
+    {
+        var selectRequest = new SelectListReq
+        {
+            Id = 0,
+            Cmd = CmdNames.Get_All_Users,
+        };
+        Overlay?.Show();
+        var res = await ApiMasterService.CallingAPI<GetAllUsersRes, SelectListReq>(AllApiNames.GET_ALL_USERS, selectRequest);
+        Overlay?.Hide();
+        if (res.responseCode == 0)
+        {
+            return res.UserDetailsList;
+        }
+        else
+        {
+            Snackbar.Add(res.responseMessage!, Severity.Error);
+            return new();
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var user = HttpContextAccessor.HttpContext?.User;
+        if (user?.Identity?.IsAuthenticated == true)
+        {
+            var uidClaim = user.Claims.FirstOrDefault(c => c.Type == CustomClaimTypes.User_Id)?.Value;
+            var nameIdentifier = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (int.TryParse(uidClaim, out int uid))
+            {
+                User_Id = uid;
+                empcode = nameIdentifier!;
+                int AdminHours = int.Parse(_Configuration["AppConfigurationSettings:AdminHours"]!);
+                isAdmin = user.IsInRole("5") && Request.Created_At.AddHours(AdminHours) > DateTime.Now;
+
+            }
+            else
+            {
+                // Handle missing/invalid claim value
+                User_Id = 0; // or throw an exception, or log
+            }
+        }
+        else
+        {
+            // Handle unauthenticated user
+            User_Id = 0;
+        }
+        var status = Request.Status; // e.g., "New", "Accepted", "Declined", "Passed", "Failed"
+
+        Stage = status switch
+        {
+            "New" => 1,
+            "Accepted" or "Declined" => 2,
+            "Passed" or "Failed" => 3,
+            _ => 1
+        };
+
+
+        await base.OnInitializedAsync();
+    }
+
+    string CircleClass(int n) => $"pps-circle {(Stage == n ? "current" : (Stage > n ? "active" : ""))}";
+    string ConnectorClass(int nextStage) => Stage >= nextStage ? "active" : "";
+
+
+    private void OnImageMouseOver(string imagepath)
+    {
+        imgPath = imagepath;
+    }
+    private void OnImageMouseOut()
+    {
+        imgPath = "";
+    }
+}

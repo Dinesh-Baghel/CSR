@@ -1,0 +1,79 @@
+﻿<MudDialog>
+    <DialogContent>
+        <MudText Typo="Typo.h6">@((IsEditMode ? "Edit" : "Add") + " Menu")</MudText>
+
+        <MudForm @ref="form">
+            <MudGrid>
+                    <MudItem xs="12" md="9">
+                        <MudTextField T="string" Label="Menu Label" @bind-Value="menu.Label" Required="true" />
+                    </MudItem>
+                <MudItem xs="12" md="3">
+                    <MudNumericField T="int" Min="1" Max="MaxViewOrder" Label="View Order" @bind-Value="menu.Order" />
+                    </MudItem>
+                    <MudItem xs="12" md="12">
+                    <MudTextField T="string" Label="Page Title" @bind-Value="menu.Page_Title" />
+                    </MudItem>
+                    <MudItem xs="12" md="12">
+                    <MudTextField T="string" Label="Page Description" @bind-Value="menu.Page_Description" />
+                    </MudItem>
+                    <MudItem xs="12" md="12">
+                    <MudTextField T="string" Label="Page Keywords" @bind-Value="menu.Page_Keywords" />
+                    </MudItem>
+                    <MudItem xs="12" md="12">
+                        <MudTextField T="string" Label="Page URL" @bind-Value="menu.Url" />
+                    </MudItem>
+                    <MudItem xs="12" md="6">
+                    <MudSwitch T="bool" @bind-Value="menu.Website_Visibility" Color="Color.Secondary" UncheckedColor="Color.Default" Label="Website Visibility" />
+                    </MudItem>
+                    <MudItem xs="12" md="6">
+                    <MudSwitch T="bool" @bind-Value="menu.Active_Status" Color="Color.Secondary" UncheckedColor="Color.Default" Label="Active Status" />
+                </MudItem>
+              
+                    </MudGrid>
+        </MudForm>
+    </DialogContent>
+
+    <DialogActions>
+        <MudButton OnClick="Save" Color="Color.Secondary" Variant="Variant.Filled" Disabled="@isSubmitting">Save</MudButton>
+        <MudButton OnClick="CloseDialog" Color="Color.Error" Variant="Variant.Filled">Cancel</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter]
+    private IMudDialogInstance? MudDialog { get; set; }
+    [Parameter] public Menu menu { get; set; } = new();
+    [Parameter] public bool IsEditMode { get; set; }
+    private MudForm form = new();
+    private bool isSubmitting = false;
+    private SelectListReq selectListReq = new();
+    [Parameter] public int MaxViewOrder { get; set; }
+    private void ResetPermissions(int RoleId)
+    {
+        for (int i=0; i< menu.RoleList.Count; i++)
+        {
+            if (menu.RoleList[i].Id.Equals(RoleId))
+            {
+                menu.RoleList[i].Permission = null;
+            }
+        }
+
+    }
+    //Get_Roles_List
+    private void Save()
+    {
+        form.Validate();
+        if (form.IsValid)
+        {
+            MudDialog?.Close(DialogResult.Ok(menu));
+        }
+    }
+    private void SaveUser()
+    {
+        MudDialog?.Close(DialogResult.Ok(menu));
+    }
+    private void CloseDialog()
+    {
+        MudDialog?.Close();
+    } 
+}

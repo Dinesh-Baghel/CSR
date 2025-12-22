@@ -1,0 +1,56 @@
+﻿@using Microsoft.AspNetCore.Authentication
+@using Microsoft.AspNetCore.Http
+
+@foreach (var topMenu in menuList.Where(m => m.Parent_Id == 0))
+{
+    var children = menuList.Where(m => m.Parent_Id == topMenu.Id).ToList();
+    @if (children.Any())
+    {
+        <MudMenu Class="pt-1 px-1 d-none d-md-flex" FullWidth="true" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter" EndIcon="@Icons.Material.Filled.KeyboardArrowDown" Label="@topMenu.Label" Dense>
+            <BSRTopRecursiveMenu MenuItems="children" MenuList="menuList" />
+        </MudMenu>
+    }
+    else
+    {
+        <MudNavMenu Class="pt-1 px-1 d-none d-md-flex">
+            <MudNavLink Style="color:white;" Href="@topMenu.Url">@topMenu.Label</MudNavLink>
+        </MudNavMenu>
+    }
+}
+@* <MudNavMenu Class="pt-1 px-1 d-none d-md-flex">
+    <MudNavLink Icon="@Icons.Material.Filled.BarChart" Href="/Bsr">BSR</MudNavLink>
+</MudNavMenu> *@
+<!-- User Start -->
+<MudMenu Class="pt-1 px-1 d-none d-md-flex" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopLeft" IconColor="Color.Primary">
+    <ActivatorContent>
+        <MudAvatar Color="Color.Secondary">@UserName?[0]</MudAvatar>
+    </ActivatorContent>
+    <ChildContent>
+        <MudMenuItem Label="User Name">@UserName</MudMenuItem>
+        <MudMenuItem Label="Logout" Href="/Account/User-Logout">Logout</MudMenuItem>
+    </ChildContent>
+</MudMenu>
+<!-- User End -->
+@code {
+    private List<MenusList> menuList { get; set; } = new();
+    private SelectListReq selectListReq { get; set; } = new();
+    private string? UserName { get; set; }
+    protected override async Task OnInitializedAsync()
+    {
+        var context = HttpContextAccessor.HttpContext;
+        if (context != null)
+        {
+            UserName = context.User.Identity!.Name;
+        }
+        selectListReq.Cmd = CmdNames.Get_Menu_List;
+        var res1 = await ApiMasterService.CallingAPI<GetMenuListRes, SelectListReq>(AllApiNames.GET_MENUS_LIST!, selectListReq);
+        if (res1.responseCode == 0)
+        {
+            menuList = res1.menusLists;
+        }
+        else
+        {
+            menuList = new();
+        }
+    }
+}

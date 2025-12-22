@@ -1,0 +1,567 @@
+﻿@using Domain.Entities.Base
+@using EmailService.Models
+@using MudBlazor
+@using static Admin.Components.Pages.QPS.QpsDashboard
+@using Microsoft.AspNetCore.Components.Forms
+@using SixLabors.ImageSharp
+@using SixLabors.ImageSharp.Processing
+@using SixLabors.ImageSharp.Formats
+@using SixLabors.ImageSharp.Formats.Jpeg
+@using SixLabors.ImageSharp.Formats.Png
+@using System.IO;
+@inject IWebHostEnvironment Env
+@inherits ComponentBase
+@inject IDialogService DialogService
+<MudDialog>
+    <DialogContent>
+        @if (IsEditMode)
+        {
+
+        }
+        else
+        {
+            @*  <h3>New Request</h3> *@
+
+            <MudStack Row="true" Justify="Justify.SpaceEvenly" Spacing="1" Class="mb-2">
+                <MudTextField @bind-Value="GenArticleNo" Label="Article No." Required="true" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                <MudButton Color="MudBlazor.Color.Info" Variant="Variant.Filled" Class="mt-2" Style="max-height: 40px;" OnClick="@GetDetail">Get Details</MudButton>
+            </MudStack>
+
+        }
+        <MudForm Model="@Request" ValidSubmit="Submit" @ref="form">
+
+            @if (Request.Generic_Article != "" && Request.Generic_Article != "NF" && Request.Generic_Article != "AF")
+            {
+                <MudPaper Class="pa-4">
+                    <MudStack Row="true">
+                        <ReadOnlyField Label="Generic Article" Value="@(Request.Generic_Article + " ~ " + Request.Article_Description)" />
+                    </MudStack>
+                    <MudStack Row="true">
+                        <ReadOnlyField Label="Merchandise Category" Value="@(Request.Mc + " ~ " + Request.Mc_Description)" />
+                        <ReadOnlyField Label="Division" Value="@(Request.Division + " ~ " + Request.Division_Description)" />
+                    </MudStack>
+                    <MudStack Row="true">
+                        <ReadOnlyField Label="COLOR" Value="@Request.Color" />
+                        <ReadOnlyField Label="MRP" Value="@Request.Mrp" />
+                    </MudStack>
+                    <MudStack Row="true">
+                        <ReadOnlyField Label="Vendor" Value="@(Request.Vendor_Code + " ~ " + Request.Vendor_Name)" />
+                    </MudStack>
+                </MudPaper>
+
+                <MudPaper Class="pa-2 mt-2">
+                    <MudStack Row="true">
+                        <MudSelect T="string" Required="true" @bind-Value="@Request.PP_Type" Label="Select Type" Placeholder="Please Select" AdornmentIcon="@Icons.Material.Filled.Article" AdornmentColor="MudBlazor.Color.Primary">
+                            @foreach (var type in SampleTypes)
+                            {
+                                <MudSelectItem Value="@type">@type</MudSelectItem>
+                            }
+                        </MudSelect>
+
+
+                        <MudTextField Label="Quantity" @bind-Value="@Request.Qty" />
+                    </MudStack>
+                </MudPaper>
+
+                <MudPaper Class="pa-2 mt-2">
+                    <MudStack Row="true">
+                        <MudFileUpload T="IReadOnlyList<IBrowserFile>" Accept=".png, .jpg, .pdf, .word" FilesChanged="UploadFiles" MaximumFileCount="10" MaxFileSize="@(10 * 1024 * 1024)">
+                            <ActivatorContent>
+                                <MudButton Variant="Variant.Filled" Color="MudBlazor.Color.Primary" StartIcon="@Icons.Material.Filled.CloudUpload">Upload only image or pdf files upto 3MB size</MudButton>
+                            </ActivatorContent>
+                            <SelectedTemplate>
+                                @if (files != null)
+                                {
+                                    <MudList T="string">
+                                        @foreach (var file in files)
+                                        {
+                                            <MudListItem Icon="@Icons.Material.Filled.AttachFile">
+                                                @file.Name <code>@(file.Size / 1024) KB</code>
+                                                <MudButton Variant="Variant.Outlined" OnClick="@(() => Remove(file))">remove</MudButton>
+                                            </MudListItem>
+                                        }
+                                    </MudList>
+                                }
+
+                            </SelectedTemplate>
+                        </MudFileUpload>
+                    </MudStack>
+                    <MudStack Row="true">
+                        @if (largSizeFiles.Count > 0)
+                        {
+                            <div style="display:flex;flex-wrap:wrap;gap:10px;">
+                                <MudText>Sorry, the following file(s) are too large to upload. Please choose a file smaller than 3 MB.</MudText>
+                                @foreach (var path in largSizeFiles)
+                                {
+                                    <code>@path <br /></code>
+                                    @*  <img src="@path" style="width:50px;border:1px solid #ccc;border-radius:6px;" /> *@
+                                }
+                            </div>
+                        }
+                    </MudStack>
+                </MudPaper>
+                <MudStack Row="true" Justify="Justify.FlexEnd" Spacing="1" Class="mt-3 mb-3">
+                    <MudButton Variant="Variant.Outlined" OnClick="@Cancel">Cancel</MudButton>
+                    <MudButton Disabled="@(files.Count == 0)" Color="MudBlazor.Color.Primary" Variant="Variant.Filled" OnClick="@Submit">Save</MudButton>
+                    @if (files.Count > 0)
+                    {
+                        <MudButton Variant="Variant.Filled" Color="MudBlazor.Color.Primary" StartIcon="@Icons.Material.Filled.Clear" OnClick="ClearAsync">Remove All Files</MudButton>
+                    }
+                </MudStack>
+            }
+            else if (Request.Generic_Article == "NF")
+            {
+                <MudAlert Severity="Severity.Error" Elevation="0" Variant="Variant.Filled">
+                    We couldn’t find a matching generic article. Verify the number and try again.
+                </MudAlert>
+            }
+            else if (Request.Generic_Article == "AF" && Request.ERRORCODE != 0)
+            {
+                <MudTable T="PpsRequest" Items="existingArticles" Hover="true" Dense="true" >
+                    <HeaderContent>
+                    </HeaderContent>
+                    <RowTemplate>
+                        <MudTd>
+                            <MudAlert Severity="Severity.Success" Elevation="0" Variant="Variant.Outlined" OnClick="@(() => OpenPpsDetailPopup(context))">
+                                @context.ERRORMESSAGE <b> View Details...</b>
+                            </MudAlert>
+                        </MudTd>
+                    </RowTemplate>
+                </MudTable>
+                
+                <br />
+
+                <MudButton Variant="Variant.Filled" Color="MudBlazor.Color.Primary" OnClick="CreateNew">
+                    <MudIconButton Icon="@Icons.Material.Filled.Info" Color="MudBlazor.Color.Primary" Size="MudBlazor.Size.Small" /> Do you want to create new request with other type?
+                </MudButton>
+
+            }
+
+        </MudForm>
+
+    </DialogContent>
+</MudDialog>
+<QPSOverlay @ref="Overlay" />
+@code {
+    private QPSOverlay? Overlay;
+    private MudForm form = new();
+    [CascadingParameter] IMudDialogInstance MudDialog { get; set; }
+    [Parameter] public PpsRequest Request { get; set; } = new();
+    [Parameter] public bool IsEditMode { get; set; }
+    [Parameter] public string? EmpCode { get; set; }
+    [Parameter] public string? Email { get; set; }
+
+    private string pageSize => EmailServerSettings.SmtpServer;
+
+    private List<string> SampleTypes = new() { "FIT Sample", "Size Set", "PP Sample" };
+    private List<PpsRequest> existingArticles { get; set; } = new();
+
+    private const string UploadFolder = "wwwroot/Images/PPS";
+    private const string relPath = "/Images/PPS";
+    private const long MaxFileSize = 15 * 1024 * 1024; // 15MB
+
+
+    public string PPType { get; set; }
+    public int Qty { get; set; }
+    public string? GenArticleNo;
+
+    async void Submit()
+    {
+
+        List<string> fileNames = new();
+        await form.Validate();
+        if (form.IsValid)
+        {
+            if (!files.Count.Equals(0))
+            {
+                // Ensure the directory exists
+                var folderPath = Path.Combine(Directory.GetCurrentDirectory(), UploadFolder);
+                if (!Directory.Exists(folderPath))
+                {
+                    Directory.CreateDirectory(folderPath);
+                }
+
+                foreach (var file in files)
+                {
+                    // Generate a unique file name to prevent overwriting
+                    var fileName = Guid.NewGuid() + Path.GetExtension(file.Name);
+                    var filePath = Path.Combine(folderPath, fileName);
+
+                    // Save the file
+                    await using var fileStream = new FileStream(filePath, FileMode.Create);
+                    await file.OpenReadStream(MaxFileSize).CopyToAsync(fileStream);
+
+                    // Update ContentDetails.File_Url with the relative path
+                    fileNames.Add(Path.Combine(relPath, fileName).Replace("\\", "/"));
+                }
+                // Clear the file upload component and file names list
+                ClearAsync();
+
+                Request.Request_Id = 0;
+                Request.Created_At = DateTime.Now;
+                Request.Status = "New";
+                Request.Buyer_Id = EmpCode!;
+                Request.ATTACHMENTS = string.Join(",", fileNames);
+                Overlay?.Show();
+                var res = await ApiMasterService.CallingAPI<InUpRes, PpsRequest>(AllApiNames.CREATE_PPS_REQUEST, Request);
+                Overlay?.Hide();
+                if (res.responseCode.Equals(0))
+                {
+                    Snackbar.Add("PPS added successfully.", Severity.Success);
+
+                    var users = await GetUsers();
+                    var toEmails = string.Join(";", users.Where(a => a.Role_Id == 3).Select(a => a.Emp_Mail_Id));
+                    // SendEmail();
+                    var serverSettings = mapper.Map<ServerSettings>(EmailServerSettings);
+                    var userSettings = new UserMailSettings
+                    {
+                        From = EmailServerSettings.From,// "noreply@vishalwholesale.co.in",
+                        To = toEmails,
+                        Subject = $"PPS request creation...reg.",
+                        Body = "Hi Team!, <br/>PPS request has been successfully <b>created</b> for generic article <h3>" + Request.Article_Description + " [ " + Request.Generic_Article + " ]. </h3>",
+                        IsBodyHtml = true,
+                        // Attachments = new List<string> { @"D:\test.pdf" }
+                    };
+
+                    var result = sender.SendMail(serverSettings, userSettings);
+                }
+                else
+                {
+                    foreach (var item in fileNames)
+                        File.Delete("wwwroot" + item);
+                    // Delete the file
+                    await DialogService.ShowMessageBox(title: "Error", markupMessage: (MarkupString)res.responseMessage!, yesText: "OK");
+                }
+            }
+
+            MudDialog.Cancel();
+        }
+    }
+    void Cancel() => MudDialog.Cancel();
+    async Task GetDetail()
+    {
+        try
+        {
+            existingArticles.Clear(); //1130140673
+
+            // Early exit if no valid Generic Article Number
+            if (string.IsNullOrWhiteSpace(GenArticleNo))
+            {
+                Request.Generic_Article = "NF";
+                await InvokeAsync(StateHasChanged);
+                return;
+            }
+            // Prepare request safely
+            var selectRequest = new SelectListReq
+            {
+                Id = 0,
+                Cmd = CmdNames.Get_Generic_Article_Details,
+                ResponseType = "GenericArticleDetails", // safer than string literal
+                StrField = GenArticleNo ?? string.Empty        // null-safe
+            };
+
+            // Call API safely with proper type parameters
+            Overlay?.Show();
+            var existingGenericArticle = await ApiMasterService
+                .CallingAPI<List<GenericArticleItem>, SelectListReq>(AllApiNames.SELECT_ALL_PPSREQUEST, selectRequest);
+            Overlay?.Hide();
+            if (existingGenericArticle is not null)
+            {
+                if (existingGenericArticle?.Any() == true)  // Safe and concise
+                {
+
+                    var firstArticle = existingGenericArticle.First();
+                    var genericArticleItems = existingGenericArticle.Where(a => a.ERRORCODE != 0).ToList();
+
+                    Automapping.CopyProperties(firstArticle, Request);
+                    if (genericArticleItems.Count > 0)
+                    {
+                        PpsRequest ppsRequestObj;
+                        foreach (var item in genericArticleItems)
+                        {
+                            ppsRequestObj = new PpsRequest();
+                            Automapping.CopyProperties(item, ppsRequestObj);
+                            existingArticles.Add(ppsRequestObj);
+
+                        }
+                        Request.Generic_Article = "AF";
+                    }
+
+                    await InvokeAsync(StateHasChanged);
+                    return;
+
+                }
+                else
+                {
+                    var req = new SAP_API_DATA_Req
+                    {
+                        Param = GenArticleNo ?? string.Empty,  // Ensure no null
+                        TaskName = "APPS_QPS_API"
+                    };
+
+                    Overlay?.Show();
+                    var sapApiData = await ApiMasterService
+                        .CallingAPI<ApiData, SAP_API_DATA_Req>(AllApiNames.GET_SAP_API!, req)
+                        .ConfigureAwait(false);
+                    Overlay?.Hide();
+
+                    if (sapApiData is not null)
+                    {
+                        Overlay?.Show();
+                        var gad = await ApiMasterService
+                            .CallingSAPAPI<GenericArticleResponse, string>(string.Empty, sapApiData)
+                            .ConfigureAwait(false);
+                        Overlay?.Hide();
+
+                        if (gad?.GenericArticles?.Any() == true)  // Safe and concise
+                        {
+                            var firstArticle = gad.GenericArticles.First();
+
+                            if (firstArticle is not null)  // extra guard
+                            {
+                                Automapping.CopyProperties(firstArticle, Request);
+                                await InvokeAsync(StateHasChanged);
+                                return;
+                            }
+                        }
+                    }
+
+                }
+                // Fallback for not found
+                Request.Generic_Article = "NF";
+                await InvokeAsync(StateHasChanged);
+            }
+
+        }
+        catch (Exception ex)
+        {
+            await DialogService.ShowMessageBox(title: "Information", markupMessage: (MarkupString)$"Error in loading Generic Article: {ex.Message}", yesText: "Yes", noText: "No");
+            // Proper error handling
+            Console.Error.WriteLine($"Error in loading Generic Article: {ex.Message}");
+            // Fallback for not found
+        }
+
+
+
+    }
+    protected override Task OnInitializedAsync()
+    {
+        Request.Generic_Article = "";
+        StateHasChanged();
+        return base.OnInitializedAsync();
+    }
+
+
+    private async Task<List<UserDetails>> GetUsers()
+    {
+        var selectRequest = new SelectListReq
+        {
+            Id = 0,
+            Cmd = CmdNames.Get_All_Users,
+        };
+        Overlay?.Show();
+        var res = await ApiMasterService.CallingAPI<GetAllUsersRes, SelectListReq>(AllApiNames.GET_ALL_USERS, selectRequest);
+        Overlay?.Hide();
+        if (res.responseCode == 0)
+        {
+            return res.UserDetailsList;
+        }
+        else
+        {
+            Snackbar.Add(res.responseMessage!, Severity.Error);
+            return new();
+        }
+    }
+
+    private List<string> uploadedFiles = new();
+    private List<string> largSizeFiles = new();
+    IList<IBrowserFile> files = new List<IBrowserFile>();
+
+    private List<string> Thumbnails = new();
+
+    private void ClearAsync()
+    {
+        files.Clear();
+        largSizeFiles.Clear();
+        StateHasChanged();
+
+    }
+    private void Remove(IBrowserFile item)
+    {
+        files.Remove(item);
+        largSizeFiles.Clear();
+        StateHasChanged();
+
+    }
+
+
+    public class InMemoryBrowserFile : IBrowserFile
+    {
+        private readonly byte[] _fileBytes;
+
+        public InMemoryBrowserFile(byte[] fileBytes, string name, string contentType)
+        {
+            _fileBytes = fileBytes;
+            Name = name;
+            Size = fileBytes.Length;
+            LastModified = DateTimeOffset.Now;
+            ContentType = contentType;
+        }
+
+        public DateTimeOffset LastModified { get; }
+        public string Name { get; }
+        public long Size { get; }
+        public string ContentType { get; }
+
+        public Stream OpenReadStream(long maxAllowedSize = 512000, CancellationToken cancellationToken = default)
+        {
+            return new MemoryStream(_fileBytes);
+        }
+    }
+
+
+    private async Task UploadFiles(IReadOnlyList<IBrowserFile> _files)
+    {
+        if (_files.Count < 20)
+        {
+            Overlay?.Show();
+            foreach (var file in _files)
+            {
+
+                var uploadsFolder = Path.Combine(Env.WebRootPath, "uploads");
+                if (!Directory.Exists(uploadsFolder))
+                    Directory.CreateDirectory(uploadsFolder);
+
+                var ext = Path.GetExtension(file.Name).ToLower();
+                var uniqueFileName = $"{Guid.NewGuid()}{ext}";
+                var filePath = Path.Combine(uploadsFolder, uniqueFileName);
+
+                if (ext == ".jpg" || ext == ".jpeg" || ext == ".png")
+                {
+                    // Log original size
+                    long originalSize = file.Size;
+                    // Console.WriteLine($"Original Size: {originalSize / 1024.0:F2} KB ({file.Name})");
+
+                    // Open image with ImageSharp
+                    using var stream = file.OpenReadStream(maxAllowedSize: 10 * 1024 * 1024); // limit: 10 MB
+                    using var image = await Image.LoadAsync(stream);
+
+                    // ✅ Resize if too wide
+                    if (image.Width > 1024)
+                    {
+                        var scale = 1024.0 / image.Width;
+                        var newHeight = (int)(image.Height * scale);
+                        image.Mutate(x => x.Resize(1024, newHeight));
+                    }
+
+                    using var outputStream = new MemoryStream();
+                    // ✅ Choose encoder based on format
+                    IImageEncoder encoder = ext switch
+                    {
+                        ".jpg" or ".jpeg" => new JpegEncoder { Quality = 80 }, // compress jpeg
+                        ".png" => new PngEncoder { CompressionLevel = PngCompressionLevel.Level6 }, // compress png
+                        _ => new JpegEncoder { Quality = 80 } // default
+                    };
+
+                    await image.SaveAsync(outputStream, encoder);
+                    // await image.SaveAsync(filePath, encoder);
+                    long compressedSize = outputStream.Length;
+                    // Console.WriteLine($"Compressed Size: {compressedSize / 1024.0:F2} KB ({file.Name})");
+
+                    if (compressedSize <= (3 * 1024 * 1024))
+                    {
+                        // You can now save outputStream.ToArray() to DB or file system
+                        //File.WriteAllBytes($"{filePath}", outputStream.ToArray());
+                        //uploadedFiles.Add("/uploads/" + uniqueFileName);
+
+                        IBrowserFile compressedFile = new InMemoryBrowserFile(outputStream.ToArray(), $"{file.Name}", "image/jpeg");
+                        this.files.Add(compressedFile);
+                    }
+                    else
+                    {
+                        largSizeFiles.Add($"{file.Name}");
+                    }
+                }
+                else
+                {
+                    long originalSize = file.Size;
+                    if (originalSize <= (3 * 1024 * 1024))
+                    {
+                        this.files.Add(file);
+                    }
+                    else
+                    {
+                        largSizeFiles.Add($"{file.Name}");
+                    }
+
+                }
+
+            }
+            Overlay?.Hide();
+        }
+
+    }
+
+    private async Task GenerateThumbnail(IBrowserFile file)
+    {
+        var resized = await file.RequestImageFileAsync(file.ContentType, 200, 200);
+        var buffer = new byte[resized.Size];
+        await resized.OpenReadStream().ReadAsync(buffer);
+
+        var imageDataUrl = $"data:{resized.ContentType};base64,{Convert.ToBase64String(buffer)}";
+
+        await InvokeAsync(() =>
+        {
+            Thumbnails.Add(imageDataUrl);
+            StateHasChanged();
+        });
+    }
+
+    private async Task OpenPpsDetailPopup(PpsRequest request)
+    {
+        SelectListReq selectSelectAllSelectListReq = new();
+        selectSelectAllSelectListReq.Id = request.Request_Id;
+        selectSelectAllSelectListReq.Cmd = CmdNames.Get_PPSRequest_Details;
+        selectSelectAllSelectListReq.ResponseType = "PpsRequest";
+        selectSelectAllSelectListReq.StrField = request.Generic_Article;
+        Overlay?.Show();
+        var res = await ApiMasterService.CallingAPI<List<PpsRequest>, SelectListReq>(AllApiNames.SELECT_ALL_PPSREQUEST, selectSelectAllSelectListReq);
+        Overlay?.Hide();
+        if (res.Any())
+        {
+            var parameters = new DialogParameters { ["Request"] = res.First() };
+            var options = new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true, CloseButton = true };
+            var dialog = await DialogService.ShowAsync<AccepDeclineModel>("PPS Request Details", parameters, options);
+            var result = await dialog.Result;
+
+            if (!result.Canceled)
+            {
+                StateHasChanged();
+            }
+
+        }
+
+    }
+
+    private async void CreateNew()
+    {
+        try
+        {
+            if (existingArticles.Any())
+                Request.Generic_Article = existingArticles.First().Generic_Article;
+
+            Request.PP_Type = "";
+            SampleTypes.RemoveAll(x => existingArticles.Any(a => a.PP_Type == x));
+            existingArticles.Clear();
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            //Console.WriteLine($"CreateNew failed: {ex}");
+            await DialogService.ShowMessageBox(title: "Information", markupMessage: (MarkupString)$"Create New failed: {ex.Message}", yesText: "Yes", noText: "No");
+            throw;
+        }
+    }
+
+}
+

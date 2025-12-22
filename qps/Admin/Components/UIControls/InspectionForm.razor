@@ -1,0 +1,830 @@
+﻿@using Admin.Components.Pages.UserMaster
+@using Admin.Components.Shared
+@using EmailService.Models
+@using MudExtensions
+@using System.Text.RegularExpressions
+@using System.Security.Claims
+
+
+<MudDialog>
+    <DialogContent>
+        <MudForm @ref="form">
+            <MudGrid>
+                <MudItem xs="12" md="12">
+                    <MudGrid>
+                        <MudItem xs="12" md="12">
+                            <MudChip T="string" OnClick="ViewPOIRDetails" Variant="Variant.Filled" Color="Color.Secondary">View Details [PO# - @PO.PoNumber] [IR# - @PO.InspId] </MudChip>
+                        </MudItem>
+                        <!-- Vendor Code -->
+                        <MudItem xs="12" md="2">
+                            <MudTextField T="string" Label="GPT NO." @bind-Value="_model.GptNo" Required="true" />
+                        </MudItem>
+                        <MudItem xs="12" md="2">
+                            <MudSelect T="int" Label="GPT Status" @bind-Value="_model.GptStatus" Required="true">
+                                <MudSelectItem Value="0">
+                                    --Select--
+                                </MudSelectItem>
+                                @foreach (var item in _model.PassFailGPTStatus)
+                                {
+                                    <MudSelectItem Value="@item.Master_ID">
+                                        @( $"{item.Master_Name}")
+                                    </MudSelectItem>
+                                }
+                            </MudSelect>
+                        </MudItem>
+                        <MudItem xs="12" md="2">
+                            <MudTextField T="string" Label="If fail(GPT) Approved By" @bind-Value="_model.GptApprovedBy" />
+                        </MudItem>
+                        <MudItem xs="12" md="2">
+                            <MudDatePicker @bind-Date="_model.GptApprovedDate" Label="Approved Date" Required="true" />
+                        </MudItem>
+                        <MudItem xs="12" md="2">
+                            <MudTextField Label="No of Bags/Cartons" @bind-Value="_model.NoOfBagsCartonsQty" Required="true" />
+                        </MudItem>
+                        <MudItem xs="12" md="2">
+                            <MudSelect T="int" Label="Unit" @bind-Value="_model.NoOfBagsCartonsUnit" Required="true">
+                                <MudSelectItem Value="0">
+                                    --Select--
+                                </MudSelectItem>
+                                @foreach (var item in _model.UnitNoOfBagCarton)
+                                {
+                                    <MudSelectItem Value="@item.Master_ID">
+                                        @( $"{item.Master_Name}")
+                                    </MudSelectItem>
+                                }
+                            </MudSelect>
+                        </MudItem>
+                        <MudItem xs="12" md="2">
+                            <MudSelect T="int" Label="Packing Status" @bind-Value="_model.PackingStatus">
+                                <MudSelectItem Value="0">
+                                    --Select--
+                                </MudSelectItem>
+                                @foreach (var item in _model.YesNoPackingStatus)
+                                {
+                                    <MudSelectItem Value="@item.Master_ID">
+                                        @( $"{item.Master_Name}")
+                                    </MudSelectItem>
+                                }
+                            </MudSelect>
+                        </MudItem>
+                        <MudItem xs="12" md="2">
+                            <MudSelect T="int" Label="Inline Done" @bind-Value="_model.InlineDone" Required="true">
+                                <MudSelectItem Value="0">
+                                    --Select--
+                                </MudSelectItem>
+                                @foreach (var item in _model.YesNoInlineDone)
+                                {
+                                    <MudSelectItem Value="@item.Master_ID">
+                                        @( $"{item.Master_Name}")
+                                    </MudSelectItem>
+                                }
+                            </MudSelect>
+                        </MudItem>
+                        <MudItem xs="12" md="2">
+                            <MudSelect T="int" Label="Packing List" @bind-Value="_model.PackingList">
+                                <MudSelectItem Value="0">
+                                    --Select--
+                                </MudSelectItem>
+                                @foreach (var item in _model.YesNoPackingList)
+                                {
+                                    <MudSelectItem Value="@item.Master_ID">
+                                        @( $"{item.Master_Name}")
+                                    </MudSelectItem>
+                                }
+                            </MudSelect>
+                        </MudItem>
+                        <MudItem xs="12" md="2">
+                            <MudDatePicker @bind-Date="_model.PpsReleaseDate" Label="PPS Release Date" Required="true" />
+                        </MudItem>
+                        <MudItem xs="12" md="2">
+                            <MudDatePicker @bind-Date="_model.PpsExpiryDate" Label="PPS Expiry Date" Required="true" />
+                        </MudItem>
+                        <!-- Vendor Name -->
+                        <MudItem xs="12" md="4">
+                            <MudTextField T="string" Label="Fiber Content On PO" @bind-Value="_model.FiberContentOnPo" Required="true" />
+                        </MudItem>
+                        <MudItem xs="12" md="4">
+                            <MudTextField T="string" Label="Fiber Content On Test Report" @bind-Value="_model.FiberContentOnTestReport" Required="true" />
+                        </MudItem>
+                        <MudItem xs="12" md="4">
+                            <MudTextField T="string" Label="Fiber Content On W/C" @bind-Value="_model.FiberContentOnWc" Required="true" />
+                        </MudItem>
+                        <MudItem xs="12" md="4">
+                            <MudTextField T="string" Label="GSM On PO" @bind-Value="_model.GsmOnPo" Required="true" />
+                        </MudItem>
+                        <MudItem xs="12" md="4">
+                            <MudTextField T="string" Label="GSM On Test Report" @bind-Value="_model.GsmOnTestReport" Required="true" />
+                        </MudItem>
+                        <MudItem xs="12" md="2">
+                            <MudTextField Label="GSM On Bulk" @bind-Value="_model.GsmOnBulk" />
+                        </MudItem>
+                        <MudItem xs="12" md="2">
+                            <MudSelect T="int" Label="Measurement Sample Size" @bind-Value="_model.MeasurementSampleSize">
+                                <MudSelectItem Value="0">
+                                    --Select--
+                                </MudSelectItem>
+                                @foreach (var item in _model.PassFailMeasurementSampleSize)
+                                {
+                                    <MudSelectItem Value="@item.Master_ID">
+                                        @( $"{item.Master_Name}")
+                                    </MudSelectItem>
+                                }
+                            </MudSelect>
+                        </MudItem>
+                        <MudItem xs="12" md="2">
+                            <MudTextField Label="No of Check Bags/Cartons" @bind-Value="_model.NoOfCheck" Required="true" />
+                        </MudItem>
+                        <MudItem xs="12" md="2">
+                            <MudSelect T="int" Label="Unit" @bind-Value="_model.NoOfCheckUnit" Required="true">
+                                <MudSelectItem Value="0">
+                                    --Select--
+                                </MudSelectItem>
+                                @foreach (var item in _model.UnitNoOfCheck)
+                                {
+                                    <MudSelectItem Value="@item.Master_ID">
+                                        @( $"{item.Master_Name}")
+                                    </MudSelectItem>
+                                }
+                            </MudSelect>
+                        </MudItem>
+                        <MudItem xs="12" md="2">
+                            <MudTextField Label="No of Prepack Check" @bind-Value="_model.NoOfPrepackCheck" />
+                        </MudItem>
+                        <MudItem xs="12" md="2">
+                            <MudTextField T="string" Label="Workmanship" @bind-Value="_model.Workmanship" />
+                        </MudItem>
+                        <MudItem xs="12" md="2">
+                            <MudTextField T="string" Label="AQL" @bind-Value="_model.Aql" />
+                        </MudItem>
+                        <MudItem xs="12" md="2">
+                            <MudTextField T="string" Label="AQL Sample Size" @bind-Value="_model.AqlSampleSize" />
+                        </MudItem>
+                        <MudItem xs="12" md="2">
+                            <MudTextField Label="Defects Allowed" @bind-Value="_model.DefectsAllowed" Required="true" />
+                        </MudItem>
+                        <MudItem xs="12" md="2">
+                            <MudSelect T="int" Label="Defects Status" @bind-Value="_model.DefectsStatus" Required="true">
+                                <MudSelectItem Value="0">
+                                    --Select--
+                                </MudSelectItem>
+                                @foreach (var item in _model.PassFailDefectsStatus)
+                                {
+                                    <MudSelectItem Value="@item.Master_ID">
+                                        @( $"{item.Master_Name}")
+                                    </MudSelectItem>
+                                }
+                            </MudSelect>
+                        </MudItem>
+                        <MudItem xs="12" md="2">
+                            <MudSelect T="int" Label="Inspection Result" @bind-Value="_model.InspectionResult" Required="true">
+                                <MudSelectItem Value="0">
+                                    --Select--
+                                </MudSelectItem>
+                                @foreach (var item in _model.PassFailInspectionResult)
+                                {
+                                    <MudSelectItem Value="@item.Master_ID">
+                                        @( $"{item.Master_Name}")
+                                    </MudSelectItem>
+                                }
+                            </MudSelect>
+                        </MudItem>
+                        <MudItem xs="12" md="6">
+                            <MudTextField T="string" Label="Remark Comment" @bind-Value="_model.RemarkComment" />
+                        </MudItem>
+                        <MudItem xs="12" md="12">
+                            <MudTextField T="string" Label="Note" @bind-Value="_model.Note" />
+                        </MudItem>
+                        <MudItem xs="12" md="4">
+                            <MudTextField T="string" Label="Factory Representative" @bind-Value="_model.NameOfFactoryRepresentative" />
+                        </MudItem>
+                        <MudItem xs="12" md="4">
+                            <MudSwitch T="bool" Label="Is Complete?" Value="_model.IsComplete" Color="Color.Secondary" />
+                        </MudItem>
+
+                    </MudGrid>
+                </MudItem>
+                <MudItem xs="12" md="12">
+                    <MudGrid>
+                        <MudItem xs="12" md="12">
+                            <MudChip T="string" Variant="Variant.Outlined" Color="Color.Secondary">Defects </MudChip>
+                        </MudItem>
+                        <MudItem xs="12" md="6">
+                            <MudTextField T="string" @bind-Value="defectDto.Defects" Label="Defect" FullWidth="true"  />
+                        </MudItem>
+                        <MudItem xs="12" md="2">
+                            <MudTextField T="string" Label="Dimension" @bind-Value="defectDto.Dimension" />
+                        </MudItem>
+                        <MudItem xs="12" md="1">
+                            <MudTextField Label="Major" @bind-Value="defectDto.Major" />
+                        </MudItem>
+                        <MudItem xs="12" md="1">
+                            <MudTextField Label="Minor" @bind-Value="defectDto.Minor" />
+                        </MudItem>
+                        <MudItem xs="12" md="2">
+                            <MudButton Variant="Variant.Outlined" EndIcon="@Icons.Material.Filled.PostAdd" Color="Color.Secondary" OnClick="AddToAddressList">Add Defect</MudButton>
+                        </MudItem>
+                    </MudGrid>
+                </MudItem>
+                <MudItem xs="12" md="12">
+                    <MudGrid>
+                        <!-- Role Selection -->
+                        <MudItem xs="12" md="12">
+                            <MudChip T="string" Variant="Variant.Outlined" Color="Color.Secondary">List of Defect(s)</MudChip>
+                        </MudItem>
+                        <MudItem xs="12" md="12">
+                            <MudTable T="InspectionDefectDto" Items="_model.Defects" Hover="true" Dense="true" Bordered="true" Striped="true" SortLabel="Sort By">
+                                <HeaderContent>
+                                    <MudTh><MudTableSortLabel SortBy="new Func<InspectionDefectDto, object>(x => x.Defects)">DEFECT</MudTableSortLabel></MudTh>
+                                    <MudTh Style="width:80px;"><MudTableSortLabel SortBy="new Func<InspectionDefectDto, object>(x => x.Dimension)">DIMENSION</MudTableSortLabel></MudTh>
+                                    <MudTh><MudTableSortLabel SortBy="new Func<InspectionDefectDto, object>(x => x.Major)">MAJOR</MudTableSortLabel></MudTh>
+                                    <MudTh><MudTableSortLabel SortBy="new Func<InspectionDefectDto, object>(x => x.Minor)">MINOR</MudTableSortLabel></MudTh>
+                                    <MudTh></MudTh>
+                                </HeaderContent>
+                                <RowTemplate>
+                                    <MudTd DataLabel="ADDRESS">
+                                        @context.Defects
+                                    </MudTd>
+                                    <MudTd DataLabel="CITY">@context.Dimension</MudTd>
+                                    <MudTd DataLabel="POST CODE">@context.Major</MudTd>
+                                    <MudTd DataLabel="REGION">@context.Minor</MudTd>
+                                    <MudTd>
+                                        <MudTooltip Text="Edit" ShowOnFocus="false">
+                                            <MudIconButton Icon="@Icons.Material.Filled.EditNote" Color="Color.Primary" Size="Size.Small"
+                                                           OnClick="@(()  => EditItem(context))" />
+                                        </MudTooltip>
+                                        <MudTooltip Text="Remove" ShowOnFocus="false">
+                                            <MudIconButton Icon="@Icons.Material.Filled.DeleteOutline" Color="Color.Info" Size="Size.Small"
+                                                           OnClick="@(() => RemoveItem(context))" />
+                                        </MudTooltip>
+                                    </MudTd>
+                                </RowTemplate>
+                                <PagerContent>
+                                    <MudTablePager PageSizeOptions="new int[] { 10, 25, 50, 100 }" />
+                                </PagerContent>
+                            </MudTable>
+                        </MudItem>
+                    </MudGrid>
+                </MudItem>
+            </MudGrid>
+        </MudForm>
+    </DialogContent>
+
+    <DialogActions>
+
+        <MudButton OnClick="Save" Color="Color.Secondary" Variant="Variant.Filled" Disabled="@isSubmitting">Save</MudButton>
+        <MudButton OnClick="CloseDialog" Color="Color.Error" Variant="Variant.Filled">Cancel</MudButton>
+    </DialogActions>
+</MudDialog>
+<Loader IsVisible="@IsLoading" />
+
+@code {
+
+    bool isShow;
+    [CascadingParameter]
+    private IMudDialogInstance? MudDialog { get; set; }
+    [Parameter]
+    public POHeader PO { get; set; } = new();
+    [Parameter] public bool IsEditMode { get; set; }
+    public bool IsMaked { get; set; } = false;
+
+    private List<MasterData> masterDataList = new();
+
+    private InspectionDefectDto defectDto = new();
+    public InspectionModel _model { get; set; } = new();
+
+    private bool isFatched { get; set; }
+
+    private MudForm form;
+    private bool isSubmitting = false;
+    bool IsLoading = false;
+    private int User_Id = 0;
+    private string LoggedVendorCode = string.Empty;
+
+    private async Task<List<MasterData>> GetMasterData(string cmd)
+    {
+        SelectListReq selectRequest = new SelectListReq
+        {
+            Id = 0,
+            Cmd = cmd,// CmdNames.Get_Region,
+            StrField = ""     // null-safe
+        };
+        IsLoading = true;
+        var regionList = await ApiMasterService.CallingAPI<MasterDataList, SelectListReq>(AllApiNames.GET_MASTER_DATA, selectRequest);
+        IsLoading = false;
+        return regionList.masterDataList;
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var user = HttpContextAccessor.HttpContext?.User;
+        // Replace "YourCustomClaimType" with the actual claim type
+        var uid = user!.Claims.FirstOrDefault(c => c.Type == CustomClaimTypes.User_Id)?.Value;
+        User_Id = Convert.ToInt32(uid);
+        LoggedVendorCode = user!.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value!;
+        if (PO != null)
+        {
+            isFatched = IsEditMode;
+        }
+        else
+        {
+            PO = new();
+            isFatched = false;
+        }
+        var passfailMaster = await GetMasterData(CmdNames.Get_PassFail);
+        var unitMaster = await GetMasterData(CmdNames.Get_Unit);
+        var yesNoMaster = await GetMasterData(CmdNames.Get_YesNo);
+        _model.PassFailDefectsStatus = passfailMaster;
+        _model.PassFailGPTStatus = passfailMaster;
+        _model.PassFailMeasurementSampleSize = passfailMaster;
+        _model.UnitNoOfBagCarton = unitMaster;
+        _model.UnitNoOfCheck = unitMaster;
+        _model.YesNoInlineDone = yesNoMaster;
+        _model.YesNoPackingList = yesNoMaster;
+        _model.YesNoPackingStatus = yesNoMaster;
+        _model.PassFailInspectionResult = passfailMaster;
+
+
+    }
+
+
+    private async void Save()
+    {
+
+        if (PO.InspId <= 0)
+        {
+            await ShowErrorDialog("Validation", "PO and Inpection Data is missing.");
+            return;
+        }
+        bool? dres = await DialogService.ShowMessageBox("Confirmation", "Do you want to save Inspection details?", yesText: "  Yes!  ", cancelText: "   No   ");
+        if (dres == null)
+        {
+            return;
+        }
+        else
+        {
+            await form.Validate();
+
+            if (form.IsValid)
+            {
+                _model.UserId = User_Id;// Set the CREATED BY
+                _model.InspectionId = PO.InspId;
+                _model.InspectorCode = LoggedVendorCode;
+                var res1 = await ApiMasterService.CallingAPI<GenRes, InspectionModel>(AllApiNames.SAVE_INSPECT_DATA!, _model);
+                if (res1.responseCode.Equals(0))
+                {
+                    Snackbar.Add("PO record saved successfully.", Severity.Success);
+                    MudDialog?.Close();
+                }
+                else
+                {
+                    await ShowErrorDialog("Error!", res1.responseMessage!);
+                }
+            }
+        }
+
+    }
+    private void CloseDialog()
+    {
+        MudDialog?.Close();
+    }
+    private async Task ShowErrorDialog(string Tital, string message)
+    {
+        await DialogService.ShowMessageBox(Tital, message);
+    }
+    // Find Button Logic
+    private async Task OnFindClick()
+    {
+        if (!string.IsNullOrEmpty(PO.PoNumber))
+        {
+            // Prepare request safely
+            var selectRequest = new SelectListReq
+            {
+                Id = 0,
+                Cmd = CmdNames.Get_PO_Details,
+                StrField = PO.PoNumber      // null-safe
+            };
+            // Find the PO in local db
+            IsLoading = true;
+            var existingPO = await ApiMasterService.CallingAPI<POResponse, SelectListReq>(AllApiNames.GET_PO_DETAILS, selectRequest);
+            IsLoading = false;
+
+            if (existingPO.responseCode == 0 && existingPO.responseMessage!.ToUpper() == "SUCCESS")
+            {
+                if (!string.IsNullOrEmpty(existingPO.POHeader.PO_NUMBER))
+                {
+                    await ShowErrorDialog("Info", "PO details already exist.");
+
+                    //-----------------------
+                    PO = mapper.Map<POHeader>(existingPO.POHeader);
+                    PO.Details.Clear();
+                    foreach (var podetail in existingPO.PODetails)
+                    {
+                        PO.Details.Add(mapper.Map<PODetails>(podetail));
+                    }
+
+                    selectRequest.Cmd = CmdNames.Get_Vendor_By_Code;
+                    selectRequest.StrField = PO.VendorCode;     // null-safe
+                    IsLoading = true;
+                    var existingVendor = await ApiMasterService.CallingAPI<GetVendorByCode, SelectListReq>(AllApiNames.GET_VENDOR_BY_CODE, selectRequest);
+                    IsLoading = false;
+                    if (existingVendor.responseCode == 0 && existingVendor.responseMessage!.ToUpper() == "SUCCESS")
+                    {
+                        if (!string.IsNullOrEmpty(existingVendor.VendorModel.VENDOR_CODE))
+                        {
+                            selectRequest.Id = existingVendor.VendorModel.VENDOR_ID;
+                            selectRequest.Cmd = CmdNames.Get_Vendor_Address;
+                            Vendor _vendor = mapper.Map<Vendor>(existingVendor.VendorModel);
+                            _vendor.VendorGUId = Guid.NewGuid();
+                            _vendor.VendorAddresses.Clear();
+                            foreach (var addrss in existingVendor.VendorAddressList)
+                            {
+                                PO.AddressList.Add(mapper.Map<VendorAddressDetail>(addrss));
+                            }
+                        }
+                    }
+                    isFatched = true;
+                    return;
+                    //-------------------------
+                }
+            }
+
+            //------------------------------
+            string pno = PO.PoNumber;
+            var req = new SAP_API_DATA_Req
+            {
+                Param = PO.PoNumber,  // Ensure no null
+                TaskName = "SAP_PO_DETAILS"
+            };
+
+            IsLoading = true;
+            var sapApiData = await ApiMasterService
+                .CallingAPI<ApiData, SAP_API_DATA_Req>(AllApiNames.GET_SAP_API!, req)
+                .ConfigureAwait(false);
+            IsLoading = false;
+
+            if (sapApiData is not null)
+            {
+                IsLoading = true;
+                var poDetails = await ApiMasterService
+                    .CallingSAPAPI<POSAPResponse, string>(string.Empty, sapApiData)
+                    .ConfigureAwait(false);
+                IsLoading = false;
+                if (poDetails.APPS_FOOTWEAR_DETAILS != null)
+                {
+                    if (poDetails.APPS_FOOTWEAR_DETAILS.Any() == true)  // Safe and concise
+                    {
+                        var Podtl = poDetails.APPS_FOOTWEAR_DETAILS.First();
+
+                        if (Podtl is not null)  // extra guard
+                        {
+                            PO = PO.MapToHeader(poDetails);
+
+                            if (LoggedVendorCode == PO.VendorCode)
+                            {
+
+                                selectRequest.Cmd = CmdNames.Get_Vendor_By_Code;
+                                selectRequest.StrField = PO.VendorCode;     // null-safe
+
+                                var existingVendor = await ApiMasterService.CallingAPI<GetVendorByCode, SelectListReq>(AllApiNames.GET_VENDOR_BY_CODE, selectRequest);
+
+                                if (existingVendor.responseCode == 0 && existingVendor.responseMessage!.ToUpper() == "SUCCESS")
+                                {
+                                    if (!string.IsNullOrEmpty(existingVendor.VendorModel.VENDOR_CODE))
+                                    {
+                                        selectRequest.Id = existingVendor.VendorModel.VENDOR_ID;
+                                        selectRequest.Cmd = CmdNames.Get_Vendor_Address;
+                                        Vendor _vendor = mapper.Map<Vendor>(existingVendor.VendorModel);
+                                        _vendor.VendorGUId = Guid.NewGuid();
+                                        _vendor.VendorAddresses.Clear();
+                                        foreach (var addrss in existingVendor.VendorAddressList)
+                                        {
+                                            PO.AddressList.Add(mapper.Map<VendorAddressDetail>(addrss));
+                                        }
+                                    }
+                                }
+
+                                isFatched = true;
+                            }
+                            else
+                            {
+                                await ShowErrorDialog("Info", "This PO number is not assigned to you.");
+                                PO = new();
+                                PO.PoNumber = pno;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        await ShowErrorDialog("Info", "PO not found.");
+                        PO = new();
+                        PO.PoNumber = pno;
+                    }
+                }
+                else
+                {
+                    await ShowErrorDialog("Info", "Requesting server is not responding.");
+                    PO = new();
+                    PO.PoNumber = pno;
+                }
+
+
+            }
+            else
+            {
+                await ShowErrorDialog("Error", "SAP_PO_DETAILS Api not found.");
+                return;
+            }
+
+        }
+        else
+        {
+            await ShowErrorDialog("Warning", "Please enter a valid PO Number");
+        }
+    }
+    private async void AddToAddressList()
+    {
+
+        InspectionDefectDto obj = new InspectionDefectDto();
+        if (!string.IsNullOrEmpty(defectDto.Defects))
+        {
+            if (defectDto.Minor == 0 && defectDto.Major == 0)
+            {
+                await ShowErrorDialog("Validation", "Major or Minor value is required.");
+                return;
+            }
+            _model.Defects.Add(new InspectionDefectDto
+            {
+                Defects = defectDto.Defects,
+                Dimension = defectDto.Dimension,
+                Major = defectDto.Major,
+                Minor = defectDto.Minor,
+                DefectId = Guid.NewGuid()
+            });
+            defectDto = new();
+            StateHasChanged();
+        }
+        else
+        {
+            await ShowErrorDialog("Validation", "Defect is required.");
+        }
+
+
+
+
+    }
+    private async void EditItem(InspectionDefectDto request)
+    {
+
+        var parameters = new DialogParameters
+        {
+            { "_vendor",  new Vendor()  },
+            { "IsEditMode", false }
+        };
+        var options = new DialogOptions { CloseButton = true, MaxWidth = MaxWidth.Medium, FullWidth = true };
+
+        var dialog = DialogService.Show<POLineItemDetails>("PO Line Item Detials", parameters, options);
+
+        var result = await dialog.Result;
+
+    }
+    private async void RemoveItem(InspectionDefectDto request)
+    {
+
+        var parameters = new DialogParameters
+        {
+            { "_vendor",  new Vendor()  },
+            { "IsEditMode", false }
+        };
+        var options = new DialogOptions { CloseButton = true, MaxWidth = MaxWidth.Medium, FullWidth = true };
+
+        var dialog = DialogService.Show<POLineItemDetails>("PO Line Item Detials", parameters, options);
+
+        var result = await dialog.Result;
+
+    }
+    private void ViewPOIRDetails()
+    {
+        var parameters = new DialogParameters
+        {
+            { "PO",  PO  },
+            { "IsEditMode", PO != null }
+        };
+        var options = new DialogOptions { CloseButton = true, MaxWidth = MaxWidth.Large, FullWidth = true };
+
+        DialogService.Show<POIRDetails>("Inspection Request Details", parameters, options);
+
+    }
+}
+<style>
+    .muddividr {
+        margin: 0 !important;
+        border-color: #f408b2 !important;
+        border-width: 2px;
+    }
+
+    .mud-breadcrumbs {
+        padding: 12px 12px;
+    }
+
+    .floating-search-btn {
+        position: fixed;
+        top: 50%;
+        right: 0;
+        transform: translateY(-50%);
+        background-color: #e91e63;
+        color: white;
+        padding: 10px 6px;
+        border-radius: 8px 0 0 8px;
+        cursor: pointer;
+        writing-mode: vertical-rl;
+        text-orientation: mixed;
+        font-weight: bold;
+        z-index: 999;
+        box-shadow: 0 0 8px rgba(0,0,0,0.2);
+    }
+
+        .floating-search-btn:hover {
+            background-color: #c2185b;
+        }
+
+    .search-modal {
+        position: fixed;
+        top: 170px;
+        right: 35px;
+        background-color: white;
+        width: 320px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+        border-radius: 8px;
+        z-index: 1000;
+    }
+
+        .search-modal .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .search-modal .close-btn {
+            background: none;
+            border: none;
+            font-size: 18px;
+            cursor: pointer;
+        }
+
+    .mud-simple-table.mud-table-dense * tr td, .mud-simple-table.mud-table-dense * tr th {
+        padding: 2px 4px
+    }
+
+    .font8 {
+        font-size: 0.8rem;
+    }
+
+    .mud-list-subheader-extended {
+        padding-top: 0px;
+        padding-bottom: 0px;
+        margin-bottom: -12px !important;
+    }
+
+    .mud-list-item-extended {
+        padding-bottom: 0px !important;
+    }
+
+    .mud-list-item-gutters-extended.mud-list-item-dense-extended {
+        padding-left: 4px;
+        padding-right: 4px;
+        padding-top: 0px;
+        padding-bottom: 0px;
+    }
+
+    .mud-list-subheader-gutters-extended {
+        padding-left: 8px;
+        padding-right: 8px;
+        padding-top: 0px !important;
+        padding-bottom: 0px !important;
+    }
+
+    .mud-icon-button-edge-margin-end {
+        color: red !important;
+    }
+
+    .mud-input > input.mud-input-root-outlined, div.mud-input-slot.mud-input-root-outlined {
+        padding: 15px 10px;
+        font-size: 12px;
+        height: 20px !important;
+    }
+
+
+
+    .filter-paper {
+        padding-left: 8px !important;
+        padding-right: 8px !important;
+        padding-top: 25px !important;
+        padding-bottom: 5px !important;
+        margin-left: 22px !important;
+        margin-right: 28px !important;
+        margin-bottom: 20px !important;
+    }
+
+    .mud-link {
+        font-size: 0.8rem !important;
+    }
+
+    .mud-list-item-multiselect-extended.mud-list-item-multiselect-checkbox-extended {
+        padding-inline-end: 0px;
+    }
+
+    .border1pxblack {
+        border: 1px solid #ffffffeb;
+        background-color: #ed008b !important;
+        color: white;
+    }
+
+    .border1pxblack1 {
+        background-color: #ed008b !important;
+        color: white;
+        border: none !important;
+    }
+
+    .my-custom-select {
+        position: relative;
+    }
+
+        .my-custom-select .mud-popover {
+            padding-top: 20px;
+        }
+
+    .filter-close-button {
+        position: absolute;
+        top: 6px;
+        right: 6px;
+        cursor: pointer;
+        background-color: white;
+        border: 1px solid #ccc;
+        border-radius: 50%;
+        padding: 2px;
+        z-index: 99999;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    }
+
+    .mud-list-subheader-extended {
+        top: -6px !important;
+    }
+
+    .mud-list-subheader-extended {
+        position: relative !important;
+    }
+
+    .disabled-div {
+        pointer-events: none; /* Prevent clicks */
+        opacity: 0.6; /* Dimmed look */
+        background-color: #f0f0f0; /* Optional: lighter background */
+        user-select: none; /* Prevent text selection */
+    }
+
+    .mud-dialog-title {
+        border-bottom: 1px solid #1413140d;
+    }
+
+    .mud-dialog-actions {
+        border-top: 1px solid #1413140d;
+    }
+
+    .mud-dialog-content {
+        padding-top: 1.5rem !important;
+        padding-bottom: 1.5rem !important;
+    }
+
+    .mud-dialog-title {
+        padding: 11px !important;
+    }
+
+    .mud-message-box__yes-button {
+        color: white !important;
+        background-color: green !important;
+    }
+
+    .mud-message-box__cancel-button {
+        color: white !important;
+        background-color: red !important;
+    }
+
+    .mud-message-box .mud-dialog-actions {
+        display: flex;
+        flex-direction: row-reverse;
+        justify-content: flex-start;
+    }
+</style>
+<style>
+
+    .mud-dialog-title {
+        color: white !important;
+        background: linear-gradient(to right, #0e6cb1, #ffffff) !important;
+    }
+
+    .mud-dialog-actions {
+        background: linear-gradient(to right, #3b7ed12b, #ffffff) !important
+    }
+
+</style>

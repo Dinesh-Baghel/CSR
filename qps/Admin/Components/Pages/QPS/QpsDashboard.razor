@@ -1,0 +1,542 @@
+﻿@page "/"
+@using Admin.Components.Shared
+@using System.Globalization
+@using Admin.Components.UIControls
+@using ClosedXML.Excel
+@using MudExtensions
+@attribute [Authorize]
+@using MudBlazor
+@using System.Security.Claims
+@using System.Text.RegularExpressions
+@inject IDialogService DialogService
+
+
+<MudPaper Class="pa-4">
+    <MudStack Spacing="2">
+
+        @if (isBuyer || isAdmin)
+        {
+            <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                <MudText Typo="Typo.h5" Align="Align.Left">PPS Requests</MudText>
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="OpenAddDialog">
+                    <MudIcon Icon="@Icons.Material.Filled.Add" /> Add Request
+                </MudButton>
+            </MudStack>
+        }
+        @if (isQC || isView)
+        {
+            <MudText Typo="Typo.h5" Align="Align.Left" Class="mb-5">PPS Requests</MudText>
+
+        }
+
+        <MudPaper Class="p-4 mb-4" Outlined="true">
+            <MudGrid>
+                <MudItem xs="12" sm="4">
+                    <MudTextField @bind-Value="_searchText" Label="Search..."
+                                  Variant="Variant.Text" Adornment="Adornment.Start"
+                                  AdornmentIcon="@Icons.Material.Filled.Search" Immediate="true" OnKeyUp="OnSearchChanged" />
+
+                </MudItem>
+                <!-- Top Row: Date Filters + Apply Button -->
+                <MudItem xs="12" sm="2">
+                    <MudDatePicker @bind-Date="FromDate" Label="From Date" />
+                </MudItem>
+
+                <MudItem xs="12" sm="2">
+
+                    <MudDatePicker @bind-Date="_toDate" Label="To Date" MinDate="_fromDate" />
+                    @if (!string.IsNullOrEmpty(_errorMessage))
+                    {
+                        <MudText Color="Color.Error">@_errorMessage</MudText>
+                    }
+                </MudItem>
+
+                <MudItem xs="12" sm="4" Class="d-flex align-items-end">
+                    <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="ApplyFilter">
+                        <MudIcon Icon="@Icons.Material.Filled.FilterList" Class="mr-2" />
+                        Apply Filter
+                    </MudButton>
+                    <MudButton Class="ml-2" Variant="Variant.Filled" Color="Color.Success" StartIcon="@Icons.Material.Filled.FileDownload" OnClick="DownloadExcel">Download Excel</MudButton>
+
+                </MudItem>
+
+                <!-- Second Row: Search Box -->
+
+            </MudGrid>
+        </MudPaper>
+
+        <MudTable T="PpsRequest" Items="_filteredRequests" Hover="true" Dense="true" Bordered="true" Striped="true" SortLabel="Sort By">
+            <HeaderContent>
+                @if (isQC || isAdmin)
+                {
+                    <MudTh></MudTh>
+                }
+                <MudTh><MudTableSortLabel SortBy="new Func<PpsRequest, object>(x => x.Generic_Article)">Article</MudTableSortLabel></MudTh>
+                <MudTh Style="width:80px;"><MudTableSortLabel SortBy="new Func<PpsRequest, object>(x => x.Color)">Color</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortBy="new Func<PpsRequest, object>(x => x.Mc_Description)">Merchandise Category</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortBy="new Func<PpsRequest, object>(x => x.Division_Description)">Division</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortBy="new Func<PpsRequest, object>(x => x.Vendor_Name)">Vendor</MudTableSortLabel></MudTh>
+                <MudTh Style="text-align:right"><MudTableSortLabel SortBy="new Func<PpsRequest, object>(x => x.Mrp)">MRP</MudTableSortLabel></MudTh>
+                <MudTh>Status</MudTh>
+                <MudTh><MudTableSortLabel SortBy="new Func<PpsRequest, object>(x => x.PP_Type)">Type</MudTableSortLabel></MudTh>
+                <MudTh>Qty</MudTh>
+                @*  <MudTh><MudTableSortLabel SortBy="new Func<PpsRequest, object>(x => x.Buyer_Id)">Buyer</MudTableSortLabel></MudTh> *@
+                <MudTh><MudTableSortLabel SortBy="new Func<PpsRequest, object>(x => x.Created_At)">Created At</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortBy="new Func<PpsRequest, object>(x => x.CREATED_BY)">Created By</MudTableSortLabel></MudTh>
+                <MudTh>Verified At</MudTh>
+                <MudTh><MudTableSortLabel SortBy="new Func<PpsRequest, object>(x => x.VERIFIED_BY)">Verified By</MudTableSortLabel></MudTh>
+
+
+            </HeaderContent>
+            <RowTemplate>
+                @if (isQC || isAdmin)
+                {
+                    <MudTd>
+
+                        @if (context.Status == "Accepted" || context.Status == "New")
+                        {
+                            <MudTooltip Text="Edit Details" ShowOnFocus="false">
+                                <MudIconButton Icon="@Icons.Material.Filled.EditNote" Color="Color.Primary" Size="Size.Small"
+                                               OnClick="@(()  => OpenPpsDetailPopup(context))" />
+                            </MudTooltip>
+                        }
+                        else
+                        {
+                            <MudTooltip Text="View Details" ShowOnFocus="false">
+                                <MudIconButton Icon="@Icons.Material.Filled.Visibility" Color="Color.Info" Size="Size.Small"
+                                               OnClick="@(() => OpenPpsDetailPopup(context))" />
+                            </MudTooltip>
+                        }
+
+                    </MudTd>
+                }
+                <MudTd DataLabel="Generic Article">
+                    <MudIconButton Color="Color.Info" Size="Size.Small"
+                                   OnClick="@(() => OpenPpsHistoryPopup(context))">
+                        <b> @HighlightText(context.Generic_Article!)</b>
+                    </MudIconButton> <br /> @HighlightText(context.Article_Description!)
+                </MudTd>
+
+                <MudTd DataLabel="COLOR">@HighlightText(context.Color!)</MudTd>
+                <MudTd DataLabel="[Merchandise Category] Description"><b>@HighlightText(context.Mc!)</b> ~ @HighlightText(context.Mc_Description!)</MudTd>
+                <MudTd DataLabel="[Division] Description"><b>@HighlightText(context.Division!)</b> ~ @HighlightText(context.Division_Description!)</MudTd>
+                <MudTd DataLabel="[Vendor Code] Name"><b>@HighlightText(context.Vendor_Code!)</b> ~ @HighlightText(context.Vendor_Name!)</MudTd>
+                <MudTd Style="text-align:right" DataLabel="MRP">@HighlightText(context.Mrp!)</MudTd>
+                <MudTd DataLabel="Status">
+                    <MudChip T="String" Color="@GetStatusColor(context.STATUS_ID)" Variant="Variant.Filled">@HighlightText(context.Status) </MudChip>
+                </MudTd>
+                <MudTd DataLabel="Type">@HighlightText(context.PP_Type!)</MudTd>
+                <MudTd Style="text-align:right" DataLabel="Qty">@context.Qty</MudTd>
+                <MudTd DataLabel="Created At">
+                    @HighlightText(context.Created_At.ToString("dd-MMM-yyyy HH:mm:ss tt")!)
+                </MudTd>
+                <MudTd DataLabel="Created At">
+                    <b> @HighlightText(context.CREATED_BY.Split('~')[0]) </b> ~ @HighlightText((context.CREATED_BY?.Split('~').Length > 1 ? context.CREATED_BY.Split('~')[1] : ""))
+                </MudTd>
+                <MudTd DataLabel="Verified At">
+                    @HighlightText(context.VERIFIED_AT!)
+                </MudTd>
+                <MudTd DataLabel="Verified At">
+                    <b>@HighlightText(context.VERIFIED_BY.Split('~')[0])</b> ~ @HighlightText((context.VERIFIED_BY?.Split('~').Length > 1 ? context.VERIFIED_BY.Split('~')[1] : ""))
+                </MudTd>
+
+            </RowTemplate>
+            <PagerContent>
+                <MudTablePager PageSizeOptions="new int[] { 10, 25, 50, 100 }" />
+            </PagerContent>
+        </MudTable>
+    </MudStack>
+</MudPaper>
+<Loader IsVisible="@IsLoading" />
+<MessageBox @ref="messageBox" />
+
+@code {
+
+    private DateTime? _fromDate;
+    private DateTime? _toDate;
+    private SelectListReq selectSelectAllSelectListReq = new();
+    private List<PpsRequest> _requests = new();
+    private List<PpsRequest> _filteredRequests = new();
+    private string _searchText = "";
+    private bool _isDialogOpen;
+    private bool _isEditMode;
+    private PpsRequest _ppsRequestModel = new();
+    private int User_Id = 0;
+    private string Role_Id = "";
+    private string empcode;
+    private string useremail;
+    private bool isBuyer = false;
+    private bool isQC = false;
+    private bool isAdmin = false;
+    private bool isView = false;
+    private string? _errorMessage;
+
+    private DateTime? FromDate
+    {
+        get => _fromDate;
+        set
+        {
+            _fromDate = value;
+            if (_toDate.HasValue && _fromDate.HasValue && _toDate < _fromDate)
+            {
+                _toDate = _fromDate; // auto-adjust
+            }
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        // var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        // var user = authState.User;
+
+        // isAdmin = user.IsInRole("Admin");
+
+        var user = HttpContextAccessor.HttpContext?.User;
+        if (user?.Identity?.IsAuthenticated == true)
+        {
+
+            var uidClaim = user.Claims.FirstOrDefault(c => c.Type == CustomClaimTypes.User_Id)?.Value;
+            var nameIdentifier = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var email = user.FindFirst(ClaimTypes.Email)?.Value;
+            // var roleId = user.FindFirst(ClaimTypes.Role)?.Value;
+            if (int.TryParse(uidClaim, out int uid))
+            {
+                User_Id = uid;
+                empcode = nameIdentifier!;
+                useremail = email;
+                // Role_Id = roleId!;
+                isBuyer = user.IsInRole("2");
+                isQC = user.IsInRole("3");
+                isAdmin = user.IsInRole("5");
+                isView = user.IsInRole("4");
+            }
+            else
+            {
+                // Handle missing/invalid claim value
+                User_Id = 0; // or throw an exception, or log
+            }
+        }
+        else
+        {
+            // Handle unauthenticated user
+            User_Id = 0;
+        }
+
+        await base.OnInitializedAsync();
+    }
+
+    private async Task OpenPpsDetailPopup(PpsRequest request)
+    {
+
+        var parameters = new DialogParameters { ["Request"] = request };
+        var options = new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true, CloseButton = true };
+
+        var dialog = await DialogService.ShowAsync<AccepDeclineModel>("PPS Request Details", parameters, options);
+        var result = await dialog.Result;
+
+        if (!result.Canceled)
+        {
+            await GetAllPPS();
+            StateHasChanged();
+        }
+
+
+    }
+
+    private async Task OpenPpsHistoryPopup(PpsRequest request)
+    {
+        List<PpsLogHistory> _history = new();
+        selectSelectAllSelectListReq.Id = request.Request_Id;
+        selectSelectAllSelectListReq.Cmd = CmdNames.Get_PPS_Request_History_Timeline;
+        selectSelectAllSelectListReq.ResponseType = "PpsLogHistory";
+        _history = await ApiMasterService.CallingAPI<List<PpsLogHistory>, SelectListReq>(AllApiNames.SELECT_ALL_PPSREQUEST, selectSelectAllSelectListReq);
+
+        var parameters = new DialogParameters
+        {
+            ["_history"] = _history,
+            ["ATTACHMENTS"] = request.ATTACHMENTS,
+            ["ATTACHMENTS_STEP2"] = request.ATTACHMENTS_STEP2,
+            ["ATTACHMENTS_STEP3"] = request.ATTACHMENTS_STEP3
+        };
+
+        var options = new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true, CloseButton = true };
+
+        await DialogService.ShowAsync<PPSHistoryTimeLine>("PPS History Timeline for generic article [ " + request.Generic_Article + " ~ " + request.Article_Description + " ]", parameters, options);
+    }
+
+    private void OnSearchChanged(KeyboardEventArgs e)
+    {
+        // _filteredRequests = string.IsNullOrWhiteSpace(_searchText)
+        //     ? _requests
+        //     : _requests.Where(r => r.Title.Contains(_searchText, StringComparison.OrdinalIgnoreCase)).ToList();
+
+        ApplyFilter();
+    }
+
+
+
+    private void ApplyFilter()
+    {
+
+        if (string.IsNullOrWhiteSpace(_searchText))
+        {
+            _filteredRequests = _requests;
+        }
+        else
+        {
+            var words = _searchText
+                .Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+            _filteredRequests = _requests
+                .Where(r => words.All(w => r.Title.Contains(w, StringComparison.OrdinalIgnoreCase)))
+                .ToList();
+        }
+
+        if (_fromDate.HasValue && _toDate.HasValue && _toDate < _fromDate)
+        {
+            // show error message
+            _errorMessage = "To Date cannot be earlier than From Date.";
+            return;
+        }
+
+        _errorMessage = null;
+
+        if (_fromDate.HasValue)
+            _filteredRequests = _filteredRequests
+                .Where(o => o.Created_At.Date >= _fromDate.Value).ToList();
+
+        if (_toDate.HasValue)
+            _filteredRequests = _filteredRequests
+                .Where(o => o.Created_At.Date <= _toDate.Value).ToList();
+    }
+
+    private async Task GetAllPPS()
+    {
+        _requests = new();
+        selectSelectAllSelectListReq.Id = 0;
+        selectSelectAllSelectListReq.Cmd = CmdNames.Get_All_PPSRequest;
+        selectSelectAllSelectListReq.ResponseType = "PpsRequest";
+        _requests = await ApiMasterService.CallingAPI<List<PpsRequest>, SelectListReq>(AllApiNames.SELECT_ALL_PPSREQUEST, selectSelectAllSelectListReq);
+        _filteredRequests = _requests;
+
+        ApplyFilter();
+        StateHasChanged();
+    }
+
+    private async Task OpenAddDialog()
+    {
+
+        var parameters = new DialogParameters
+        {
+            ["Request"] = new PpsRequest(),
+            ["IsEditMode"] = false,
+            ["EmpCode"] = empcode,
+            ["Email"] = useremail
+        };
+        var options = new DialogOptions
+        {
+            MaxWidth = MaxWidth.Small,
+            FullWidth = true,
+            CloseButton = true
+        };
+
+        var dialog = await DialogService.ShowAsync<AddEditPpsRequestDialog>("Add PPS Request", parameters, options);
+        var result = await dialog.Result;
+        await GetAllPPS();
+        StateHasChanged();
+    }
+
+    private async Task EditRequest(PpsRequest existing)
+    {
+        var parameters = new DialogParameters
+        {
+            ["Request"] = new PpsRequest
+            {
+                Request_Id = existing.Request_Id,
+                Status = existing.Status,
+                Description = existing.Description
+            },
+            ["IsEditMode"] = true
+        };
+
+        var options = new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true, CloseButton = true };
+        var dialog = await DialogService.ShowAsync<AddEditPpsRequestDialog>("Edit PPS Request", parameters, options);
+        var result = await dialog.Result;
+
+        if (!result.Canceled && result.Data is PpsRequest updated)
+        {
+            var req = _requests.First(r => r.Request_Id == updated.Request_Id);
+            req.Status = updated.Status;
+            req.Description = updated.Description;
+        }
+    }
+
+    private void ViewDetails(PpsRequest req)
+    {
+        // Could show a read-only dialog or navigate to details page
+    }
+
+    private void DeleteRequest(int id)
+    {
+        _requests.RemoveAll(r => r.Request_Id == id);
+        OnSearchChanged(null);
+    }
+
+    private async void SaveRequest()
+    {
+        if (_isEditMode)
+        {
+            // note applicable
+
+            // var existing = _requests.FirstOrDefault(r => r.Id == _ppsRequestModel.Id);
+            // if (existing != null)
+            // {
+            //     existing.Title = _ppsRequestModel.Title;
+            //     existing.Status = _ppsRequestModel.Status;
+            //     existing.Description = _ppsRequestModel.Description;
+            // }
+
+        }
+        else
+        {
+            _ppsRequestModel.Request_Id = _requests.Any() ? _requests.Max(r => r.Request_Id) + 1 : 1;
+            _ppsRequestModel.Created_At = DateTime.Now;
+
+
+        }
+        //OnSearchChanged(null);
+        _isDialogOpen = false;
+    }
+
+    private async Task ShowErrorDialog(string message)
+    {
+        await DialogService.ShowMessageBox(title: "Error", markupMessage: (MarkupString)message, yesText: "OK");
+    }
+    private void CloseDialog() => _isDialogOpen = false;
+
+    private Color GetStatusColor(string status) =>
+        status switch
+        {
+            "Approved" => Color.Success,
+            "Rejected" => Color.Error,
+            _ => Color.Warning
+        };
+
+    private Color GetStatusColor(int statusId) => statusId switch
+    {
+        1 => Color.Info,     // New
+        2 => Color.Warning,  // Accepted
+        3 => Color.Error,    // Declined
+        4 => Color.Success,  // Passed
+        5 => Color.Error,  // Failed
+        _ => Color.Default
+    };
+    private MessageBox? messageBox;
+    bool IsLoading = false;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await GetAllPPS();
+            StateHasChanged();
+        }
+    }
+
+    private async Task DownloadExcel()
+    {
+        using var workbook = new XLWorkbook();
+        var worksheet = workbook.Worksheets.Add("Orders");
+
+        // Search Criteria in Row 1, spanning columns 1–4
+        worksheet.Range(1, 1, 1, 6).Merge();
+        worksheet.Cell(1, 1).Value = $"Search Criteria : {string.Join(" and ", _searchText.Split(' '))}";
+        worksheet.Cell(1, 1).Style.Font.Bold = true;
+
+        // Date Range in Row 2, spanning columns 1–4
+        worksheet.Range(1, 7, 1, 13).Merge();
+        worksheet.Cell(1, 7).Value = $"Date Range : From  {FromDate:dd-MMM-yyyy}  To  {_toDate:dd-MMM-yyyy}";
+        worksheet.Cell(1, 7).Style.Font.Bold = true;
+
+        // Header
+        worksheet.Cell(2, 1).Value = "Article";
+        worksheet.Cell(2, 2).Value = "Color";
+        worksheet.Cell(2, 3).Value = "Merchandise Category";
+        worksheet.Cell(2, 4).Value = "Division";
+        worksheet.Cell(2, 5).Value = "Vendor";
+        worksheet.Cell(2, 6).Value = "MRP";
+        worksheet.Cell(2, 7).Value = "Status";
+        worksheet.Cell(2, 8).Value = "Type";
+        worksheet.Cell(2, 9).Value = "Qty";
+        worksheet.Cell(2, 10).Value = "Created At";
+        worksheet.Cell(2, 11).Value = "Created By";
+        worksheet.Cell(2, 12).Value = "Verified At";
+        worksheet.Cell(2, 13).Value = "Verified By";
+
+        // Data
+        for (int i = 0; i < _filteredRequests.Count; i++)
+        {
+            var order = _filteredRequests[i];
+            worksheet.Cell(i + 3, 1).Value = $"{order.Generic_Article} ~ {order.Article_Description}";
+            worksheet.Cell(i + 3, 2).Value = $"{order.Color}";
+            worksheet.Cell(i + 3, 3).Value = $"{order.Mc} ~ {order.Mc_Description}";
+            worksheet.Cell(i + 3, 4).Value = $"{order.Division} ~ {order.Division_Description}";
+            worksheet.Cell(i + 3, 5).Value = $"{order.Vendor_Code} ~ {order.Vendor_Name}";
+            worksheet.Cell(i + 3, 6).Value = $"{order.Pps_Mrp} ";
+            worksheet.Cell(i + 3, 7).Value = $"{order.Status}";
+            worksheet.Cell(i + 3, 8).Value = $"{order.PP_Type}";
+            worksheet.Cell(i + 3, 9).Value = $"{order.Qty} ";
+            worksheet.Cell(i + 3, 10).Value = $"{order.Created_At} ";
+            worksheet.Cell(i + 3, 11).Value = $"{order.CREATED_BY} ";
+            worksheet.Cell(i + 3, 12).Value = $"{order.VERIFIED_AT} ";
+            worksheet.Cell(i + 3, 13).Value = $"{order.VERIFIED_BY} ";
+
+        }
+
+        using var stream = new MemoryStream();
+        workbook.SaveAs(stream);
+        var content = stream.ToArray();
+
+        // Download in Blazor
+        var fileName = $"PPS_{DateTime.Now:yyyyMMdd}.xlsx";
+        await JS.InvokeVoidAsync("downloadFile", fileName, Convert.ToBase64String(content));
+    }
+
+    private MarkupString HighlightText(string text)
+    {
+        if (string.IsNullOrWhiteSpace(_searchText) || string.IsNullOrWhiteSpace(text))
+            return (MarkupString)text;
+
+        var words = _searchText
+    .Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        string pattern = string.Join("|", words.Select(Regex.Escape));// Regex.Escape(_searchText);
+
+        string result = Regex.Replace(text, pattern, match => $"<span class='highlight'>{match.Value}</span>", RegexOptions.IgnoreCase);
+
+        return (MarkupString)result;
+    }
+}
+<style>
+    .mud-breadcrumbs {
+        padding: 12px 12px;
+    }
+
+    /* Target MudTable header row */
+    .mud-table thead tr th {
+        background-color: #ed008b !important;
+        color: #ffffff !important;
+        font-weight: bold !important;
+    }
+
+    .mud-table-cell {
+        padding-inline-start: 5px !important;
+        padding-inline-end: 5px !important;
+    }
+
+    .highlight {
+        background-color: yellow;
+        color: darkblue;
+        font-weight: bold;
+    }
+
+</style>

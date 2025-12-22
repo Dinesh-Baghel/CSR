@@ -1,0 +1,63 @@
+﻿@using Microsoft.AspNetCore.Authentication
+@using Microsoft.AspNetCore.Http
+<MudNavMenu Class="pt-2" Style="color:white;">
+    <!-- User Start -->
+    <MudNavGroup Icon="@Icons.Material.Filled.Person" IconColor="Color.Inherit" Title="@UserName">
+        <MudNavLink Icon="@Icons.Material.Filled.ExitToApp" IconColor="Color.Inherit" Style="color:white;" Href="/Account/User-Logout">Logout</MudNavLink>
+    </MudNavGroup>
+    <!-- User End -->
+    @foreach (var topMenu in menuList.Where(m => m.Parent_Id == 0))
+    {
+        var children = menuList.Where(m => m.Parent_Id == topMenu.Id).ToList();
+        @if (children.Any())
+        {
+            <MudNavGroup Title="@topMenu.Label" Expanded="true">
+                <BSRRecursiveNavMenu MenuItems="children" AllMenus="menuList" />
+            </MudNavGroup>
+        }
+        else
+        {
+            <MudNavLink Href="@topMenu.Url" Class="f15" Match="NavLinkMatch.All">@topMenu.Label</MudNavLink>
+        }
+    }
+    @* <MudNavLink Icon="@Icons.Material.Filled.BarChart" Href="/Bsr">BSR</MudNavLink> *@
+
+    @* <MudNavLink Href="#" Icon="@Icons.Material.Filled.BarChart">Best Seller Report</MudNavLink> *@
+</MudNavMenu>
+
+@code {
+
+    private List<MenusList> menuList { get; set; } = new();
+    private SelectListReq selectListReq { get; set; } = new();
+    private string? UserName { get; set; }
+    protected override async Task OnInitializedAsync()
+    {
+        var context = HttpContextAccessor.HttpContext;
+        if (context != null)
+        {
+            UserName = context.User.Identity!.Name;
+        }
+        selectListReq.Cmd = CmdNames.Get_Menu_List;
+        var res1 = await ApiMasterService.CallingAPI<GetMenuListRes, SelectListReq>(AllApiNames.GET_MENUS_LIST!, selectListReq);
+        if (res1.responseCode == 0)
+        {
+            menuList = res1.menusLists;
+        }
+        else
+        {
+            menuList = new();
+        }
+    }
+}
+<style>
+    @@media (max-width: 767.98px) {
+        /* .mud-icon-root.mud-svg-icon {
+            fill: white !important;
+        } */
+
+       /*  .mud-navmenu.mud-navmenu-default .mud-nav-link-expand-icon.mud-transform {
+           
+        } */
+        
+    }
+</style>

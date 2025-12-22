@@ -1,0 +1,15 @@
+﻿@page "/Account/User-Logout"
+@using Microsoft.AspNetCore.Authentication
+@layout BlankLayout
+
+
+@code {
+    // [CascadingParameter]
+    // private HttpContext httpContext { get; set; } = default!;
+    protected override async Task OnInitializedAsync()
+    {
+        NavigationManager.NavigateTo("/auth/logout", forceLoad: true);
+    }
+    
+
+}

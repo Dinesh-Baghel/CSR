@@ -1,0 +1,67 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+	<PropertyGroup>
+		<TargetFramework>net8.0</TargetFramework>
+		<Nullable>enable</Nullable>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<EnableWindowsTargeting>true</EnableWindowsTargeting>
+		<RuntimeIdentifiers>win-x64;win-arm64</RuntimeIdentifiers>
+		<Version>1.0.0</Version>
+		<AssemblyVersion>1.0.0</AssemblyVersion>
+		<FileVersion>1.0.0</FileVersion>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<None Remove="Reports\BsrListReport.rdlc" />
+		<None Remove="Reports\BsrListReportWithImage.rdlc" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<Content Include="Reports\BsrListReport.rdlc">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
+		<Content Include="Reports\BsrListReportWithImage.rdlc">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
+
+	</ItemGroup>
+	<ItemGroup>
+		<Content Include="Logs\**" CopyToPublishDirectory="PreserveNewest" />
+	</ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.8" />
+		<PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+		<PackageReference Include="ReportViewerCore.NETCore" Version="15.1.26" />
+		<PackageReference Include="Serilog.Extensions.Logging.File" Version="3.0.0" />
+		<PackageReference Include="Swashbuckle.AspNetCore" Version="6.9.0" />
+		<PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.2.0" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\Application\Application.csproj" />
+		<ProjectReference Include="..\Infrastructure\Infrastructure.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<Reference Include="MyNewEncDec">
+			<HintPath>..\Dependencies\MyNewEncDec\MyNewEncDec.dll</HintPath>
+		</Reference>
+	</ItemGroup>
+
+	<ItemGroup>
+		<Compile Update="ReportsDataSets\BsrReportDataSet.Designer.cs">
+			<DependentUpon>BsrReportDataSet.xsd</DependentUpon>
+			<DesignTime>True</DesignTime>
+			<AutoGen>True</AutoGen>
+		</Compile>
+	</ItemGroup>
+
+	<ItemGroup>
+		<None Update="ReportsDataSets\BsrReportDataSet.xsd">
+			<SubType>Designer</SubType>
+			<LastGenOutput>BsrReportDataSet.Designer.cs</LastGenOutput>
+			<Generator>MSDataSetGenerator</Generator>
+		</None>
+	</ItemGroup>
+
+</Project>

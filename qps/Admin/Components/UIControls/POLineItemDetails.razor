@@ -1,0 +1,444 @@
+﻿@using Admin.Components.Pages.UserMaster
+@using Admin.Components.Shared
+@using EmailService.Models
+@using MudExtensions
+@using System.Text.RegularExpressions
+
+<MudDialog>
+    <DialogContent>
+        <MudForm @ref="form">
+            <MudGrid>
+                <MudItem xs="12" md="12">
+                    <MudGrid>
+                        <MudItem xs="12" md="3">
+                            <MudTextField @bind-Value="Vendor.Address" Label="Line Item"  FullWidth="true" AdornmentAriaLabel="Add Address" Required="true" />
+                        </MudItem>
+                        <MudItem xs="12" md="3">
+                            <MudTextField T="string" Label="Article" @bind-Value="Vendor.City" Required="true" />
+                        </MudItem>
+                        <MudItem xs="12" md="6">
+                            <MudTextField T="string" Label="Article Description" @bind-Value="Vendor.PostCode" Required="true" />
+                        </MudItem>
+
+                        <MudItem xs="12" md="2">
+                            <MudTextField T="string" Label="Total Qty." @bind-Value="Vendor.RegionDescription" />
+                        </MudItem>
+
+                        <MudItem xs="12" md="2">
+                            <MudTextField T="string" Label="Offered Qty." @bind-Value="Vendor.ContactNo" Required="true" />
+                        </MudItem>
+
+                        <MudItem xs="12" md="8">
+                            <MudTextField @bind-Value="Vendor.Address" Label="Inspection Location" Multiline="true" FullWidth="true" AdornmentAriaLabel="Add Address" Required="true" />
+                        </MudItem>
+                        <MudItem xs="12" md="6">
+                            <MudTextField T="string" Label="Date of Inspection" @bind-Value="Vendor.EmailId" Required="true" />
+                        </MudItem>
+                       
+                    </MudGrid>
+                </MudItem>
+            </MudGrid>
+        </MudForm>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Save" Color="Color.Secondary" Variant="Variant.Outlined" EndIcon="@Icons.Material.Filled.PostAdd" Disabled="@isSubmitting">Update Line Item List</MudButton>
+        <MudButton OnClick="CloseDialog" Color="Color.Error" Variant="Variant.Filled">Cancel</MudButton>
+        <MudButton Variant="Variant.Outlined" EndIcon="@Icons.Material.Filled.PostAdd" Color="Color.Secondary" OnClick="AddToAddressList">Update Line Item</MudButton>
+    </DialogActions>
+</MudDialog>
+<Loader IsVisible="@IsLoading" />
+
+@code {
+
+    bool isShow;
+    [CascadingParameter]
+    private IMudDialogInstance? MudDialog { get; set; }
+    public VendorDetail Vendor { get; set; } = new();
+    [Parameter]
+    public Vendor _vendor { get; set; } = new();
+    [Parameter] public bool IsEditMode { get; set; }
+    public bool IsMaked { get; set; } = false;
+
+    private bool isFatched { get; set; }
+
+    private MudForm form;
+    private bool isSubmitting = false;
+    bool IsLoading = false;
+    private int User_Id = 0;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var user = HttpContextAccessor.HttpContext?.User;
+        // Replace "YourCustomClaimType" with the actual claim type
+        var uid = user!.Claims.FirstOrDefault(c => c.Type == CustomClaimTypes.User_Id)?.Value;
+        User_Id = Convert.ToInt32(uid);
+        if (_vendor != null)
+        {
+            Vendor.VendorCode = _vendor.VendorCode;
+            Vendor.VendorName = _vendor.VendorName;
+            Vendor.GSTNo = _vendor.GSTNo;
+            isFatched = IsEditMode;
+        }
+        else
+        {
+            _vendor = new();
+            isFatched = false;
+        }
+
+    }
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            // IsLoading = true;
+            // IsLoading = false;
+            // StateHasChanged();
+        }
+    }
+    private async Task Reset()
+    {
+        bool? dres = await DialogService.ShowMessageBox("Confirmation", "Are you sure you want to reset Vendor form ?", yesText: "  Yes!  ", cancelText: "   No   ");
+        if (dres == null)
+        {
+            return;
+        }
+        else
+        {
+            Vendor = new();
+            _vendor = new();
+            IsEditMode = false;
+            StateHasChanged();
+        }
+    }
+    //Get_Roles_List
+    private async void Save()
+    {
+
+        if (string.IsNullOrEmpty(_vendor.VendorCode))
+        {
+            await ShowErrorDialog("Validation", "Vendor Code & Vendor Name are required.");
+            return;
+        }
+        if (_vendor.VendorAddresses.Count == 0)
+        {
+            await ShowErrorDialog("Validation", "At least one address is required.");
+            return;
+        }
+
+
+        bool? dres = await DialogService.ShowMessageBox("Confirmation", "Do you want to save vendor details?", yesText: "  Yes!  ", cancelText: "   No   ");
+        if (dres == null)
+        {
+            return;
+        }
+        else
+        {
+
+            _vendor.CreatedBy = User_Id;// Set the CREATED BY
+
+            var randomPassword = _passwordHasher.GenerateRandomPassword(8);
+            if (!IsEditMode)
+            {
+                _vendor.PassWord = _passwordHasher.HashPassword(randomPassword);
+            }
+
+            var res1 = await ApiMasterService.CallingAPI<GenRes, Vendor>(AllApiNames.SET_VENDOR!, _vendor);
+            if (res1.responseCode.Equals(0))
+            {
+                Snackbar.Add("Vendor record saved successfully.", Severity.Success);
+
+                var toEmails = string.Join(";", _vendor.VendorAddresses.Select(a => a.Email_Ids));
+                // SendEmail();
+                var serverSettings = mapper.Map<ServerSettings>(EmailServerSettings);
+                var userSettings = new UserMailSettings
+                {
+                    From = EmailServerSettings.From,// "noreply@vishalwholesale.co.in",
+                    To = toEmails,
+                    Subject = $"Vendor account creation...reg.",
+                    Body =
+                        $"Hi {_vendor.VendorName},<br/><br/>" +
+                        $"Your account has been successfully <b>created</b> for inspection activities.<br/><br/>" +
+                        $"Please use the following credentials to log in:<br/>" +
+                        $"Login ID: <b>{_vendor.VendorCode}</b><br/>" +
+                        $"Password: <b>{randomPassword}</b><br/>" +
+                        $"Login URL: 🔗 <a href='https://qps.vishalmegamart.com:8024/'>https://qps.vishalmegamart.com:8024/</a><br/><br/>" +
+                        $"<b>Note : </b> For security purposes, please change your password after your first login.",
+
+                    IsBodyHtml = true,
+                    // Attachments = new List<string> { @"D:\test.pdf" }
+                };
+                if (!IsEditMode)
+                {
+                    var result = sender.SendMail(serverSettings, userSettings);
+                }
+                MudDialog?.Close();
+            }
+            else
+            {
+                await ShowErrorDialog("Error!", res1.responseMessage!);
+            }
+        }
+
+    }
+    private void CloseDialog()
+    {
+        MudDialog?.Close();
+    }
+    private async Task ShowErrorDialog(string Tital, string message)
+    {
+        await DialogService.ShowMessageBox(Tital, message);
+    }
+    // Find Button Logic
+    private async Task OnFindClick()
+    {
+        if (!string.IsNullOrEmpty(Vendor.VendorCode))
+        {
+            // Prepare request safely
+            var selectRequest = new SelectListReq
+            {
+                Id = 0,
+                Cmd = CmdNames.Get_Vendor_By_Code,
+                ResponseType = "",
+                StrField = Vendor.VendorCode       // null-safe
+            };
+            // Find the vendor in local db
+            IsLoading = true;
+            var existingVendor = await ApiMasterService.CallingAPI<GetVendorByCode, SelectListReq>(AllApiNames.GET_VENDOR_BY_CODE, selectRequest);
+            IsLoading = false;
+
+            if (existingVendor.responseCode == 0 && existingVendor.responseMessage!.ToUpper() == "SUCCESS")
+            {
+                if (!string.IsNullOrEmpty(existingVendor.VendorModel.VENDOR_CODE))
+                {
+                    await ShowErrorDialog("Info", "Vendor details already exist in the record.");
+
+
+                    selectRequest.Id = existingVendor.VendorModel.VENDOR_ID;
+                    selectRequest.Cmd = CmdNames.Get_Vendor_Address;
+                    var res = await ApiMasterService.CallingAPI<GetAddressByVendorCode, SelectListReq>(AllApiNames.GET_VENDOR_ADDRESS, selectRequest);
+                    if (res.responseCode == 0 && res.responseMessage!.ToUpper() == "SUCCESS")
+                    {
+
+                        _vendor.VendorGUId = Guid.NewGuid();
+                        _vendor.VendorId = existingVendor.VendorModel.VENDOR_ID;
+                        _vendor.VendorCode = existingVendor.VendorModel.VENDOR_CODE;
+                        _vendor.VendorName = existingVendor.VendorModel.VENDOR_NAME;
+                        _vendor.GSTNo = existingVendor.VendorModel.GST_NO;
+                        _vendor.Default_Password_Changed = existingVendor.VendorModel.DEFAULT_PASSWORD_CHANGED;
+                        _vendor.IsActive = existingVendor.VendorModel.IS_ACTIVE;
+                        _vendor.CreatedBy = existingVendor.VendorModel.CREATED_BY;
+                        _vendor.CreatedDate = existingVendor.VendorModel.CREATED_DATE;
+                        isFatched = true;
+                        _vendor.VendorAddresses.Clear();
+                        foreach (var addrss in res.AddressList)
+                        {
+                            _vendor.VendorAddresses.Add(new VendorAddressDetail
+                            {
+                                AddressId = addrss.ADDRESS_ID,
+                                AddressLine1 = addrss.ADDRESS_LINE1,
+                                City = addrss.CITY,
+                                PinCode = addrss.PINCODE,
+                                Email_Ids = addrss.EMAIL_IDS,
+                                Mobile_Numbers = addrss.MOBILE_NUMBERS,
+                                Region = addrss.REGION_CODE,
+                                RegionDescription = addrss.REGION_DESCRIPTION,
+                                IsDefault = addrss.IS_DEFAULT,
+                                Created_Date = addrss.CREATED_DATE,
+                                Created_By = addrss.CREATED_BY,
+                                Updated_Date = addrss.MODIFIED_DATE,
+                                AddressGUId = Guid.NewGuid()
+                            });
+                        }
+                        Vendor.VendorCode = _vendor.VendorCode;
+                        Vendor.VendorName = _vendor.VendorName;
+                        Vendor.GSTNo = _vendor.GSTNo;
+
+                    }
+
+                    return;
+                }
+            }
+
+            //------------------------------
+            string vcode = Vendor.VendorCode;
+            var req = new SAP_API_DATA_Req
+            {
+                Param = Vendor.VendorCode,  // Ensure no null
+                TaskName = "SAP_VENDOR_DETAILS"
+            };
+
+            IsLoading = true;
+            var sapApiData = await ApiMasterService
+                .CallingAPI<ApiData, SAP_API_DATA_Req>(AllApiNames.GET_SAP_API!, req)
+                .ConfigureAwait(false);
+            IsLoading = false;
+
+            if (sapApiData is not null)
+            {
+                IsLoading = true;
+                var vendorDetails = await ApiMasterService
+                    .CallingSAPAPI<VendorResponse, string>(string.Empty, sapApiData)
+                    .ConfigureAwait(false);
+                IsLoading = false;
+                if (vendorDetails.VendorDetails != null)
+                {
+                    if (vendorDetails.VendorDetails.Any() == true)  // Safe and concise
+                    {
+                        var Vendordtl = vendorDetails.VendorDetails.First();
+
+                        if (Vendordtl is not null)  // extra guard
+                        {
+                            Vendor = Vendordtl;
+                            Vendor.ContactNo = Vendordtl.TelephoneNumber + "; " + Vendordtl.TelephoneNumber2 + "; " + Vendordtl.TelephoneNumber3;
+
+                            _vendor.VendorCode = Vendordtl.VendorCode;
+                            _vendor.VendorName = Vendordtl.VendorName;
+                            _vendor.GSTNo = Vendordtl.GSTNo;
+
+                            _vendor.VendorGUId = Guid.NewGuid();
+                            isFatched = true;
+                        }
+                    }
+                    else
+                    {
+                        await ShowErrorDialog("Info", "Vendor not found.");
+                        Vendor = new();
+                        Vendor.VendorCode = vcode;
+
+                    }
+                }
+                else
+                {
+                    await ShowErrorDialog("Info", "Requesting server is not responding.");
+                    Vendor = new();
+                    Vendor.VendorCode = vcode;
+                }
+
+
+            }
+            else
+            {
+                await ShowErrorDialog("Error", "SAP_VENDOR_DETAILS Api not found.");
+                return;
+            }
+
+        }
+        else
+        {
+            await ShowErrorDialog("Warning", "Please enter a valid Vendor Code.");
+        }
+    }
+    private async void AddToAddressList()
+    {
+        await form.Validate();
+
+        if (!string.IsNullOrEmpty(Vendor.EmailId))
+        {
+            List<string> emailIds = Vendor.EmailId.TrimEnd(';').Split(';', StringSplitOptions.RemoveEmptyEntries).Select(e => e.Trim()).ToList(); ;
+
+            foreach (var id in emailIds)
+            {
+                bool isValid = Regex.IsMatch(id, @"^[^@\s]+@[^@\s]+\.[^@\s]+$");
+                if (!isValid)
+                {
+                    await DialogService.ShowMessageBox("Info", $"Email-id '{id}' is invalid.");
+                    return;
+                }
+            }
+        }
+
+        if (form.IsValid)
+        {
+            var vendorDetails = _vendor.VendorAddresses.Where(p => p.AddressGUId == Vendor.VendorUId).FirstOrDefault();
+            if (vendorDetails != null)
+            {
+                vendorDetails.AddressLine1 = Vendor.Address;
+                vendorDetails.City = Vendor.City;
+                vendorDetails.PinCode = Vendor.PostCode;
+                vendorDetails.Region = Vendor.Region;
+                vendorDetails.RegionDescription = Vendor.RegionDescription;
+                vendorDetails.Mobile_Numbers = Vendor.ContactNo;
+                vendorDetails.Email_Ids = Vendor.EmailId;
+                vendorDetails.IsDefault = Vendor.IsDefault;
+            }
+            else
+            {
+                bool isexist = _vendor.VendorAddresses.Where(p => p.AddressLine1.Trim() == Vendor.Address.Trim()).Any();
+                if (!isexist)
+                {
+                    _vendor.VendorAddresses.Add(new VendorAddressDetail
+                    {
+                        AddressGUId = Guid.NewGuid(),
+                        AddressLine1 = Vendor.Address,
+                        City = Vendor.City,
+                        PinCode = Vendor.PostCode,
+                        Region = Vendor.Region,
+                        RegionDescription = Vendor.RegionDescription,
+                        Mobile_Numbers = Vendor.ContactNo,
+                        Email_Ids = Vendor.EmailId,
+                        IsDefault = Vendor.IsDefault
+                    });
+                }
+                else
+                {
+                    await DialogService.ShowMessageBox("Info", "Same address already exists in the list.");
+                    return;
+                }
+
+            }
+            Vendor.Address = "";
+            Vendor.VendorUId = Guid.Empty;
+            Vendor.City = "";
+            Vendor.PostCode = "";
+            Vendor.ContactNo = "";
+            Vendor.EmailId = "";
+            Vendor.IsDefault = false;
+            Vendor.Region = "";
+            Vendor.RegionDescription = "";
+            IsMaked = _vendor.VendorAddresses.Where(a => a.IsDefault == true).Any();
+            StateHasChanged();
+        }
+    }
+    private async void RemoveItem(VendorAddressDetail request)
+    {
+
+        bool? dres = await DialogService.ShowMessageBox("Confirmation", "Are you sure you want to delete this item?", yesText: "  Yes!  ", cancelText: "   No   ");
+        if (dres == null)
+        {
+            return;
+        }
+        else
+        {
+            _vendor.VendorAddresses.Remove(request);
+            StateHasChanged();
+        }
+    }
+    private async void EditItem(VendorAddressDetail request)
+    {
+
+        bool? dres = await DialogService.ShowMessageBox("Confirmation", "Are you sure you want to update this item?", yesText: "  Yes!  ", cancelText: "   No   ");
+        if (dres == null)
+        {
+            return;
+        }
+        else
+        {
+            Vendor.VendorUId = request.AddressGUId;
+            Vendor.Address = request.AddressLine1;
+            Vendor.City = request.City;
+            Vendor.PostCode = request.PinCode;
+            Vendor.Region = request.Region;
+            Vendor.RegionDescription = request.RegionDescription;
+            Vendor.ContactNo = request.Mobile_Numbers;
+            Vendor.EmailId = request.Email_Ids;
+            Vendor.IsDefault = request.IsDefault;
+            IsMaked = request.IsDefault == true ? false : _vendor.VendorAddresses.Where(a => a.IsDefault == true).Any();
+            StateHasChanged();
+        }
+
+
+
+
+    }
+
+}

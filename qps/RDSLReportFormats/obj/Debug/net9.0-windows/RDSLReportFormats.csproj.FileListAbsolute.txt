@@ -1,0 +1,8 @@
+D:\QPS Project\QPS\RDSLReportFormats\obj\Debug\net9.0-windows\RDSLReportFormats.csproj.AssemblyReference.cache
+D:\QPS Project\QPS\RDSLReportFormats\obj\Debug\net9.0-windows\RDSLReportFormats.Form1.resources
+D:\QPS Project\QPS\RDSLReportFormats\obj\Debug\net9.0-windows\RDSLReportFormats.csproj.GenerateResource.cache
+D:\QPS Project\QPS\RDSLReportFormats\obj\Debug\net9.0-windows\RDSLReportFormats.GeneratedMSBuildEditorConfig.editorconfig
+D:\QPS Project\QPS\RDSLReportFormats\obj\Debug\net9.0-windows\RDSLReportFormats.AssemblyInfoInputs.cache
+D:\QPS Project\QPS\RDSLReportFormats\obj\Debug\net9.0-windows\RDSLReportFormats.AssemblyInfo.cs
+D:\QPS Project\QPS\RDSLReportFormats\obj\Debug\net9.0-windows\RDSLReportFormats.csproj.CoreCompileInputs.cache
+D:\QPS Project\QPS\RDSLReportFormats\obj\Debug\net9.0-windows\RDSLReportFormats.sourcelink.json

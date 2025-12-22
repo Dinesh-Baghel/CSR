@@ -1,0 +1,6 @@
+D:\Chandra Bhan Singh\Projects\BSR\WinRdlc\obj\Release\net8.0-windows\WinRdlc.Form1.resources
+D:\Chandra Bhan Singh\Projects\BSR\WinRdlc\obj\Release\net8.0-windows\WinRdlc.csproj.GenerateResource.cache
+D:\Chandra Bhan Singh\Projects\BSR\WinRdlc\obj\Release\net8.0-windows\WinRdlc.GeneratedMSBuildEditorConfig.editorconfig
+D:\Chandra Bhan Singh\Projects\BSR\WinRdlc\obj\Release\net8.0-windows\WinRdlc.AssemblyInfoInputs.cache
+D:\Chandra Bhan Singh\Projects\BSR\WinRdlc\obj\Release\net8.0-windows\WinRdlc.AssemblyInfo.cs
+D:\Chandra Bhan Singh\Projects\BSR\WinRdlc\obj\Release\net8.0-windows\WinRdlc.csproj.CoreCompileInputs.cache

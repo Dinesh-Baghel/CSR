@@ -1,0 +1,232 @@
+﻿@page "/Menu-Master"
+@attribute [Authorize]
+<MudGrid Class="justify-end">
+            <MudItem>
+                <MudBreadcrumbs Items="_items">
+                    <ItemTemplate Context="item">
+                        <MudLink Href="@item.Href">@item.Text.ToUpper()</MudLink>
+                    </ItemTemplate>
+                </MudBreadcrumbs>
+            </MudItem>
+        </MudGrid>
+<h3>Menu Master</h3>
+<MudStack Row="true" AlignItems="AlignItems.End" Justify="Justify.FlexEnd">
+    <MudButton OnClick="() => OpenRoleDialog()" StartIcon="@Icons.Material.Filled.Add" Variant="Variant.Filled" Color="Color.Secondary">
+        Add New Menu
+    </MudButton>
+</MudStack>
+<br />
+<MudTable Items="FilteredData" @ref="MudTable">
+    <ToolBarContent>
+        <MudSpacer />
+        <MudTextField T="string" Value="@SearchQuery" ValueChanged="OnSearchChanged" Placeholder="Search" Adornment="Adornment.Start"
+                      AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+    </ToolBarContent>
+    <HeaderContent>
+        <MudTh>Menu Label</MudTh>
+        <MudTh>Url</MudTh>
+        <MudTh>View Order</MudTh>
+        <MudTh>Visibility</MudTh>
+        <MudTh>Active</MudTh>
+        <MudTh>Actions</MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd>@context.Label</MudTd>
+        <MudTd>@(context.Url)</MudTd>
+        <MudTd>@(context.Order)</MudTd>
+        <MudTd>@(context.Website_Visibility ? "Yes" : "No")</MudTd>
+        <MudTd>@(context.Active_Status ? "Yes" : "No")</MudTd>
+        <MudTd>
+            <MudButton OnClick="() => OpenRoleDialog(context)" StartIcon="@Icons.Material.Filled.Edit" Color="Color.Secondary" Variant="Variant.Text" />
+        </MudTd>
+    </RowTemplate>
+    <NoRecordsContent>
+        <MudText>No matching records found</MudText>
+    </NoRecordsContent>
+    <LoadingContent>
+        <MudText>Loading...</MudText>
+    </LoadingContent>
+    <PagerContent>
+        <MudTablePager PageSizeOptions="[5,10,15,20,25,50,100]" />
+    </PagerContent>
+</MudTable>
+
+
+
+@code {
+    private List<MenusList> menuList { get; set; } = new();
+    private SelectListReq selectListReq = new();
+    private List<Menu> FilteredData = new();
+    private List<Menu> Data = new(); // Menus to be shown on the current page
+    private MudTable<Menu> MudTable = new();
+    private string SearchQuery = string.Empty;
+    private int PageSize = 5; // Items per page
+    private int CurrentPage = 0; // Current page index
+    private int User_Id = 0; // Current User Id
+    private int Parent_Id = 0; // Current User Id
+    private Modules modules = new();
+    private List<BreadcrumbItem> _items = new List<BreadcrumbItem>
+    {
+        new BreadcrumbItem("Home", href: "/V1/Login2BsrAccount"),
+        new BreadcrumbItem("Menu List", href: "#", disabled: true)
+    };
+    protected override async Task OnInitializedAsync()
+    {
+        modules = await MenuService.GetModules();
+        if (!modules.User_Management)
+        {
+            NavigationManager.NavigateTo("/");
+        }
+        var user = HttpContextAccessor.HttpContext?.User;
+        if(user==null)
+        {
+            NavigationManager.NavigateTo("/Account/User-Login");
+            return;
+        }
+
+        // Replace "YourCustomClaimType" with the actual claim type
+        var uid = user.Claims.FirstOrDefault(c => c.Type == CustomClaimTypes.User_Id)?.Value;
+        User_Id = Convert.ToInt32(uid);
+        NavigationManager.LocationChanged += OnLocationChanged!;
+        OnLocationChanged(NavigationManager,null);
+    }
+    // Unsubscribe to avoid memory leaks
+    public void Dispose()
+    {
+        NavigationManager.LocationChanged -= OnLocationChanged!;
+    }
+    private void OnLocationChanged(object sender, Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs e)
+    {
+        var uri = NavigationManager?.ToAbsoluteUri(NavigationManager.Uri);
+        var query = System.Web.HttpUtility.ParseQueryString(uri!.Query);
+        if (query.Get("output") == null)
+        {
+            return;
+        }
+        Eqs = new EncryptedQueryString(query["output"]!);
+        if (Eqs["Page_Id"] == null)
+        {
+            return;
+        }
+        Parent_Id = Convert.ToInt32(Eqs["Page_Id"]!.ToString());
+        Task.Run(async () =>
+        {
+            try
+            {
+                // Call the API asynchronously and assign the result to Data
+                Data = await GetData();
+
+                // Assign the result to FilteredData on the main thread
+                // You may need to call InvokeAsync to ensure the update happens on the main thread in Blazor Server
+                InvokeAsync(() =>
+                {
+                    FilteredData = Data;
+                    StateHasChanged();  // Trigger a re-render of the component
+                });
+            }
+            catch (Exception ex)
+            {
+                // Handle any exceptions that may occur
+                Console.WriteLine($"Error: {ex.Message}");
+            }
+        });
+    }
+    private async Task<List<Menu>> GetData()
+    {
+        selectListReq.Id = Parent_Id;
+        selectListReq.Cmd = CmdNames.Get_All_Menu;
+        var res = await ApiMasterService.CallingAPI<MenuRes, SelectListReq>(AllApiNames.GET_ALL_MENUS!, selectListReq);
+        if (res.responseCode == 0 && res.responseMessage!.ToUpper() == "SUCCESS")
+        {
+            return res.menuList!;
+        }
+        else
+        {
+            Snackbar.Add(res.responseMessage!,Severity.Error);
+            return new List<Menu>();
+        }
+    }
+    private void OnSearchChanged(string searchQuery)
+    {
+        this.SearchQuery = searchQuery;
+        FilterRoles(); // Apply search filter
+        ApplyPaging(); // Re-apply pagination after search
+    }
+    private void FilterRoles()
+    {
+        if (string.IsNullOrWhiteSpace(SearchQuery))
+        {
+            FilteredData = Data; // Show all data if search is empty
+        }
+        else
+        {
+            FilteredData = Data
+                .Where(role => role.Label!.Contains(SearchQuery, StringComparison.OrdinalIgnoreCase) ||
+                       role.Url!.ToString().Contains(SearchQuery, StringComparison.OrdinalIgnoreCase))
+                .ToList(); 
+        }
+    }
+    private void ApplyPaging()
+    {
+        var startIndex = CurrentPage * PageSize;
+        FilteredData = FilteredData.Skip(startIndex).Take(PageSize).ToList(); 
+    }
+    private void OnPageChanged(int newPage)
+    {
+        CurrentPage = newPage;
+        ApplyPaging(); 
+    }
+    private async Task OpenRoleDialog(Menu? CurrentRecord = null)
+    {
+        selectListReq.Cmd = CmdNames.Get_Roles_List;
+        var roleList = await ApiMasterService.CallingAPI<List<RoleList>, SelectListReq>(AllApiNames.SELECT_ROLES_LIST!, selectListReq);
+        var parameters = new DialogParameters
+        {
+            { 
+                "menu", CurrentRecord ?? new Menu(){RoleList = roleList,Parent_Id=Parent_Id,Website_Visibility=true,Active_Status=true, Order = Data.Count+1}
+            },
+            { "IsEditMode", CurrentRecord != null },
+            { "MaxViewOrder", Data.Count+1 }
+        };
+        var options = new DialogOptions { CloseButton = true, MaxWidth = MaxWidth.Small, FullWidth = true };
+        var dialog = await DialogService.ShowAsync<MenuMasterDialog>("Menu Details", parameters, options);
+        var result = await dialog.Result;
+        if (!result!.Canceled)
+        {
+            var updatedUser = result.Data as Menu;
+            if (updatedUser != null)
+            {
+                // updatedUser.Url = updatedUser.Label!.Replace(" ","_");
+                updatedUser.Inserted_Updated_By = User_Id;
+                var res = await ApiMasterService.CallingAPI<GenRes, Menu>(AllApiNames.SET_MENU!, updatedUser);
+
+                if (res.responseCode.Equals(0))
+                {
+                    Data = await GetData();
+                    FilteredData = Data;
+                    selectListReq.Cmd = CmdNames.Get_Menu_List;
+                    var res1 = await ApiMasterService.CallingAPI<GetMenuListRes, SelectListReq>(AllApiNames.GET_MENUS_LIST!, selectListReq);
+                    if(res1.responseCode==0)
+                    {
+                        menuList = res1.menusLists;
+                    }
+                    else
+                    {
+                        menuList = new();
+                    }
+                    NavMenuService.UpdateMenuList(menuList);
+                    StateHasChanged();
+                }
+                else
+                {
+                    await ShowErrorDialog(res.responseMessage!);
+                    // Show Error Message
+                }
+            }
+        }
+    }
+    private async Task ShowErrorDialog(string message)
+    {
+        await DialogService.ShowMessageBox(title: "Error", markupMessage: (MarkupString)message, yesText: "OK");
+    }
+}

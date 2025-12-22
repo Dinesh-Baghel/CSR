@@ -1,0 +1,224 @@
+﻿@inject IDialogService DialogService
+@if (IsVisible)
+{
+    <div class="modal" style="display: block;" tabindex="-1" @onkeydown="HandleKeyDown" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content surbey_s">
+                <div class="modal-header">
+                    <h4>@Title</h4>
+                </div>
+                <div class="modal-body">
+                    @((MarkupString)@Message!)
+                </div>
+                <div class="modal-footer">
+                    @for (int i = 0; i < VisibleButtons.Count; i++)
+                    {
+                        var button = VisibleButtons[i];
+                        <button @ref="button.Element"
+                                class="@GetButtonCss(button.Label, i)"
+                                @onclick="() => Close(button.Result)">
+                            @button.Label
+                        </button>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+}
+@code {
+    public enum MessageBoxResult { None, OK, Cancel, Yes, No, Abort, Retry, Ignore }
+    public enum MessageBoxButton { OK, OKCancel, YesNo, YesNoCancel, RetryCancel, AbortRetryIgnore }
+
+    private TaskCompletionSource<MessageBoxResult>? _tcs;
+    private List<ButtonInfo> VisibleButtons = new();
+
+
+    private string Title = string.Empty;
+    private string Message = string.Empty;
+    public bool IsVisible = false;
+    private int SelectedIndex = 0;
+    private void HandleKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Escape")
+        {
+            var cancelOrNo = VisibleButtons.FirstOrDefault(b => b.Result == MessageBoxResult.Cancel || b.Result == MessageBoxResult.No);
+            if (cancelOrNo != null)
+            {
+                Close(cancelOrNo.Result);
+            }
+            else
+            {
+                Close(MessageBoxResult.None);
+            }
+        }
+        else if (e.Key == "ArrowRight")
+        {
+            if (VisibleButtons.Count > 0)
+            {
+                SelectedIndex = (SelectedIndex + 1) % VisibleButtons.Count;
+                _ = FocusSelectedButton();
+            }
+        }
+        else if (e.Key == "ArrowLeft")
+        {
+            if (VisibleButtons.Count > 0)
+            {
+                SelectedIndex = (SelectedIndex - 1 + VisibleButtons.Count) % VisibleButtons.Count;
+                _ = FocusSelectedButton();
+            }
+        }
+        else if (e.Key == "Enter")
+        {
+            if (VisibleButtons.Count > SelectedIndex)
+            {
+                Close(VisibleButtons[SelectedIndex].Result);
+            }
+        }
+    }
+
+    public Task<MessageBoxResult> ShowAsync(string title, string message, MessageBoxButton buttons)
+    {
+        Title = title;
+        Message = message;
+        SetButtons(buttons);
+        IsVisible = true;
+        SelectedIndex = 0;
+        StateHasChanged();
+        _tcs = new TaskCompletionSource<MessageBoxResult>();
+        _ = FocusSelectedButton();
+        return _tcs.Task;
+    }
+
+    private async Task FocusSelectedButton()
+    {
+        await Task.Yield();
+        await Task.Delay(150);
+        if (VisibleButtons.Count > SelectedIndex)
+        {
+            var btn = VisibleButtons[SelectedIndex];
+            _ = Task.Run(async () =>
+            {
+                await Task.Delay(50);
+                if (btn.Element.Context != null)
+                {
+                    await InvokeAsync(() => btn.Element.FocusAsync());
+                }
+            });
+        }
+    }
+
+    private void Close(MessageBoxResult result)
+    {
+        IsVisible = false;
+        _tcs?.TrySetResult(result);
+        StateHasChanged();
+    }
+
+    private void SetButtons(MessageBoxButton buttons)
+    {
+        VisibleButtons.Clear();
+        void Add(string label, MessageBoxResult result) => VisibleButtons.Add(new ButtonInfo { Label = label, Result = result });
+
+        switch (buttons)
+        {
+            case MessageBoxButton.OK: Add("OK", MessageBoxResult.OK); break;
+            case MessageBoxButton.OKCancel:
+                Add("OK", MessageBoxResult.OK); Add("Cancel", MessageBoxResult.Cancel); break;
+            case MessageBoxButton.YesNo:
+                Add("Yes", MessageBoxResult.Yes); Add("No", MessageBoxResult.No); break;
+            case MessageBoxButton.YesNoCancel:
+                Add("Yes", MessageBoxResult.Yes); Add("No", MessageBoxResult.No); Add("Cancel", MessageBoxResult.Cancel); break;
+            case MessageBoxButton.RetryCancel:
+                Add("Retry", MessageBoxResult.Retry); Add("Cancel", MessageBoxResult.Cancel); break;
+            case MessageBoxButton.AbortRetryIgnore:
+                Add("Abort", MessageBoxResult.Abort); Add("Retry", MessageBoxResult.Retry); Add("Ignore", MessageBoxResult.Ignore); break;
+        }
+    }
+
+    private string GetButtonCss(string label, int index)
+    {
+        string selectedStyle = label switch
+        {
+            "OK" => "btn btn-primary",
+            "Cancel" => "btn btn-secondary",
+            "Yes" => "btn btn-success ",
+            "No" => "btn btn-danger",
+            "Retry" => "btn btn-warning",
+            "Abort" => "btn btn-danger",
+            "Ignore" => "btn btn-info",
+            _ => "btn btn-primary"
+        };
+
+        string normalStyle = label switch
+        {
+            "OK" => "btn btn-outline-primary",
+            "Cancel" => "btn btn-outline-secondary",
+            "Yes" => "btn btn-outline-success",
+            "No" => "btn btn-outline-danger",
+            "Retry" => "btn btn-outline-warning",
+            "Abort" => "btn btn-outline-danger",
+            "Ignore" => "btn btn-outline-info",
+            _ => "btn btn-outline-primary"
+        };
+
+        return (index == SelectedIndex ? selectedStyle : normalStyle) + " btn-wpos mx-1";
+    }
+
+    private class ButtonInfo
+    {
+        public string Label { get; set; } = string.Empty;
+        public MessageBoxResult Result { get; set; }
+        public ElementReference Element { get; set; }
+    }
+}
+<style>
+    .modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        z-index: 5000;
+        width: 100vw;
+        height: 100vh;
+        display: flex;
+        align-items: center; /* Vertical center */
+        justify-content: center; /* Horizontal center */
+        background-color: rgba(0, 0, 0, 0.5); /* Optional: dimmed background */
+    }
+
+    .modal-dialog {
+        max-width: 500px;
+        width: 90%;
+        margin-top:20vh !important;
+        
+    }
+
+    .modal-content {
+        
+        border-radius: 8px;
+        box-shadow: 0 8px 20px rgba(0,0,0,0.25);
+        overflow: hidden;
+        background-color: #f5f5f5;
+    }
+
+    .modal-header {
+        padding: 5px;
+        background-color: #ed008b;
+        border-bottom: 1px solid #ddd;
+        padding-left:16px;
+        color:white;
+    }
+
+    .modal-footer {
+        text-align: right;
+        border-top: 1px solid #ddd;
+        padding: 5px;
+        background-color: white;
+        border-bottom: 1px solid #ddd;
+        padding-left: 16px;
+    }
+
+    .modal-body {
+        padding: 20px;
+        font-size: 1rem;
+    }
+</style>

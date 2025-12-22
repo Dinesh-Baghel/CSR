@@ -1,0 +1,28 @@
+﻿@using MudBlazor
+
+<MudTextField T="string"
+              Value="@Value"
+              Label="@Label"
+              ReadOnly="true"
+              Variant="@Variant"
+              FullWidth="true"
+              Lines="@Lines"
+              AutoSize="true"
+              Class="readonly-field"
+              
+              Margin="Margin.Dense" />
+
+
+@code {
+    [Parameter] public string Label { get; set; }
+    [Parameter] public string Value { get; set; }
+    [Parameter] public Variant Variant { get; set; } = Variant.Outlined; // Outlined or Filled
+    [Parameter] public int Lines { get; set; } = 1; // Default single line
+}
+
+<style>
+    .mud-input {
+        color: rgb(255 0 80) !important;
+    }
+</style>
+

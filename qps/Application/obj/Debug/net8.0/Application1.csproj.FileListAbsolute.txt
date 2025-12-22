@@ -1,0 +1,16 @@
+D:\Chandra Bhan Singh\WVMM\CWAP\Application\bin\Debug\net8.0\Application1.deps.json
+D:\Chandra Bhan Singh\WVMM\CWAP\Application\bin\Debug\net8.0\Application1.dll
+D:\Chandra Bhan Singh\WVMM\CWAP\Application\bin\Debug\net8.0\Application1.pdb
+D:\Chandra Bhan Singh\WVMM\CWAP\Application\bin\Debug\net8.0\Domain.dll
+D:\Chandra Bhan Singh\WVMM\CWAP\Application\bin\Debug\net8.0\EncryptionUtility.dll
+D:\Chandra Bhan Singh\WVMM\CWAP\Application\bin\Debug\net8.0\Domain.pdb
+D:\Chandra Bhan Singh\WVMM\CWAP\Application\obj\Debug\net8.0\Application1.csproj.AssemblyReference.cache
+D:\Chandra Bhan Singh\WVMM\CWAP\Application\obj\Debug\net8.0\Application1.GeneratedMSBuildEditorConfig.editorconfig
+D:\Chandra Bhan Singh\WVMM\CWAP\Application\obj\Debug\net8.0\Application1.AssemblyInfoInputs.cache
+D:\Chandra Bhan Singh\WVMM\CWAP\Application\obj\Debug\net8.0\Application1.AssemblyInfo.cs
+D:\Chandra Bhan Singh\WVMM\CWAP\Application\obj\Debug\net8.0\Application1.csproj.CoreCompileInputs.cache
+D:\Chandra Bhan Singh\WVMM\CWAP\Application\obj\Debug\net8.0\Applicat.B55145CA.Up2Date
+D:\Chandra Bhan Singh\WVMM\CWAP\Application\obj\Debug\net8.0\Application1.dll
+D:\Chandra Bhan Singh\WVMM\CWAP\Application\obj\Debug\net8.0\refint\Application1.dll
+D:\Chandra Bhan Singh\WVMM\CWAP\Application\obj\Debug\net8.0\Application1.pdb
+D:\Chandra Bhan Singh\WVMM\CWAP\Application\obj\Debug\net8.0\ref\Application1.dll

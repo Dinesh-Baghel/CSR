@@ -1,0 +1,125 @@
+D:\Chandra Bhan Singh\WVMM\CWAP - Copy (4)\Domain\bin\Debug\net8.0\Domain.deps.json
+D:\Chandra Bhan Singh\WVMM\CWAP - Copy (4)\Domain\bin\Debug\net8.0\Domain.dll
+D:\Chandra Bhan Singh\WVMM\CWAP - Copy (4)\Domain\bin\Debug\net8.0\Domain.pdb
+D:\Chandra Bhan Singh\WVMM\CWAP - Copy (4)\Domain\obj\Debug\net8.0\Domain.GeneratedMSBuildEditorConfig.editorconfig
+D:\Chandra Bhan Singh\WVMM\CWAP - Copy (4)\Domain\obj\Debug\net8.0\Domain.AssemblyInfoInputs.cache
+D:\Chandra Bhan Singh\WVMM\CWAP - Copy (4)\Domain\obj\Debug\net8.0\Domain.AssemblyInfo.cs
+D:\Chandra Bhan Singh\WVMM\CWAP - Copy (4)\Domain\obj\Debug\net8.0\Domain.csproj.CoreCompileInputs.cache
+D:\Chandra Bhan Singh\WVMM\CWAP - Copy (4)\Domain\obj\Debug\net8.0\Domain.dll
+D:\Chandra Bhan Singh\WVMM\CWAP - Copy (4)\Domain\obj\Debug\net8.0\refint\Domain.dll
+D:\Chandra Bhan Singh\WVMM\CWAP - Copy (4)\Domain\obj\Debug\net8.0\Domain.pdb
+D:\Chandra Bhan Singh\WVMM\CWAP - Copy (4)\Domain\obj\Debug\net8.0\ref\Domain.dll
+D:\Chandra Bhan Singh\WVMM\CWAP\Domain\bin\Debug\net8.0\Domain.deps.json
+D:\Chandra Bhan Singh\WVMM\CWAP\Domain\bin\Debug\net8.0\Domain.dll
+D:\Chandra Bhan Singh\WVMM\CWAP\Domain\bin\Debug\net8.0\Domain.pdb
+D:\Chandra Bhan Singh\WVMM\CWAP\Domain\bin\Debug\net8.0\EncryptionUtility.dll
+D:\Chandra Bhan Singh\WVMM\CWAP\Domain\obj\Debug\net8.0\Domain.csproj.AssemblyReference.cache
+D:\Chandra Bhan Singh\WVMM\CWAP\Domain\obj\Debug\net8.0\Domain.GeneratedMSBuildEditorConfig.editorconfig
+D:\Chandra Bhan Singh\WVMM\CWAP\Domain\obj\Debug\net8.0\Domain.AssemblyInfoInputs.cache
+D:\Chandra Bhan Singh\WVMM\CWAP\Domain\obj\Debug\net8.0\Domain.AssemblyInfo.cs
+D:\Chandra Bhan Singh\WVMM\CWAP\Domain\obj\Debug\net8.0\Domain.csproj.CoreCompileInputs.cache
+D:\Chandra Bhan Singh\WVMM\CWAP\Domain\obj\Debug\net8.0\Domain.csproj.Up2Date
+D:\Chandra Bhan Singh\WVMM\CWAP\Domain\obj\Debug\net8.0\Domain.dll
+D:\Chandra Bhan Singh\WVMM\CWAP\Domain\obj\Debug\net8.0\refint\Domain.dll
+D:\Chandra Bhan Singh\WVMM\CWAP\Domain\obj\Debug\net8.0\Domain.pdb
+D:\Chandra Bhan Singh\WVMM\CWAP\Domain\obj\Debug\net8.0\ref\Domain.dll
+D:\Chandra Bhan Singh\Projects\BSR\Domain\bin\Debug\net8.0\Domain.deps.json
+D:\Chandra Bhan Singh\Projects\BSR\Domain\bin\Debug\net8.0\Domain.dll
+D:\Chandra Bhan Singh\Projects\BSR\Domain\bin\Debug\net8.0\Domain.pdb
+D:\Chandra Bhan Singh\Projects\BSR\Domain\bin\Debug\net8.0\EncryptionUtility.dll
+D:\Chandra Bhan Singh\Projects\BSR\Domain\obj\Debug\net8.0\Domain.csproj.AssemblyReference.cache
+D:\Chandra Bhan Singh\Projects\BSR\Domain\obj\Debug\net8.0\Domain.GeneratedMSBuildEditorConfig.editorconfig
+D:\Chandra Bhan Singh\Projects\BSR\Domain\obj\Debug\net8.0\Domain.AssemblyInfoInputs.cache
+D:\Chandra Bhan Singh\Projects\BSR\Domain\obj\Debug\net8.0\Domain.AssemblyInfo.cs
+D:\Chandra Bhan Singh\Projects\BSR\Domain\obj\Debug\net8.0\Domain.csproj.CoreCompileInputs.cache
+D:\Chandra Bhan Singh\Projects\BSR\Domain\obj\Debug\net8.0\Domain.csproj.Up2Date
+D:\Chandra Bhan Singh\Projects\BSR\Domain\obj\Debug\net8.0\Domain.dll
+D:\Chandra Bhan Singh\Projects\BSR\Domain\obj\Debug\net8.0\refint\Domain.dll
+D:\Chandra Bhan Singh\Projects\BSR\Domain\obj\Debug\net8.0\Domain.pdb
+D:\Chandra Bhan Singh\Projects\BSR\Domain\obj\Debug\net8.0\ref\Domain.dll
+D:\Chandra Bhan Singh\Projects\BSR_WithoutQr\Domain\bin\Debug\net8.0\Domain.deps.json
+D:\Chandra Bhan Singh\Projects\BSR_WithoutQr\Domain\bin\Debug\net8.0\Domain.dll
+D:\Chandra Bhan Singh\Projects\BSR_WithoutQr\Domain\bin\Debug\net8.0\Domain.pdb
+D:\Chandra Bhan Singh\Projects\BSR_WithoutQr\Domain\bin\Debug\net8.0\EncryptionUtility.dll
+D:\Chandra Bhan Singh\Projects\BSR_WithoutQr\Domain\obj\Debug\net8.0\Domain.csproj.AssemblyReference.cache
+D:\Chandra Bhan Singh\Projects\BSR_WithoutQr\Domain\obj\Debug\net8.0\Domain.GeneratedMSBuildEditorConfig.editorconfig
+D:\Chandra Bhan Singh\Projects\BSR_WithoutQr\Domain\obj\Debug\net8.0\Domain.AssemblyInfoInputs.cache
+D:\Chandra Bhan Singh\Projects\BSR_WithoutQr\Domain\obj\Debug\net8.0\Domain.AssemblyInfo.cs
+D:\Chandra Bhan Singh\Projects\BSR_WithoutQr\Domain\obj\Debug\net8.0\Domain.csproj.CoreCompileInputs.cache
+D:\Chandra Bhan Singh\Projects\BSR_WithoutQr\Domain\obj\Debug\net8.0\Domain.csproj.Up2Date
+D:\Chandra Bhan Singh\Projects\BSR_WithoutQr\Domain\obj\Debug\net8.0\Domain.dll
+D:\Chandra Bhan Singh\Projects\BSR_WithoutQr\Domain\obj\Debug\net8.0\refint\Domain.dll
+D:\Chandra Bhan Singh\Projects\BSR_WithoutQr\Domain\obj\Debug\net8.0\Domain.pdb
+D:\Chandra Bhan Singh\Projects\BSR_WithoutQr\Domain\obj\Debug\net8.0\ref\Domain.dll
+D:\QPS Project\BSR_WithoutQr\Domain\bin\Debug\net8.0\Domain.deps.json
+D:\QPS Project\BSR_WithoutQr\Domain\bin\Debug\net8.0\Domain.dll
+D:\QPS Project\BSR_WithoutQr\Domain\bin\Debug\net8.0\Domain.pdb
+D:\QPS Project\BSR_WithoutQr\Domain\bin\Debug\net8.0\EncryptionUtility.dll
+D:\QPS Project\BSR_WithoutQr\Domain\obj\Debug\net8.0\Domain.csproj.AssemblyReference.cache
+D:\QPS Project\BSR_WithoutQr\Domain\obj\Debug\net8.0\Domain.GeneratedMSBuildEditorConfig.editorconfig
+D:\QPS Project\BSR_WithoutQr\Domain\obj\Debug\net8.0\Domain.AssemblyInfoInputs.cache
+D:\QPS Project\BSR_WithoutQr\Domain\obj\Debug\net8.0\Domain.AssemblyInfo.cs
+D:\QPS Project\BSR_WithoutQr\Domain\obj\Debug\net8.0\Domain.csproj.CoreCompileInputs.cache
+D:\QPS Project\BSR_WithoutQr\Domain\obj\Debug\net8.0\Domain.csproj.Up2Date
+D:\QPS Project\BSR_WithoutQr\Domain\obj\Debug\net8.0\Domain.dll
+D:\QPS Project\BSR_WithoutQr\Domain\obj\Debug\net8.0\refint\Domain.dll
+D:\QPS Project\BSR_WithoutQr\Domain\obj\Debug\net8.0\Domain.pdb
+D:\QPS Project\BSR_WithoutQr\Domain\obj\Debug\net8.0\ref\Domain.dll
+D:\QPS Project\BSR_WithoutQrTest\Domain\bin\Debug\net8.0\Domain.deps.json
+D:\QPS Project\BSR_WithoutQrTest\Domain\bin\Debug\net8.0\Domain.dll
+D:\QPS Project\BSR_WithoutQrTest\Domain\bin\Debug\net8.0\Domain.pdb
+D:\QPS Project\BSR_WithoutQrTest\Domain\bin\Debug\net8.0\EncryptionUtility.dll
+D:\QPS Project\BSR_WithoutQrTest\Domain\obj\Debug\net8.0\Domain.csproj.AssemblyReference.cache
+D:\QPS Project\BSR_WithoutQrTest\Domain\obj\Debug\net8.0\Domain.GeneratedMSBuildEditorConfig.editorconfig
+D:\QPS Project\BSR_WithoutQrTest\Domain\obj\Debug\net8.0\Domain.AssemblyInfoInputs.cache
+D:\QPS Project\BSR_WithoutQrTest\Domain\obj\Debug\net8.0\Domain.AssemblyInfo.cs
+D:\QPS Project\BSR_WithoutQrTest\Domain\obj\Debug\net8.0\Domain.csproj.CoreCompileInputs.cache
+D:\QPS Project\BSR_WithoutQrTest\Domain\obj\Debug\net8.0\Domain.csproj.Up2Date
+D:\QPS Project\BSR_WithoutQrTest\Domain\obj\Debug\net8.0\Domain.dll
+D:\QPS Project\BSR_WithoutQrTest\Domain\obj\Debug\net8.0\refint\Domain.dll
+D:\QPS Project\BSR_WithoutQrTest\Domain\obj\Debug\net8.0\Domain.pdb
+D:\QPS Project\BSR_WithoutQrTest\Domain\obj\Debug\net8.0\ref\Domain.dll
+D:\QPS Project\QPSApp\Domain\bin\Debug\net8.0\Domain.deps.json
+D:\QPS Project\QPSApp\Domain\bin\Debug\net8.0\Domain.dll
+D:\QPS Project\QPSApp\Domain\bin\Debug\net8.0\Domain.pdb
+D:\QPS Project\QPSApp\Domain\bin\Debug\net8.0\EncryptionUtility.dll
+D:\QPS Project\QPSApp\Domain\obj\Debug\net8.0\Domain.csproj.AssemblyReference.cache
+D:\QPS Project\QPSApp\Domain\obj\Debug\net8.0\Domain.GeneratedMSBuildEditorConfig.editorconfig
+D:\QPS Project\QPSApp\Domain\obj\Debug\net8.0\Domain.AssemblyInfoInputs.cache
+D:\QPS Project\QPSApp\Domain\obj\Debug\net8.0\Domain.AssemblyInfo.cs
+D:\QPS Project\QPSApp\Domain\obj\Debug\net8.0\Domain.csproj.CoreCompileInputs.cache
+D:\QPS Project\QPSApp\Domain\obj\Debug\net8.0\Domain.csproj.Up2Date
+D:\QPS Project\QPSApp\Domain\obj\Debug\net8.0\Domain.dll
+D:\QPS Project\QPSApp\Domain\obj\Debug\net8.0\refint\Domain.dll
+D:\QPS Project\QPSApp\Domain\obj\Debug\net8.0\Domain.pdb
+D:\QPS Project\QPSApp\Domain\obj\Debug\net8.0\ref\Domain.dll
+D:\My Projects\QPS_PORTAL\Domain\bin\Debug\net8.0\Domain.deps.json
+D:\My Projects\QPS_PORTAL\Domain\bin\Debug\net8.0\Domain.dll
+D:\My Projects\QPS_PORTAL\Domain\bin\Debug\net8.0\Domain.pdb
+D:\My Projects\QPS_PORTAL\Domain\bin\Debug\net8.0\EncryptionUtility.dll
+D:\My Projects\QPS_PORTAL\Domain\obj\Debug\net8.0\Domain.csproj.AssemblyReference.cache
+D:\My Projects\QPS_PORTAL\Domain\obj\Debug\net8.0\Domain.GeneratedMSBuildEditorConfig.editorconfig
+D:\My Projects\QPS_PORTAL\Domain\obj\Debug\net8.0\Domain.AssemblyInfoInputs.cache
+D:\My Projects\QPS_PORTAL\Domain\obj\Debug\net8.0\Domain.AssemblyInfo.cs
+D:\My Projects\QPS_PORTAL\Domain\obj\Debug\net8.0\Domain.csproj.CoreCompileInputs.cache
+D:\My Projects\QPS_PORTAL\Domain\obj\Debug\net8.0\Domain.sourcelink.json
+D:\My Projects\QPS_PORTAL\Domain\obj\Debug\net8.0\Domain.csproj.Up2Date
+D:\My Projects\QPS_PORTAL\Domain\obj\Debug\net8.0\Domain.dll
+D:\My Projects\QPS_PORTAL\Domain\obj\Debug\net8.0\refint\Domain.dll
+D:\My Projects\QPS_PORTAL\Domain\obj\Debug\net8.0\Domain.pdb
+D:\My Projects\QPS_PORTAL\Domain\obj\Debug\net8.0\ref\Domain.dll
+D:\QPS Project\QPS\Domain\bin\Debug\net8.0\Domain.deps.json
+D:\QPS Project\QPS\Domain\bin\Debug\net8.0\Domain.dll
+D:\QPS Project\QPS\Domain\bin\Debug\net8.0\Domain.pdb
+D:\QPS Project\QPS\Domain\bin\Debug\net8.0\EncryptionUtility.dll
+D:\QPS Project\QPS\Domain\obj\Debug\net8.0\Domain.csproj.AssemblyReference.cache
+D:\QPS Project\QPS\Domain\obj\Debug\net8.0\Domain.GeneratedMSBuildEditorConfig.editorconfig
+D:\QPS Project\QPS\Domain\obj\Debug\net8.0\Domain.AssemblyInfoInputs.cache
+D:\QPS Project\QPS\Domain\obj\Debug\net8.0\Domain.AssemblyInfo.cs
+D:\QPS Project\QPS\Domain\obj\Debug\net8.0\Domain.csproj.CoreCompileInputs.cache
+D:\QPS Project\QPS\Domain\obj\Debug\net8.0\Domain.sourcelink.json
+D:\QPS Project\QPS\Domain\obj\Debug\net8.0\Domain.csproj.Up2Date
+D:\QPS Project\QPS\Domain\obj\Debug\net8.0\Domain.dll
+D:\QPS Project\QPS\Domain\obj\Debug\net8.0\refint\Domain.dll
+D:\QPS Project\QPS\Domain\obj\Debug\net8.0\Domain.pdb
+D:\QPS Project\QPS\Domain\obj\Debug\net8.0\ref\Domain.dll
